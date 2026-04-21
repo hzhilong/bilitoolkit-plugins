@@ -1,0 +1,56 @@
+{
+  "name": "bilitoolkit-plugin-quick-upgrade",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "description": "哔哩哔哩快速升级的定时任务插件",
+  "author": "hzhilong",
+  "keywords": [
+    "BiliToolkit",
+    "哔哩工具姬",
+    "bilitoolkit-plugin",
+    "bilitoolkit-plugin:name:速升姬",
+    "bilitoolkit-plugin:type:task"
+  ],
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins",
+    "directory": "bilitoolkit-plugin-quick-upgrade"
+  },
+  "bugs": {
+    "url": "https://github.com/hzhilong/bilitoolkit-task-plugin-example/issues"
+  },
+  "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-quick-upgrade#readme",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "check": "vue-tsc --build --noEmit  && eslint .",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/",
+    "dev": "chcp 65001 && vite",
+    "build": "vite build",
+    "npm login": "npm login",
+    "npm publish": "npm publish --access public"
+  },
+  "dependencies": {
+    "@ybgnb/utils": "^0.1.6",
+    "@ybgnb/bili-api": "workspace:*",
+    "bilitoolkit-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/tsconfig": "^0.7.0",
+    "eslint": "^9.31.0",
+    "prettier": "3.6.2",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  }
+}

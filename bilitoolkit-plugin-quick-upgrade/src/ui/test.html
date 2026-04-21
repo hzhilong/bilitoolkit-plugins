@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>哔哩哔哩快速升级</title>
+    <link rel="stylesheet" type="text/css" href="light-var.css">
+    <style>
+
+        .card {
+            min-width: 340px;
+            max-width: 500px;
+            font-size: 14px;
+            border-radius: 1.2em;
+            border: 2px solid var(--el-border-color);
+            overflow: hidden;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, var(--app-primary-color) 0%, var(--app-color-background) 100%);
+            color: var(--app-color-background);
+            padding: 1em;
+            display: flex;
+            align-items: center;
+            gap:8px;
+        }
+
+        .user-face {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--app-color-background);
+        }
+
+        .user-info-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 1.4em;
+            margin-left: 4px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            text-shadow: var(--app-text-shadow);
+            text-wrap: nowrap;
+        }
+
+        .user-uid {
+            color: var(--app-color-background-transparent-75);
+            font-size: 0.9em;
+            margin-top: 4px;
+            text-wrap: nowrap;
+        }
+
+        .total-exp {
+            background: var(--app-color-background-transparent-65);
+            color: var(--app-primary-color);
+            padding: 6px 16px;
+            border-radius: 1em;
+            display: inline-block;
+            margin-left: auto;
+            text-wrap: nowrap;
+        }
+
+        .task-list {
+            padding: 4px 14px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--el-border-color-light);
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-type {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--el-text-color-primary);
+            flex: 1;
+        }
+
+        .task-exp {
+            font-weight: 600;
+            color: #fb7299;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .task-status {
+            margin-right: 10px;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .success {
+            color: var(--app-success-color);
+        }
+
+        .failure {
+            color: var(--app-error-color);
+        }
+
+        footer {
+            background: var(--app-bg-color-page);
+            padding: 12px 24px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--el-text-color-secondary);
+            border-top: 1px solid var(--el-border-color-light);
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="user-info">
+        <img class="user-face"/>
+        <div class="user-info-column">
+            <span class="user-name"><strong>用户名</strong></span>
+            <span class="user-uid">uid 31414232131231232</span>
+        </div>
+        <span class="total-exp">经验 +156</span>
+    </div>
+    <div class="task-list">
+        <div class="task-item">
+            <div class="task-type">每日登录</div>
+            <div class="task-exp">+5</div>
+            <div class="task-status success">✔</div>
+        </div>
+        <div class="task-item">
+            <div class="task-type">每日观看视频</div>
+            <div class="task-exp">+5</div>
+            <div class="task-status success">✔</div>
+        </div>
+        <div class="task-item">
+            <div class="task-type">每日投币</div>
+            <div class="task-exp">+50</div>
+            <div class="task-status success">✔</div>
+        </div>
+        <div class="task-item">
+            <div class="task-type">分享视频</div>
+            <div class="task-exp">+5</div>
+            <div class="task-status failure">×</div>
+        </div>
+    </div>
+    <footer>
+        任务执行时间：2026-04-20 09:32:15 | 成功5项 / 失败1项
+    </footer>
+</div>
+</body>
+</html>

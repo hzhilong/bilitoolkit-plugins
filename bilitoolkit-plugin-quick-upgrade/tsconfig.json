@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "rootDir": "./",
+    // ================== 代码目标与模块 ==================
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": [
+      "ES2020"
+    ],
+    "outDir": "./dist",
+    "strict": true,
+    // 类型导入必须使用 type
+    "verbatimModuleSyntax": true,
+    // 每个文件单独编译
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    // 文件名大小写一致检查
+    "forceConsistentCasingInFileNames": true,
+    // 允许导入 .ts/.tsx 文件扩展名
+    "allowImportingTsExtensions": false,
+    // CommonJS 和 ES 模块互操作
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    // 生成 source map
+    "sourceMap": true,
+    // 实验性装饰器
+    "experimentalDecorators": false,
+  },
+  "include": [
+    "src",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".yalc",
+    "yalc.lock"
+  ]
+}
