@@ -1,8 +1,5 @@
-import type { TaskConfigField, InferConfig } from 'bilitoolkit-types'
-import type { UpgradeTaskResult } from '../types'
-import { type TaskConfigFields } from '../config/config'
-import { AbortError } from '@ybgnb/utils'
-import { BiliClient, type Dynamic } from '@ybgnb/bili-api'
+import type { TaskConfigField } from 'bilitoolkit-types'
+import type { UpgradeTaskResult, UpgradeTaskContext } from '../types'
 
 /**
  * 升级任务
@@ -31,24 +28,17 @@ export abstract class UpgradeTask<Name extends string = string> {
 
   /**
    * 判断是否可以运行任务
-   * @param config  配置信息
-   * @param signal  取消信号
    */
-  shouldRunTask(config: Omit<InferConfig<TaskConfigFields>, 'users'>, signal?: AbortSignal) {
+  async shouldRunTask({ config, logger, logPrefix }: UpgradeTaskContext) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configValue = (config as unknown as any)[this.toggleField.name]
     if ((typeof configValue === 'boolean' && !configValue) || (typeof configValue === 'number' && configValue < 1)) {
+      logger.info(`${logPrefix(this)} 未开启`)
       return false
     }
 
-    if (signal?.aborted) throw new AbortError()
-
     return true
   }
-  abstract run(
-    config: Omit<InferConfig<TaskConfigFields>, 'users'>,
-    biliClient: BiliClient,
-    signal: AbortSignal | undefined,
-    dynamicList: Dynamic[] | null,
-  ): Promise<UpgradeTaskResult>
+
+  abstract run(context: UpgradeTaskContext): Promise<UpgradeTaskResult>
 }

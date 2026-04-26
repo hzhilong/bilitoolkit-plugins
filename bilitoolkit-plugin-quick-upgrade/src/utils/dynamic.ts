@@ -1,44 +1,60 @@
-import { type Dynamic, DynamicTypeMap } from '@ybgnb/bili-api'
-import { randomInt } from '@ybgnb/utils'
+import { type Dynamic, DynamicTypeMap, BiliClient } from '@ybgnb/bili-api'
+import { popularStore } from '../stores/popular'
 
-export function getVideoAid(dynamicList: Dynamic[] | null, startIndex: number = 0) {
-  const result = getVideoAids(dynamicList, 1, startIndex)
+export async function getVideoAid(
+  client: BiliClient,
+  dynamicList: Dynamic[] | null,
+  startIndex: number = 0,
+  signal?: AbortSignal | undefined,
+) {
+  const result = await getVideoAids(client, dynamicList, 1, startIndex, signal)
   return {
     aid: result.aids[0],
+    bvid: result.bvids[0],
     index: result.index,
   }
 }
 
-export function getVideoAids(
+export async function getVideoAids(
+  client: BiliClient,
   dynamicList: Dynamic[] | null,
   count: number = 1,
   startIndex: number = 0,
-): {
+  signal?: AbortSignal | undefined,
+): Promise<{
   index: number
   aids: number[]
-} {
+  bvids: string[]
+}> {
   let index = startIndex
   const aids: Array<number> = []
-  if (count < 1) return { index, aids }
+  const bvids: Array<string> = []
+  if (count < 1) return { index, aids, bvids }
 
   if (dynamicList) {
     for (; index < dynamicList.length; index++) {
       const dynamic = dynamicList[index]
       if (dynamic.type === DynamicTypeMap.DYNAMIC_TYPE_AV.type) {
         const aid = dynamic.modules.module_dynamic.major?.archive?.aid
-        if (aid) {
+        const bvid = dynamic.modules.module_dynamic.major?.archive?.bvid
+        if (aid && bvid) {
           aids.push(Number(aid))
+          bvids.push(bvid)
           if (aids.length >= count) {
-            return { index, aids }
+            return { index, aids, bvids }
           }
         }
       }
     }
   }
 
-  for (let i = aids.length; i < count; i++) {
-    aids.push(randomInt(1e9, 2e9))
+  if (aids.length < count) {
+    const popularList = await popularStore.get(client, signal)
+    if (!popularList || popularList.length < count - aids.length) throw new Error('获取热门视频失败')
+
+    aids.push(...popularList.slice(0, count - aids.length).map((v) => v.aid))
+    bvids.push(...popularList.slice(0, count - aids.length).map((v) => v.bvid))
   }
 
-  return { index, aids }
+  return { index, aids, bvids }
 }

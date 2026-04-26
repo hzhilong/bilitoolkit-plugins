@@ -1,23 +1,20 @@
 import { UpgradeTask } from '../base'
-import type { TaskConfigField, InferConfig } from 'bilitoolkit-types'
-import { taskConfigSchemaMap, type TaskConfigFields } from '../../config/config'
-import { BiliClient, type Dynamic } from '@ybgnb/bili-api'
-import type { UpgradeTaskResult } from '../../types'
-import { getErrorMessage } from '@ybgnb/utils'
+import type { TaskConfigField } from 'bilitoolkit-types'
+import { taskConfigSchemaMap } from '../../config/config'
+import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types'
+import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
 import { getVideoAid } from '../../utils/dynamic'
+import { dynamicStore } from '../../stores/dynamic'
 
 export class WatchTask extends UpgradeTask {
   toggleField: TaskConfigField = taskConfigSchemaMap.watch
 
-  async run(
-    config: Omit<InferConfig<TaskConfigFields>, 'users'>,
-    biliClient: BiliClient,
-    signal: AbortSignal | undefined,
-    dynamicList: Dynamic[] | null,
-  ): Promise<UpgradeTaskResult> {
+  async run({ signal, biliClient, logger, logPrefix }: UpgradeTaskContext): Promise<UpgradeTaskResult> {
     try {
-      const aid = getVideoAid(dynamicList).aid
+      const { aid, bvid } = await getVideoAid(biliClient, await dynamicStore.get(biliClient, signal), undefined, signal)
 
+      logger.info(`${logPrefix(this)} 即将观看视频 [${bvid}]`)
+      await sleepRandom(600, 1000)
       await biliClient.videoReport.heartbeat(
         {
           w_aid: aid,
@@ -27,6 +24,7 @@ export class WatchTask extends UpgradeTask {
         },
         { signal },
       )
+      logger.info(`${logPrefix(this)} 观看视频 [${bvid}] 成功`)
       return this.successResult('执行完成', 5)
     } catch (e) {
       return this.failedResult(getErrorMessage(e))
