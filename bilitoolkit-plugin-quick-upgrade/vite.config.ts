@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
-import { taskSchedule, taskConfigSchema } from './src/config/config'
+import { taskSchedule, taskConfigSchema } from './src/config/config.js'
 import pkg from './package.json'
 
 export default defineConfig(() => {

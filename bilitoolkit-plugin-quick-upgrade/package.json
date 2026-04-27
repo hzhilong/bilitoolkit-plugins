@@ -39,7 +39,7 @@
     "npm publish": "npm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/utils": "^0.1.6",
+    "@ybgnb/utils": "^0.1.8",
     "@ybgnb/bili-api": "workspace:*",
     "bilitoolkit-types": "workspace:*"
   },

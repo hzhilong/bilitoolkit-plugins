@@ -1,7 +1,7 @@
 import { type UserInfo, BiliClient } from '@ybgnb/bili-api'
 import type { InferConfig, TaskLogger } from 'bilitoolkit-types'
-import type { MyTaskConfigFields } from '../config/config'
-import type { UpgradeTask } from '../tasks/base'
+import type { MyTaskConfigFields } from '../config/config.js'
+import type { UpgradeTask } from '../tasks/base.js'
 
 /**
  * 升级任务运行结果

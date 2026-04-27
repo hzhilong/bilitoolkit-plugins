@@ -1,11 +1,11 @@
-import { UpgradeTask } from '../base'
+import { UpgradeTask } from '../base.js'
 import type { TaskConfigField } from 'bilitoolkit-types'
-import { taskConfigSchemaMap } from '../../config/config'
-import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types'
+import { taskConfigSchemaMap } from '../../config/config.js'
+import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types.js'
 import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
-import { getVideoAid } from '../../utils/dynamic'
-import { dailyTaskStatusStore } from '../../stores/daily-status'
-import { dynamicStore } from '../../stores/dynamic'
+import { getVideoAid } from '../../utils/dynamic.js'
+import { dailyTaskStatusStore } from '../../stores/daily-status.js'
+import { dynamicStore } from '../../stores/dynamic.js'
 
 export class CoinTask extends UpgradeTask {
   toggleField: TaskConfigField = taskConfigSchemaMap.coin
@@ -46,7 +46,7 @@ export class CoinTask extends UpgradeTask {
         // 从动态获取视频aid，通过热门榜单补充
         logger.info(`${logPrefix(this)} 从动态/热门榜单获取视频中`)
         const { aid, index, bvid } = await getVideoAid(biliClient, dynamicList, dynamicIndex, signal)
-        dynamicIndex = index
+        dynamicIndex = index + 1
 
         await sleepRandom(600, 1000)
         // 查询稿件关系

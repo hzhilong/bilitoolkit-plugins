@@ -1,7 +1,7 @@
 import type { TaskPlugin, TaskResult } from 'bilitoolkit-types'
-import { type MyTaskConfigFields } from './config/config'
-import { resultToHtml } from './utils/result'
-import { runByUser } from './run/runner'
+import { type MyTaskConfigFields } from './config/config.js'
+import { resultToHtml } from './utils/result.js'
+import { runByUser } from './run/runner.js'
 
 const plugin: TaskPlugin<MyTaskConfigFields> = {
   async run(context): Promise<TaskResult> {

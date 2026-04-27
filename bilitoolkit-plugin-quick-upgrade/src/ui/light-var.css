@@ -205,7 +205,7 @@
   /* 主页面遮罩 */
   --app-bg-color-page: var(--app-color-primary-transparent-5);
   /* 应用主页面菜单栏+顶部栏+边框的背景 */
-  --app-bg-color-menus: var(--app-color-primary-transparent-5);
+  --app-bg-color-menus: var(--app-bg-color-page);
 
   /*菜单相关*/
   --app-color-menu: var(--el-text-color-regular);

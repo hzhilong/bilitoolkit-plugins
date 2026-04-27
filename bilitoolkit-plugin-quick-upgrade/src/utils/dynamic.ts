@@ -1,5 +1,5 @@
 import { type Dynamic, DynamicTypeMap, BiliClient } from '@ybgnb/bili-api'
-import { popularStore } from '../stores/popular'
+import { popularStore } from '../stores/popular.js'
 
 export async function getVideoAid(
   client: BiliClient,

@@ -1,4 +1,4 @@
-import type { UserTaskResult } from '../types'
+import type { UserTaskResult } from '../types.js'
 import { getFormattedDateTime } from '@ybgnb/utils'
 
 /**
@@ -51,8 +51,8 @@ export function resultToHtml(userTaskResult: UserTaskResult): string {
       <div style="background: linear-gradient(135deg, var(--app-primary-color) -10%, var(--app-color-background) 200%); color: var(--app-color-background); padding: 16px; display: flex; align-items: center; gap: 8px;">
         <img src="${userFace}" style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--app-color-background); object-fit: cover;" alt="头像">
         <div style="flex: 1;">
-          <div style="font-size: 16px; border-radius: 40px; backdrop-filter: blur(2px); text-shadow: var(--app-text-shadow); text-wrap: nowrap;">${userName}</div>
-          <div style=" color: var(--app-color-background-transparent-75); font-size: 14px;text-wrap: nowrap;">uid ${userUid}</div>
+          <div style="color: #ffffff;font-size: 16px; border-radius: 40px; backdrop-filter: blur(2px); text-shadow: var(--app-text-shadow); text-wrap: nowrap;">${userName}</div>
+          <div style=" color: #f2f2f2; font-size: 14px;text-wrap: nowrap;">uid ${userUid}</div>
         </div>
         <div style="background: var(--app-color-background-transparent-65);color: var(--app-primary-color);padding: 6px 16px;border-radius: 16px;display: inline-block;margin-left: auto;text-wrap: nowrap;">经验 +${totalExp}</div>
       </div>

@@ -7,7 +7,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 
-// 创建一个独立的代理实例，自己管理生命周期
 const proxyInstance = httpProxy.createProxyServer({
   changeOrigin: true,
   secure: false,
