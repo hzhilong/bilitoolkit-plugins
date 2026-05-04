@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
 import { taskSchedule, taskConfigSchema } from './src/config/config.js'
-import pkg from './package.json'
+import pkg from './package.json' with { type: 'json' }
 
 export default defineConfig(() => {
   return {

@@ -1,7 +1,7 @@
 import type { TaskContext, InferConfig } from 'bilitoolkit-types'
 import { type UserInfoWithCookie, BiliClient, type DailyTaskStatus } from '@ybgnb/bili-api'
 import type { MyTaskConfigFields } from '../config/config.js'
-import type { UserTaskResult, UpgradeTaskResult, UpgradeTaskContext } from '../types.js'
+import type { UserTaskResult, UpgradeTaskResult, UpgradeTaskContext } from '../types/index.js'
 import { loginTask } from '../tasks/impl/login.js'
 import { watchTask } from '../tasks/impl/watch.js'
 import { shareTask } from '../tasks/impl/share.js'

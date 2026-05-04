@@ -1,4 +1,4 @@
-import type { UserTaskResult } from '../types.js'
+import type { UserTaskResult } from '../types/index.js'
 import { getFormattedDateTime } from '@ybgnb/utils'
 
 /**

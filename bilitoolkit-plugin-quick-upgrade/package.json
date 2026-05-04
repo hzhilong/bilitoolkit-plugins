@@ -30,7 +30,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "check": "vue-tsc --build --noEmit  && eslint .",
+    "check": "vue-tsc -p tsconfig.dev.json --noEmit  && eslint .",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "dev": "chcp 65001 && vite",

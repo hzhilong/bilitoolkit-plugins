@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toolkitApi } from '@/api/toolkit-api.ts'
+import { toolkitApi } from '@/api/toolkit-api'
 import { BiliUserCard } from 'bilitoolkit-ui'
 import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import { ref, onMounted } from 'vue'

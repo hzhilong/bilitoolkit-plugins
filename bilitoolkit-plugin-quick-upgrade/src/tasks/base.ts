@@ -1,5 +1,5 @@
 import type { TaskConfigField } from 'bilitoolkit-types'
-import type { UpgradeTaskResult, UpgradeTaskContext } from '../types.js'
+import type { UpgradeTaskResult, UpgradeTaskContext } from '../types/index.js'
 
 /**
  * 升级任务

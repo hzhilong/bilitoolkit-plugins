@@ -1,7 +1,7 @@
 import { UpgradeTask } from '../base.js'
 import type { TaskConfigField } from 'bilitoolkit-types'
 import { taskConfigSchemaMap } from '../../config/config.js'
-import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types.js'
+import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types/index.js'
 import { getErrorMessage } from '@ybgnb/utils'
 
 export class LoginTask extends UpgradeTask {

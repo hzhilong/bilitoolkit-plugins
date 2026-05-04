@@ -8,7 +8,7 @@ async function bootstrapApp() {
   const app = createApp(HomeView)
 
   if (import.meta.env.DEV) {
-    import('./utils/dev-proxy-hook.ts').then((m) => m.setupDevProxyHook())
+    import('./utils/dev-proxy-hook.js').then((m) => m.setupDevProxyHook())
   }
 
   const pinia = createPinia()
