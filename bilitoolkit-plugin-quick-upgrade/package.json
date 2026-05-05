@@ -34,13 +34,13 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "dev": "chcp 65001 && vite",
-    "build": "vite build",
+    "build": "tsup",
     "npm login": "npm login",
     "npm publish": "npm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/utils": "^0.1.8",
     "@ybgnb/bili-api": "workspace:*",
+    "@ybgnb/utils": "^0.2.0",
     "bilitoolkit-types": "workspace:*"
   },
   "devDependencies": {
@@ -50,7 +50,7 @@
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.31.0",
     "prettier": "3.6.2",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.8"
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.2"
   }
 }
