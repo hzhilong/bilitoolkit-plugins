@@ -4,6 +4,7 @@ import type { BackupOptions } from '@/core/types/backup'
 import type { RestoreOptions } from '@/core/types/restore'
 import type { ClearOptions } from '@/core/types/clear'
 import type { TaskType, TaskId } from '@/core/types/task'
+import type { TaskGroupStatus } from '@/core/types/task-group'
 
 /**
  * 目标用户
@@ -76,4 +77,7 @@ export type ExecuteResult = {
 /**
  * 任务组执行上下文
  */
-export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'progressCallback'>
+export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'progressCallback'> & {
+  /** 状态监听 */
+  onStatusChange?: (status: TaskGroupStatus) => void
+}

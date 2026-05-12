@@ -66,7 +66,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     throw new Error('任务组已结束，不可再执行')
   }
 
-  const { progressCallback, abortSignal } = groupContext
+  const { progressCallback, abortSignal, onStatusChange } = groupContext
   const operationName = OperationTypeMap[taskGroup.operationType]
 
   return new Promise<void>(async (resolve, reject) => {
@@ -84,6 +84,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     const abortTask = async () => {
       await setProgress(undefined, `任务组已被取消`)
       await taskGroupService.markAborted(groupId)
+      onStatusChange?.('cancelled')
       reject(createAbortError())
     }
 
@@ -138,9 +139,11 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       if (hasPendingBatchTasks) {
         // 分批处理未结束
         await taskGroupService.markBatchCompleted(groupId)
+        onStatusChange?.('batchCompleted')
       } else {
         // 执行完成
         await taskGroupService.markCompleted(groupId)
+        onStatusChange?.('completed')
       }
       await setProgress(100, `${operationName}任务组执行成功`)
       resolve()
@@ -151,6 +154,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       } else {
         // 遇到其他错误
         await taskGroupService.markFailed(groupId, getErrorMessage(error))
+        onStatusChange?.('failed')
         reject(convertToCommonError(error, '任务执行失败'))
       }
     } finally {
