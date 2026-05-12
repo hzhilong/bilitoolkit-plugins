@@ -5,7 +5,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/backup'
+      redirect: '/backup',
     },
     {
       path: '/backup',
@@ -21,6 +21,11 @@ const router = createRouter({
       path: '/clear',
       name: 'clear',
       component: () => import('../views/ClearView.vue'),
+    },
+    {
+      path: '/tasks',
+      name: 'tasks',
+      component: () => import('../views/TaskManage.vue'),
     },
     {
       path: '/settings',

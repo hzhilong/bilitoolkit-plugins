@@ -29,10 +29,12 @@ export const getBackupDataByRange = async <D = Data, T extends DataRangeType = B
         break
       } else {
         items.push(...page.items)
-        await context.progressCallback(
-          (100 * (i - startPageNum + 1)) / pageTotal,
-          `第 ${i}/${endPageNum} 页 • 获取 ${page.items.length} 条 • 累计 ${items.length}`,
-        )
+        if (context.progressCallback) {
+          await context.progressCallback(
+            (100 * (i - startPageNum + 1)) / pageTotal,
+            `第 ${i}/${endPageNum} 页 • 获取 ${page.items.length} 条 • 累计 ${items.length}`,
+          )
+        }
         if (!page.hasNext) break
         await apiSleep(context.abortSignal)
       }

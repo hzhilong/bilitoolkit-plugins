@@ -1,9 +1,9 @@
 import type { BatchOptions } from '@/core/types/batch'
 import type { OperationType } from '@/core/types/operation'
-import type { BackupOptions, BackupResult } from '@/core/types/backup'
-import type { RestoreOptions, RestoreResult } from '@/core/types/restore'
-import type { ClearOptions, ClearResult } from '@/core/types/clear'
-import type { TaskType } from '@/core/types/task'
+import type { BackupOptions } from '@/core/types/backup'
+import type { RestoreOptions } from '@/core/types/restore'
+import type { ClearOptions } from '@/core/types/clear'
+import type { TaskType, TaskId } from '@/core/types/task'
 
 /**
  * 目标用户
@@ -27,7 +27,7 @@ export interface ExecuteContext {
   /** bili client id */
   clientId: string
   /** 进度回调 */
-  progressCallback: ProgressCallback
+  progressCallback?: ProgressCallback
   /** 取消信号 */
   abortSignal?: AbortSignal
 }
@@ -61,31 +61,19 @@ export type ExecuteOptions<O extends OperationType = OperationType> = O extends 
     : ClearOptions
 
 /**
- * 执行函数
- */
-export type ExecuteFn = (context: ExecuteContext, options: ExecuteOptions) => Promise<ExecuteResult>
-
-/**
  * 结果数据
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Data = any
 
 /**
- * 执行结果负载
- */
-export type ExecuteResultPayload<O extends OperationType = OperationType, D = Data> = O extends 'backup'
-  ? BackupResult
-  : O extends 'restore'
-    ? RestoreResult<D>
-    : ClearResult<D>
-
-/**
  * 执行结果
  */
-export type ExecuteResult<O extends OperationType = OperationType, D = Data> = {
-  /** 是否执行成功 */
-  success: boolean
-  /** 提示信息 */
-  msg: string
-} & ExecuteResultPayload<O, D>
+export type ExecuteResult = {
+  taskId: TaskId
+}
+
+/**
+ * 任务组执行上下文
+ */
+export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'progressCallback'>

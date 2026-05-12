@@ -1,22 +1,17 @@
-import type { TaskCreateOptions, TaskId } from '@/core/types/task'
-import { Task } from '@/core/task/task'
-import type { ExecuteResult, Data, ExecuteResultPayload } from '@/core/types/execute'
+import type { TaskCreateOptions, TaskId, Task, TaskResultPayload, TaskResult } from '@/core/types/task'
+import type { Data } from '@/core/types/execute'
 import { db } from '@/core/db/db'
 import { omitUndefined } from '@/core/utils/db'
 import type { OperationType } from '@/core/types/operation'
 
 export class TaskService {
-  async getTaskById(taskId: number, errorMsg = '任务不存在'): Promise<Task> {
+  async getById(taskId: TaskId, errorMsg = '任务不存在'): Promise<Task> {
     const task = await db.task.get(taskId)
     if (!task) throw new Error(errorMsg)
     return task
   }
 
-  /**
-   * 创建任务
-   * @param options 任务创建选项
-   */
-  async createTask<O extends OperationType = OperationType, D = Data>(options: TaskCreateOptions) {
+  async create<O extends OperationType = OperationType, D = Data>(options: TaskCreateOptions) {
     const id = await db.task.add({
       ...options,
       status: 'pending',
@@ -24,68 +19,80 @@ export class TaskService {
       progressMsg: '准备中',
       createdAt: Date.now(),
     })
-    return (await this.getTaskById(id, '任务创建失败')) as Task<O, D>
+    return (await this.getById(id, '任务创建失败')) as Task<O, D>
   }
 
-  /**
-   * 更新任务进度
-   */
-  async updateTaskProgress(taskId: TaskId, progress?: number, progressMsg?: string) {
+  async updateProgress(taskId: TaskId, progress?: number, progressMsg?: string) {
     await db.task.update(taskId, {
       ...omitUndefined({ progress, progressMsg }),
     })
   }
 
-  async markTaskRunning(taskId: TaskId): Promise<Task> {
+  async markRunning(taskId: TaskId): Promise<Task> {
     await db.task.update(taskId, {
       progressMsg: '正在执行',
       status: 'running',
     })
-    return this.getTaskById(taskId)
+    return this.getById(taskId)
   }
 
-  async markTaskAborted<O extends OperationType = OperationType, D = Data>(
+  async markAborted<O extends OperationType = OperationType, D = Data>(
     taskId: TaskId,
-    payload?: ExecuteResultPayload<O, D>,
+    payload?: TaskResultPayload<O, D>,
   ): Promise<Task> {
     const result = {
       success: false,
       msg: `任务已被取消`,
       ...payload,
-    } as ExecuteResult<O, D>
+    } as TaskResult<O, D>
     await db.task.update(taskId, {
       progressMsg: '任务已取消',
       status: 'cancelled',
       result: result,
     })
-    return this.getTaskById(taskId)
+    return this.getById(taskId)
   }
 
-  async markTaskCompleted(taskId: TaskId, result: ExecuteResult): Promise<Task> {
+  async markCompleted<O extends OperationType = OperationType, D = Data>(
+    taskId: TaskId,
+    result: TaskResult<O, D>,
+  ): Promise<Task> {
     await db.task.update(taskId, {
       progressMsg: '任务执行成功',
       status: 'completed',
       result: result,
     })
-    return this.getTaskById(taskId)
+    return this.getById(taskId)
   }
 
-  async markTaskFailed(taskId: TaskId, msg?: string): Promise<Task> {
+  async markBatchCompleted<O extends OperationType = OperationType, D = Data>(
+    taskId: TaskId,
+    result: TaskResult<O, D>,
+  ): Promise<Task> {
+    await db.task.update(taskId, {
+      progressMsg: '任务批次执行成功',
+      status: 'batchCompleted',
+      result: result,
+    })
+    return this.getById(taskId)
+  }
+
+  async markFailed(taskId: TaskId, msg?: string): Promise<Task> {
     await db.task.update(taskId, {
       progressMsg: msg ?? '任务执行失败',
       status: 'failed',
     })
-    return this.getTaskById(taskId)
+    return this.getById(taskId)
   }
 
   /**
    * 更新结果
    */
-  async updateResult<O extends OperationType = OperationType, D = Data>(taskId: TaskId, result?: ExecuteResult<O, D>) {
+  async updateResult<O extends OperationType = OperationType, D = Data>(taskId: TaskId, result?: TaskResult<O, D>) {
     await db.task.update(taskId, {
       result: result,
     })
-    return this.getTaskById(taskId)
+    return this.getById(taskId)
   }
 
   async suspendRunningTask() {

@@ -35,7 +35,9 @@ export const getBackupBatchData = async <D = Data>(
     } satisfies BatchProgress,
   }
   if (dataModule.fetchTotal !== undefined) {
-    await progressCallback(1, `正在获取数据条数`)
+    if (progressCallback) {
+      await progressCallback(1, `正在获取数据条数`)
+    }
     total = await dataModule.fetchTotal(context)
     if (total === 0 || total < batchSize * (startBatch - 1)) {
       // 数据为空 / 无更多数据可处理，分批处理已结束
@@ -49,7 +51,9 @@ export const getBackupBatchData = async <D = Data>(
   // 转换为数据源的分页起始页码
   //  let currentPage = Math.floor(((startBatch - 1) * batchSize) / backupFetchPageSize) + 1
   // 先获取一页的数据
-  await progressCallback(1, `正在获取数据...`)
+  if (progressCallback) {
+    await progressCallback(1, `正在获取数据...`)
+  }
   lastPageData = await dataModule.fetchPage(context, {
     // 这里已包含 pageNum
     pageParams,
@@ -74,10 +78,12 @@ export const getBackupBatchData = async <D = Data>(
 
   const handlePageData = async (items: D[]) => {
     list.push(...items)
-    await progressCallback(
-      (100 * currPageNo) / currBatchRemainingCount,
-      `[批次 ${startBatch}] 第 ${currPageNo}/${currBatchRemainingCount} 页 • 获取 ${items.length} 条 • (累计 ${list.length}/${currBatchRemainingSize})`,
-    )
+    if (progressCallback) {
+      await progressCallback(
+        (100 * currPageNo) / currBatchRemainingCount,
+        `[批次 ${startBatch}] 第 ${currPageNo}/${currBatchRemainingCount} 页 • 获取 ${items.length} 条 • (累计 ${list.length}/${currBatchRemainingSize})`,
+      )
+    }
     await apiSleep(context.abortSignal)
     currPageNo++
   }

@@ -23,7 +23,7 @@ async function bootstrapApp() {
   const ui = await initBilitoolkitUi(pinia, appEnv.DEV)
 
   // 暂停之前运行的任务
-  await taskService.suspendRunningTask()
+  // TODO 改成任务组
 
   app.use(ui)
   // Vue 组件中发生的错误
