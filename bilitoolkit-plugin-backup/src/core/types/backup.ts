@@ -20,23 +20,36 @@ export const TargetExtension: Record<ExportTarget, string> = {
 /**
  * 备份数据范围的类型
  */
-export type BackupDataRangeType = Extract<DataRangeType, 'all' | 'page'>
+export type BackupDataRangeType = Extract<DataRangeType, 'all' | 'page' | 'tree'>
 
 /**
- * 备份选项
+ * 基础备份选项
  */
-export type BackupOptions = {
+export interface BaseBackupBatchOptions {
   /** 文件根目录路径 */
   rootPath: string
   /** 选择的导出目标 */
   exportTargets: ExportTarget[]
-} & (
-  | BaseExecuteOptions<'backup', 'batch'>
-  | (BaseExecuteOptions<'backup', 'normal'> & {
-      /** 数据范围 */
-      dataRange: DataRange<BackupDataRangeType>
-    })
-)
+}
+
+/**
+ * 分批处理模式的备份选项
+ */
+export type BackupBatchOptions = BaseBackupBatchOptions & BaseExecuteOptions<'backup', 'batch'>
+
+/**
+ * 普通模式的备份选项
+ */
+export type BackupNormalOptions = BaseBackupBatchOptions &
+  BaseExecuteOptions<'backup', 'normal'> & {
+    /** 数据范围 */
+    dataRange: DataRange<BackupDataRangeType>
+  }
+
+/**
+ * 备份选项
+ */
+export type BackupOptions = BackupBatchOptions | BackupNormalOptions
 
 /**
  * 备份的资源

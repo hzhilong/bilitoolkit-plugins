@@ -15,15 +15,19 @@ export class ToView extends BaseModule<ToViewItem> {
   backupDataRangeType: BackupDataRangeType[] = ['all', 'page']
   exportTargets: ExportTarget[] = ['json']
 
-  fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<ToViewItem>> {
-    return toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.fetchPageWithNextParams, params)
+  fetchTotal = async (context: ExecuteContext): Promise<number> => {
+    return (await toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.getTotal)) ?? 0
   }
 
-  async fetchTotal(context: ExecuteContext): Promise<number> {
-    return (await toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.getTotal)) ?? 0
+  fetchPage = (context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<ToViewItem>> => {
+    return toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.fetchPageWithNextParams, params)
   }
 
   getDataTotalDesc(list: ToViewItem[]): string {
     return `${list.length} 条稍后再看`
+  }
+
+  fetchAll = (context: ExecuteContext): Promise<ToViewItem[]> => {
+    return this.baseFetchAll(context)
   }
 }

@@ -1,9 +1,10 @@
 import type { OperationType } from '@/core/types/operation'
-import type { Data, TargetUser, ExecuteOptions } from '@/core/types/execute'
+import type { TargetUser, ExecuteOptions } from '@/core/types/execute'
 import type { DataType } from '@/core/types/data-type'
 import type { BackupResult } from '@/core/types/backup'
 import type { RestoreResult } from '@/core/types/restore'
 import type { ClearResult } from '@/core/types/clear'
+import type { Data } from '@/core/types/data-module'
 
 export type TaskId = Task['id']
 
@@ -42,7 +43,7 @@ export type TaskCreateOptions = Pick<Task, 'type' | 'operationType' | 'dataType'
 /**
  * 执行任务
  */
-export interface Task<O extends OperationType = OperationType, D = Data> {
+export interface Task<O extends OperationType = OperationType, D extends Data = Data> {
   /** 任务 ID */
   id: number
   /** 任务类型 */
@@ -70,7 +71,7 @@ export interface Task<O extends OperationType = OperationType, D = Data> {
 /**
  * 任务结果负载
  */
-export type TaskResultPayload<O extends OperationType = OperationType, D = Data> = O extends 'backup'
+export type TaskResultPayload<O extends OperationType = OperationType, D extends Data = Data> = O extends 'backup'
   ? BackupResult
   : O extends 'restore'
     ? RestoreResult<D>
@@ -79,7 +80,7 @@ export type TaskResultPayload<O extends OperationType = OperationType, D = Data>
 /**
  * 任务结果
  */
-export type TaskResult<O extends OperationType = OperationType, D = Data> = {
+export type TaskResult<O extends OperationType = OperationType, D extends Data = Data> = {
   /** 是否执行成功 */
   success: boolean
   /** 提示信息 */

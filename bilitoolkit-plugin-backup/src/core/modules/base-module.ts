@@ -1,21 +1,29 @@
-import type { DataModule, FetchPageParams } from '@/core/types/data-module'
+import type { DataModule, FetchTotal, FetchPage, FetchTreeQuery, FetchAll, Data } from '@/core/types/data-module'
 import type { DataType } from '@/core/types/data-type'
 import { type OperationType } from '@/core/types/operation'
-import type { ExportTarget, BackupDataRangeType, BackupAsset, BackupOptions, BackupResult } from '@/core/types/backup'
-import type { ExecuteContext, Data } from '@/core/types/execute'
+import type {
+  ExportTarget,
+  BackupDataRangeType,
+  BackupAsset,
+  BackupOptions,
+  BackupBatchOptions,
+  BackupNormalOptions,
+} from '@/core/types/backup'
+import type { ExecuteContext } from '@/core/types/execute'
 import { createAbortError } from '@ybgnb/utils'
 import { taskService } from '@/core/service/task'
-import { getBackupBatchData } from '@/core/utils/batch'
+import { getBatchBackupData } from '@/core/utils/batch'
 import { exportTxtFile } from '@/core/utils/export'
 import { getBackupDataByRange } from '@/core/utils/data-range'
-import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
 import type { Task, TaskResult } from '@/core/types/task'
+import type { TreeRangeOptions } from '@/core/types/data-range'
+import type { BatchProgress } from '@/core/types/batch'
 
 /**
  * 模块基类
  */
-export abstract class BaseModule<D = Data> implements DataModule<D> {
+export abstract class BaseModule<D extends Data> implements DataModule<D> {
   /** 数据类型 */
   abstract dataType: DataType
   /** 数据类型名称 */
@@ -24,17 +32,19 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
   abstract operations: OperationType[]
   /** 备份时可选的数据范围类型 */
   abstract backupDataRangeType: BackupDataRangeType[]
+  /** 树形范围的选项（仅支持两层） */
+  treeRangeOptions?: TreeRangeOptions<D>
   /** 备份支持的导出目标 */
   abstract exportTargets: ExportTarget[]
-
   /** 获取数据总条数 */
-  abstract fetchTotal?(context: ExecuteContext): Promise<number>
-
+  fetchTotal?: FetchTotal<D>
+  /** 获取分页数据（单个数据要包装为数组） */
+  abstract fetchPage: FetchPage<D>
   /** 获取所有数据（单个数据要包装为数组） */
-  abstract fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<D>>
+  abstract fetchAll: FetchAll<D>
 
-  /** 获取所有数据（单个数据要包装为数组） */
-  async fetchAll(context: ExecuteContext): Promise<D[]> {
+  /** 获取所有数据 */
+  protected baseFetchAll = async (context: ExecuteContext, query?: FetchTreeQuery) => {
     // 这里因为是通过主进程代理发起请求
     // 为了实现取消的功能，需手动循环调用，不能直接使用bili-api的fetchAll方法
     let pageNum = 1
@@ -45,7 +55,7 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
       if (context.progressCallback) {
         await context.progressCallback(1, `正在获取数据条数`)
       }
-      total = await this.fetchTotal(context)
+      total = await this.fetchTotal(context, query)
       await apiSleep(context.abortSignal)
     }
     let progress = 1
@@ -54,9 +64,13 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
       if (context.abortSignal?.aborted) {
         break
       }
-      const pageData = await this.fetchPage(context, {
-        pageNum: pageNum,
-      })
+      const pageData = await this.fetchPage(
+        context,
+        {
+          pageNum,
+        },
+        query,
+      )
       if (pageData === null) break
 
       if (pageData.items) {
@@ -113,51 +127,65 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
     task: Task<'backup', D>,
   ): Promise<TaskResult<'backup', D>> => {
     if (task.executeOptions.mode === 'batch') {
-      // 分批处理
-      const backupOptions = task.executeOptions
-      const { batchOptions } = backupOptions
-      const { list, batchProgress } = await getBackupBatchData<D>(this, batchOptions, context)
-      // 导出备份资源
-      const assets = await this.exportBackupAsset(context, task as Task<'backup', D>, backupOptions, list)
-      const result: BackupResult = {
-        backupAssets: [...(task.result?.backupAssets ?? []), ...assets],
-        batchProgress: batchProgress,
-      }
-      let msg
-      if (batchProgress.remainingDataCount !== undefined && batchProgress.remainingBatchCount !== undefined) {
-        // 分批处理进度有剩余批次的信息
-        msg = `[${batchOptions.startBatch}/${batchProgress.remainingBatchCount}] 已备份 ${this.getDataTotalDesc(list)}`
-      } else {
-        msg = `[${batchOptions.startBatch}] 已备份 ${this.getDataTotalDesc(list)}`
-      }
-      return {
-        success: true,
-        msg: msg,
-        ...result,
-      } as TaskResult<'backup', D>
+      // 分批模式
+      return await this.handleBatchBackup(task, context)
     } else {
-      // 分批处理
-      const backupOptions = task.executeOptions
       // 普通模式
-      const list = await getBackupDataByRange(this, backupOptions.dataRange, context)
-      // 导出备份资源
-      const assets = await this.exportBackupAsset(context, task as Task<'backup', D>, backupOptions, list)
-      return {
-        success: true,
-        msg: `已备份 ${this.getDataTotalDesc(list)}`,
-        backupAssets: assets,
-      } as TaskResult<'backup', D>
+      return await this.handleNormalBackup(task, context)
     }
   }
 
+  /**
+   * 处理普通模式备份
+   */
+  protected async handleNormalBackup(task: Task<'backup', D>, context: ExecuteContext) {
+    const backupOptions = task.executeOptions as BackupNormalOptions
+    // 获取备份数据
+    const list = await getBackupDataByRange(this, backupOptions.dataRange, context)
+    // 导出备份资源
+    const assets = await this.exportBackupAsset(context, task as Task<'backup', D>, backupOptions, list)
+    return {
+      success: true,
+      msg: `已备份 ${this.getDataTotalDesc(list)}`,
+      backupAssets: assets,
+    } as TaskResult<'backup', D>
+  }
+
+  /**
+   * 处理分批模式备份
+   */
+  protected async handleBatchBackup(task: Task<'backup', D>, context: ExecuteContext) {
+    const backupOptions = task.executeOptions as BackupBatchOptions
+    const { batchOptions } = backupOptions
+    // 获取分批次处理的备份数据
+    const { list, batchProgress } = await getBatchBackupData<D>(this, batchOptions, context)
+    // 导出备份资源
+    const assets = await this.exportBackupAsset(context, task as Task<'backup', D>, backupOptions, list, batchProgress)
+    let msg
+    if (batchProgress.remainingDataCount !== undefined && batchProgress.remainingBatchCount !== undefined) {
+      // 分批处理进度有剩余批次的信息
+      msg = `[${batchOptions.startBatch}/${batchProgress.remainingBatchCount}] 已备份 ${this.getDataTotalDesc(list)}`
+    } else {
+      msg = `[${batchOptions.startBatch}] 已备份 ${this.getDataTotalDesc(list)}`
+    }
+    return {
+      success: true,
+      msg: msg,
+      backupAssets: [...(task.result?.backupAssets ?? []), ...assets],
+      batchProgress: batchProgress,
+    } as TaskResult<'backup', D>
+  }
+
+  // TODO 完善树形文件设计
   protected exportBackupAsset = async (
     { abortSignal, progressCallback }: ExecuteContext,
     task: Task<'backup', D>,
     options: BackupOptions,
     data: D[],
+    batchProgress?: BatchProgress,
   ) => {
-    const lastBackupResult = task.result as BackupResult | undefined
     const assets: BackupAsset[] = []
+    // 遍历配置的可导出资源
     for (const exportTarget of options.exportTargets) {
       if (abortSignal?.aborted) {
         // 已被取消，记录已导出的资源
@@ -166,6 +194,7 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
         })
         throw createAbortError()
       }
+
       if (progressCallback) {
         await progressCallback(
           undefined,
@@ -173,15 +202,7 @@ export abstract class BaseModule<D = Data> implements DataModule<D> {
         )
       }
       if (exportTarget === 'json') {
-        assets.push(
-          await exportTxtFile(
-            this.dataType,
-            options.rootPath,
-            'json',
-            JSON.stringify(data),
-            lastBackupResult?.batchProgress,
-          ),
-        )
+        assets.push(await exportTxtFile(this.dataType, options.rootPath, 'json', JSON.stringify(data), batchProgress))
       } else {
         // TODO 调用子类实现其他文件的导出
         throw new Error('暂未支持')

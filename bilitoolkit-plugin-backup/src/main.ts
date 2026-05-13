@@ -7,7 +7,6 @@ import '@/assets/scss/base.scss'
 import App from '@/App.vue'
 import router from '@/router'
 import { appEnv } from '@ybgnb/vite-env/common'
-import { taskService } from '@/core/service/task'
 
 async function bootstrapApp() {
   const app = createApp(App)

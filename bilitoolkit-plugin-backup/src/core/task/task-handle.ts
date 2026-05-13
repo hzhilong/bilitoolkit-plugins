@@ -1,9 +1,9 @@
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
-import type { ExecuteContext, Data } from '@/core/types/execute'
+import type { ExecuteContext } from '@/core/types/execute'
 import type { Task, TaskResult } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
 import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError } from '@ybgnb/utils'
-import type { DataModule } from '@/core/types/data-module'
+import type { DataModule, Data } from '@/core/types/data-module'
 import { checkAbortSignal } from '@/core/utils/abort'
 
 /**

@@ -36,7 +36,7 @@ export interface ExecuteContext {
 /**
  * 基础的执行选项
  */
-export type BaseExecuteOptions<O extends OperationType, T extends TaskType> = T extends 'normal'
+export type BaseExecuteOptions<O extends OperationType, T extends TaskType> = [T] extends ['normal']
   ? {
       /** 操作类型 */
       operationType: O
@@ -60,12 +60,6 @@ export type ExecuteOptions<O extends OperationType = OperationType> = O extends 
   : O extends 'restore'
     ? RestoreOptions
     : ClearOptions
-
-/**
- * 结果数据
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Data = any
 
 /**
  * 执行结果

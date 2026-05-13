@@ -6,7 +6,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { bundleStats } from 'rollup-plugin-bundle-stats'
 import { loadEnvConfig } from '@ybgnb/vite-env'
 
 /**

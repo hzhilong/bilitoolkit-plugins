@@ -1,13 +1,13 @@
-import type { DataModule } from '@/core/types/data-module'
+import type { DataModule, Data } from '@/core/types/data-module'
 import { type BatchOptions, isBatchable, type BatchProgress } from '@/core/types/batch'
-import type { Data, ExecuteContext } from '@/core/types/execute'
+import type { ExecuteContext } from '@/core/types/execute'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
 
 /**
- * 获取备份时需要分批次处理的数据
+ * 获取分批次处理的备份数据
  */
-export const getBackupBatchData = async <D = Data>(
+export const getBatchBackupData = async <D extends Data = Data>(
   dataModule: DataModule<D>,
   batchOptions: BatchOptions,
   context: ExecuteContext,

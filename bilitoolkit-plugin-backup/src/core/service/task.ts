@@ -1,8 +1,8 @@
 import type { TaskCreateOptions, TaskId, Task, TaskResultPayload, TaskResult } from '@/core/types/task'
-import type { Data } from '@/core/types/execute'
 import { db } from '@/core/db/db'
 import { omitUndefined } from '@/core/utils/db'
 import type { OperationType } from '@/core/types/operation'
+import type { Data } from '@/core/types/data-module'
 
 export class TaskService {
   async getById(taskId: TaskId, errorMsg = '任务不存在'): Promise<Task> {
@@ -11,7 +11,7 @@ export class TaskService {
     return task
   }
 
-  async create<O extends OperationType = OperationType, D = Data>(options: TaskCreateOptions) {
+  async create<O extends OperationType = OperationType, D extends Data = Data>(options: TaskCreateOptions) {
     const id = await db.task.add({
       ...options,
       status: 'pending',
@@ -36,7 +36,7 @@ export class TaskService {
     return this.getById(taskId)
   }
 
-  async markAborted<O extends OperationType = OperationType, D = Data>(
+  async markAborted<O extends OperationType = OperationType, D extends Data = Data>(
     taskId: TaskId,
     payload?: TaskResultPayload<O, D>,
   ): Promise<Task> {
@@ -53,7 +53,7 @@ export class TaskService {
     return this.getById(taskId)
   }
 
-  async markCompleted<O extends OperationType = OperationType, D = Data>(
+  async markCompleted<O extends OperationType = OperationType, D extends Data = Data>(
     taskId: TaskId,
     result: TaskResult<O, D>,
   ): Promise<Task> {
@@ -65,7 +65,7 @@ export class TaskService {
     return this.getById(taskId)
   }
 
-  async markBatchCompleted<O extends OperationType = OperationType, D = Data>(
+  async markBatchCompleted<O extends OperationType = OperationType, D extends Data = Data>(
     taskId: TaskId,
     result: TaskResult<O, D>,
   ): Promise<Task> {
@@ -88,7 +88,10 @@ export class TaskService {
   /**
    * 更新结果
    */
-  async updateResult<O extends OperationType = OperationType, D = Data>(taskId: TaskId, result?: TaskResult<O, D>) {
+  async updateResult<O extends OperationType = OperationType, D extends Data = Data>(
+    taskId: TaskId,
+    result?: TaskResult<O, D>,
+  ) {
     await db.task.update(taskId, {
       result: result,
     })
