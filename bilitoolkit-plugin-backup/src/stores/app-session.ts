@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { TaskGroup } from '@/core/types/task-group'
 
 /**
  * 应用会话状态 Store
@@ -7,14 +8,23 @@ import { ref } from 'vue'
 export const useAppSessionStore = defineStore(
   'AppSessionStore',
   () => {
-    // 有其他激活的任务
-    const hasActiveTask = ref(false)
+    // 是否有其他激活的任务组
+    const hasActiveTaskGroup = ref(false)
+    // 其他激活的任务组
+    const activeTaskGroup = ref<TaskGroup>()
 
-    const setActiveTask = (flag: boolean): void => {
-      hasActiveTask.value = flag
+    const setActiveTaskGroupFlag = (flag: boolean) => {
+      hasActiveTaskGroup.value = flag
+      if (!flag) {
+        activeTaskGroup.value = undefined
+      }
     }
 
-    return { hasActiveTask, setActiveTask }
+    const setActiveTaskGroup = (group: TaskGroup): void => {
+      activeTaskGroup.value = group
+    }
+
+    return { hasActiveTaskGroup, setActiveTaskGroupFlag, activeTaskGroup, setActiveTaskGroup }
   },
   {
     persist: false,

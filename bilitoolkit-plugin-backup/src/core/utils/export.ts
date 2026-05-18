@@ -18,7 +18,7 @@ export const exportTxtFile = async (
   await toolkitApi.file.write(filePath, new TextEncoder().encode(content))
   return {
     type: target,
-    name: DataTypeMap[dataType],
+    name: DataTypeMap[dataType].name,
     fileName: fileName,
     filePath: filePath,
   }

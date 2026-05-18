@@ -24,6 +24,7 @@ export default defineConfigWithVueTs(
   skipFormatting,
   {
     rules: {
+      'vue/block-lang': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },

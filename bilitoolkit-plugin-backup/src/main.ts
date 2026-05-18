@@ -4,9 +4,9 @@ import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 import { initBilitoolkitUi, handleError } from 'bilitoolkit-ui'
 import 'bilitoolkit-ui/style.css'
 import '@/assets/scss/base.scss'
+import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import router from '@/router'
-import { appEnv } from '@ybgnb/vite-env/common'
 
 async function bootstrapApp() {
   const app = createApp(App)
@@ -19,7 +19,7 @@ async function bootstrapApp() {
   app.use(pinia)
   app.use(router)
 
-  const ui = await initBilitoolkitUi(pinia, appEnv.DEV)
+  const ui = await initBilitoolkitUi(pinia)
 
   // 暂停之前运行的任务
   // TODO 改成任务组

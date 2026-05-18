@@ -25,7 +25,7 @@ export type BackupDataRangeType = Extract<DataRangeType, 'all' | 'page' | 'tree'
 /**
  * 基础备份选项
  */
-export interface BaseBackupBatchOptions {
+export interface BaseBackupOptions {
   /** 文件根目录路径 */
   rootPath: string
   /** 选择的导出目标 */
@@ -35,12 +35,12 @@ export interface BaseBackupBatchOptions {
 /**
  * 分批处理模式的备份选项
  */
-export type BackupBatchOptions = BaseBackupBatchOptions & BaseExecuteOptions<'backup', 'batch'>
+export type BackupBatchOptions = BaseBackupOptions & BaseExecuteOptions<'backup', 'batch'>
 
 /**
  * 普通模式的备份选项
  */
-export type BackupNormalOptions = BaseBackupBatchOptions &
+export type BackupNormalOptions = BaseBackupOptions &
   BaseExecuteOptions<'backup', 'normal'> & {
     /** 数据范围 */
     dataRange: DataRange<BackupDataRangeType>

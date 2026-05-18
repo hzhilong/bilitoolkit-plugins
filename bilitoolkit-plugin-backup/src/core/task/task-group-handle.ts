@@ -6,11 +6,11 @@ import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import { inArray } from '@/core/utils/array'
 import type { Task } from '@/core/types/task'
 import { executeTask } from '@/core/task/task-handle'
-import { DATA_MODULES_MAP } from '@/core/modules'
+import { registeredModulesMap } from '@/core/modules/register'
 import type { ExecuteContext, GroupExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import { taskGroupService } from '@/core/service/task-group'
-import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError } from '@ybgnb/utils'
+import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError, CommonError } from '@ybgnb/utils'
 import { checkAbortSignal } from '@/core/utils/abort'
 
 /**
@@ -62,19 +62,21 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
 ) => {
   // 获取最新的任务组数据
   const taskGroup = await taskGroupService.getById(groupId)
+  if (!taskGroup.user) throw new CommonError(`用户未登录`)
+
   if (inArray(taskGroup.status, ['cancelled', 'failed', 'completed'])) {
     throw new Error('任务组已结束，不可再执行')
   }
 
-  const { progressCallback, abortSignal, onStatusChange } = groupContext
+  const { onProgress, abortSignal, onStatusChange, onItemsStatusChange, onItemsProgress } = groupContext
   const operationName = OperationTypeMap[taskGroup.operationType]
 
   return new Promise<void>(async (resolve, reject) => {
     // 设置进度
     const setProgress = async (progress?: number, msg?: string) => {
       const intProgress = progress ? Math.floor(progress) : undefined
-      if (progressCallback) {
-        await progressCallback(intProgress, msg)
+      if (onProgress) {
+        await onProgress(intProgress, msg)
       }
       await taskGroupService.updateProgress(groupId, intProgress, msg)
     }
@@ -120,15 +122,24 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       const finishedCount = taskGroup.items.length - pendingTasks.length
       // 是否有未结束的批处理任务
       let hasPendingBatchTasks = false
+      onStatusChange?.('running')
       // 遍历需要执行的任务
       for (let i = 0; i < pendingTasks.length; i++) {
         const task = pendingTasks[i]
-        const dataModule = DATA_MODULES_MAP[task.dataType]
+        const dataModule = registeredModulesMap[task.dataType]
         await setProgress(
           (100 * (i + 1 + finishedCount)) / taskGroup.items.length,
           `正在执行${OperationTypeMap[task.operationType]}任务 [${dataModule.dataTypeName}]`,
         )
-        await executeTask<O>(context, dataModule, task)
+        await executeTask<O>(
+          {
+            ...context,
+            onProgress: onItemsProgress?.[i],
+            onStatusChange: onItemsStatusChange?.[i],
+          },
+          dataModule,
+          task,
+        )
         if ((await taskService.getById(task.id)).status === 'batchCompleted') {
           hasPendingBatchTasks = true
         }
@@ -153,7 +164,9 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
         await abortTask()
       } else {
         // 遇到其他错误
-        await taskGroupService.markFailed(groupId, getErrorMessage(error))
+        const errorMessage = getErrorMessage(error)
+        await taskGroupService.markFailed(groupId, errorMessage)
+        await setProgress(undefined, errorMessage)
         onStatusChange?.('failed')
         reject(convertToCommonError(error, '任务执行失败'))
       }

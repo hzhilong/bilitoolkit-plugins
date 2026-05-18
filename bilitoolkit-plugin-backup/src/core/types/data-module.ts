@@ -25,7 +25,7 @@ export interface TreeData extends Data {
  * 约定规则：
  * 1. 任务模式分为 normal（单次执行）与 batch（分批续跑执行）。
  * 2. 数据范围（DataRange）用于描述本次操作的数据选择范围。
- * 3. 多层数据结构（如二层树形数据）仅支持：
+ * 3. 多层数据结构（如两层树形数据）仅支持：
  *    - all：处理全部数据
  *    - tree：按层级路径选择指定数据
  *      - 第一层多选，第二层 all
@@ -41,7 +41,7 @@ export interface DataModule<D extends Data = Data> {
   /** 可操作的类型 */
   operations: OperationType[]
   /** 备份时可选的数据范围类型 */
-  backupDataRangeType: BackupDataRangeType[]
+  backupDataRangeTypes: BackupDataRangeType[]
   /** 树形范围的选项（仅支持两层） */
   treeRangeOptions?: TreeRangeOptions<D>
   /** 备份支持的导出目标 */
@@ -52,6 +52,9 @@ export interface DataModule<D extends Data = Data> {
     context: ExecuteContext,
     task: Task<O, D>,
   ) => Promise<TaskResult<O, D>>
+
+  /** 构建分页大小（备份时的数据接口分页策略） */
+  getPageSize: () => number
 
   /** 获取数据总条数 */
   fetchTotal?: FetchTotal<D>

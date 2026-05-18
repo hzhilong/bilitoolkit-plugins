@@ -1,7 +1,17 @@
 import type { RequestParams } from '@ybgnb/bili-api'
 import type { TreeData, Data } from '@/core/types/data-module'
 
-export type DataRangeType = 'all' | 'list' | 'page' | 'tree'
+export const DataRangeTypeMap = {
+  all: '所有数据',
+  list: '列表数据',
+  page: '分页数据',
+  tree: '多层数据',
+} as const
+
+/**
+ * 数据范围的类型
+ */
+export type DataRangeType = keyof typeof DataRangeTypeMap
 
 /**
  * 数据范围 - 所有数据
@@ -24,7 +34,6 @@ export interface ListDataRange {
 export interface PageDataRange {
   type: 'page'
   ranges: [number, number]
-  pageSize: number
   pageParams?: RequestParams
 }
 

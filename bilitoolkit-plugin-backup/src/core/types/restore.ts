@@ -7,7 +7,7 @@ import type { Data } from '@/core/types/data-module'
 /**
  * 基础还原选项
  */
-export interface BaseRestoreBatchOptions {
+export interface BaseRestoreOptions {
   /** 需要从哪些还原资源还原（暂时只支持json） */
   backupAssets: BackupAsset<'json'>[]
 }
@@ -15,12 +15,12 @@ export interface BaseRestoreBatchOptions {
 /**
  * 分批处理模式的还原选项
  */
-export type RestoreBatchOptions = BaseRestoreBatchOptions & BaseExecuteOptions<'restore', 'batch'>
+export type RestoreBatchOptions = BaseRestoreOptions & BaseExecuteOptions<'restore', 'batch'>
 
 /**
  * 普通模式的还原选项
  */
-export type RestoreNormalOptions = BaseRestoreBatchOptions &
+export type RestoreNormalOptions = BaseRestoreOptions &
   BaseExecuteOptions<'restore', 'normal'> & {
     /** 数据范围 */
     dataRange: DataRange<'all' | 'page' | 'list'>

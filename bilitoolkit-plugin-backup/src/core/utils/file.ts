@@ -21,7 +21,7 @@ export const getBackupFilePath = (
   batchProgress?: BatchProgress,
 ): Pick<BackupAsset, 'fileName' | 'filePath'> => {
   const batchSuffix = batchProgress ? `-${batchProgress.nextBatch - 1}` : ''
-  const fileName = `${DataTypeMap[dataType]}${batchSuffix}${TargetExtension[target]}`
+  const fileName = `${DataTypeMap[dataType].name}${batchSuffix}${TargetExtension[target]}`
   const filePath = `${rootPath}${fileName}`
   return { fileName, filePath }
 }

@@ -7,15 +7,13 @@ import type { RequestParams } from '@ybgnb/bili-api'
 export interface BatchableModule extends DataModule {
   /** 可分批处理的大小 */
   batchSizes: number[]
-  /** 备份数据源支持分页获取时的每页数量 */
-  backupFetchPageSize: number
 }
 
 /**
  * 是否为可批处理的模块
  */
 export const isBatchable = (module: DataModule): module is BatchableModule => {
-  return 'batchSizes' in module && 'backupFetchPageSize' in module && Array.isArray(module.batchSizes)
+  return 'batchSizes' in module && Array.isArray(module.batchSizes)
 }
 
 /**

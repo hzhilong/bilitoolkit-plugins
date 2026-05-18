@@ -14,7 +14,7 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
   dataModule: DataModule<D>,
   task: Task<O>,
 ): Promise<TaskResult<O, D>> => {
-  const { user, progressCallback, abortSignal, clientId } = context
+  const { user, onProgress, onStatusChange, abortSignal, clientId } = context
   const { operationType, id: taskId } = task
   const operationName = OperationTypeMap[operationType]
 
@@ -24,8 +24,8 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
     // 设置进度
     const setProgress = async (progress?: number, msg?: string) => {
       const intProgress = progress ? Math.floor(progress) : undefined
-      if (progressCallback) {
-        await progressCallback(intProgress, msg)
+      if (onProgress) {
+        await onProgress(intProgress, msg)
       }
       await taskService.updateProgress(taskId, intProgress, msg)
     }
@@ -34,6 +34,7 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
     const abortTask = async () => {
       await setProgress(undefined, `${operationName}任务已被取消`)
       await taskService.markAborted(taskId)
+      onStatusChange?.('cancelled')
       reject(createAbortError())
     }
 
@@ -45,12 +46,13 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
       abortSignal?.addEventListener('abort', abortHandler)
 
       await taskService.markRunning(taskId)
+      onStatusChange?.('running')
       const result = await dataModule.executeTask<O>(
         {
           user,
           clientId,
           abortSignal,
-          progressCallback: setProgress,
+          onProgress: setProgress,
         },
         task,
       )
@@ -58,9 +60,11 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
       if ('batchProgress' in result && result.batchProgress && !result.batchProgress.isFinished) {
         // 分批处理未结束
         await taskService.markBatchCompleted(taskId, result)
+        onStatusChange?.('batchCompleted')
       } else {
         // 执行完成
         await taskService.markCompleted(taskId, result)
+        onStatusChange?.('completed')
       }
 
       await setProgress(100, `${operationName}任务执行成功`)
@@ -71,7 +75,10 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
         await abortTask()
       } else {
         // 遇到其他错误
-        await taskService.markFailed(taskId, getErrorMessage(error))
+        const errorMessage = getErrorMessage(error)
+        await taskService.markFailed(taskId, errorMessage)
+        await setProgress(undefined, errorMessage)
+        onStatusChange?.('failed')
         reject(convertToCommonError(error, '任务执行失败'))
       }
     } finally {

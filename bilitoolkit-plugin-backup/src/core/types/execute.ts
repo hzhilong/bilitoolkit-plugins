@@ -3,7 +3,7 @@ import type { OperationType } from '@/core/types/operation'
 import type { BackupOptions } from '@/core/types/backup'
 import type { RestoreOptions } from '@/core/types/restore'
 import type { ClearOptions } from '@/core/types/clear'
-import type { TaskType, TaskId } from '@/core/types/task'
+import type { TaskType, TaskId, TaskStatus } from '@/core/types/task'
 import type { TaskGroupStatus } from '@/core/types/task-group'
 
 /**
@@ -17,7 +17,12 @@ export interface TargetUser {
 /**
  * 进度回调
  */
-export type ProgressCallback = (progress?: number, msg?: string) => Promise<void>
+export type OnProgress = (progress?: number, msg?: string) => Promise<void>
+
+/**
+ * 状态监听
+ */
+export type OnStatusChange<S extends TaskStatus | TaskGroupStatus> = (status: S) => void
 
 /**
  * 执行上下文
@@ -28,7 +33,9 @@ export interface ExecuteContext {
   /** bili client id */
   clientId: string
   /** 进度回调 */
-  progressCallback?: ProgressCallback
+  onProgress?: OnProgress
+  /** 状态监听 */
+  onStatusChange?: OnStatusChange<TaskGroupStatus>
   /** 取消信号 */
   abortSignal?: AbortSignal
 }
@@ -41,13 +48,13 @@ export type BaseExecuteOptions<O extends OperationType, T extends TaskType> = [T
       /** 操作类型 */
       operationType: O
       /** 模式：正常模式，范围选择 */
-      mode: 'normal'
+      mode: T
     }
   : {
       /** 操作类型 */
       operationType: O
       /** 模式：批处理 */
-      mode: 'batch'
+      mode: T
       /** 启用分批处理的选项 */
       batchOptions: BatchOptions
     }
@@ -71,7 +78,9 @@ export type ExecuteResult = {
 /**
  * 任务组执行上下文
  */
-export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'progressCallback'> & {
-  /** 状态监听 */
-  onStatusChange?: (status: TaskGroupStatus) => void
+export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'onProgress' | 'onStatusChange'> & {
+  /** 任务项进度监听 */
+  onItemsProgress?: OnProgress[]
+  /** 任务项状态监听 */
+  onItemsStatusChange?: OnStatusChange<TaskGroupStatus>[]
 }

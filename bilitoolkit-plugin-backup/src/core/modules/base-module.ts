@@ -31,13 +31,15 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
   /** 可操作的类型 */
   abstract operations: OperationType[]
   /** 备份时可选的数据范围类型 */
-  abstract backupDataRangeType: BackupDataRangeType[]
+  abstract backupDataRangeTypes: BackupDataRangeType[]
   /** 树形范围的选项（仅支持两层） */
   treeRangeOptions?: TreeRangeOptions<D>
   /** 备份支持的导出目标 */
   abstract exportTargets: ExportTarget[]
   /** 获取数据总条数 */
   fetchTotal?: FetchTotal<D>
+  /** 构建分页大小（备份时的数据接口分页策略） */
+  abstract getPageSize: () => number
   /** 获取分页数据（单个数据要包装为数组） */
   abstract fetchPage: FetchPage<D>
   /** 获取所有数据（单个数据要包装为数组） */
@@ -52,8 +54,8 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
 
     let total: number | null = null
     if (this.fetchTotal) {
-      if (context.progressCallback) {
-        await context.progressCallback(1, `正在获取数据条数`)
+      if (context.onProgress) {
+        await context.onProgress(1, `正在获取数据条数`)
       }
       total = await this.fetchTotal(context, query)
       await apiSleep(context.abortSignal)
@@ -75,14 +77,14 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
 
       if (pageData.items) {
         list.push(...pageData.items)
-        if (context.progressCallback) {
+        if (context.onProgress) {
           if (total) {
-            await context.progressCallback(
+            await context.onProgress(
               (100 * list.length) / total,
               `第 ${pageNum}/${Math.ceil(total / pageData.pageSize)} 页 • 获取 ${pageData.items.length} 条 • 累计 ${list.length}`,
             )
           } else {
-            await context.progressCallback(
+            await context.onProgress(
               progress,
               `第 ${pageNum} 页 • 获取 ${pageData.items.length} 条 • 累计 ${list.length}`,
             )
@@ -178,7 +180,7 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
 
   // TODO 完善树形文件设计
   protected exportBackupAsset = async (
-    { abortSignal, progressCallback }: ExecuteContext,
+    { abortSignal, onProgress }: ExecuteContext,
     task: Task<'backup', D>,
     options: BackupOptions,
     data: D[],
@@ -195,8 +197,8 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
         throw createAbortError()
       }
 
-      if (progressCallback) {
-        await progressCallback(
+      if (onProgress) {
+        await onProgress(
           undefined,
           `[${assets.length + 1}/${options.exportTargets.length}] 正在导出 ${exportTarget} 文件`,
         )

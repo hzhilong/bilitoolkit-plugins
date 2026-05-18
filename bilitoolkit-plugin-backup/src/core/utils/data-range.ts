@@ -29,8 +29,8 @@ async function getBackupDataByPageRange<D>(
       break
     } else {
       items.push(...page.items)
-      if (context.progressCallback) {
-        await context.progressCallback(
+      if (context.onProgress) {
+        await context.onProgress(
           (100 * (i - startPageNum + 1)) / pageTotal,
           `第 ${i}/${endPageNum} 页 • 获取 ${page.items.length} 条 • 累计 ${items.length}`,
         )

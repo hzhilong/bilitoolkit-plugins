@@ -15,19 +15,19 @@ export type TaskType = 'normal' | 'batch'
  */
 export const TaskStatusMap = {
   // 准备
-  pending: '准备',
+  pending: '准备中',
   // 运行
-  running: '运行',
+  running: '运行中',
   // 暂停
   //  paused: '暂停',
   // 批次完成
-  batchCompleted: '批次完成',
+  batchCompleted: '批次已完成',
   // 完成
-  completed: '完成',
+  completed: '已完成',
   // 失败
-  failed: '失败',
+  failed: '已失败',
   // 取消
-  cancelled: '取消',
+  cancelled: '已取消',
 } as const
 
 /**
