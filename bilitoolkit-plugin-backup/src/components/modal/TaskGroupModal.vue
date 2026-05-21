@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="O extends OperationType = OperationType">
-import { watch, onUnmounted, ref } from 'vue'
+import { watch, ref } from 'vue'
 import { type TaskGroup, type TaskGroupId } from '@/core/types/task-group'
 import type { OperationType } from '@/core/types/operation'
 import { useLoadingData } from 'bilitoolkit-ui'
@@ -7,7 +7,7 @@ import { taskGroupService } from '@/core/service/task-group'
 import type TaskGroupCard from '@/components/card/TaskGroupCard.vue'
 
 const props = defineProps<{
-  taskGroupId: TaskGroupId
+  taskGroupId?: TaskGroupId
   autoExec?: boolean
 }>()
 const taskGroup = ref<TaskGroup<O>>()
@@ -31,7 +31,6 @@ watch(
     immediate: true,
   },
 )
-onUnmounted(() => {})
 </script>
 
 <template>
@@ -39,10 +38,11 @@ onUnmounted(() => {})
     <el-dialog
       title="任务组"
       v-model="visible"
+      @update:model-value="visible = $event"
       width="66%"
       style="max-width: 600px; min-width: 400px; max-height: 90vh; overflow: hidden"
-      :close-on-click-modal="true"
-      :close-on-press-escape="true"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
       :show-close="true"
       align-center
     >

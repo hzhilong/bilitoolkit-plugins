@@ -1,12 +1,17 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
-import { initBilitoolkitUi, handleError } from 'bilitoolkit-ui'
+import { initBilitoolkitUi, handleError, toolkitApi } from 'bilitoolkit-ui'
 import 'bilitoolkit-ui/style.css'
 import '@/assets/scss/base.scss'
 import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import router from '@/router'
+import { appEnv } from '@ybgnb/vite-env/common'
+
+if (appEnv.DEV) {
+  import('element-plus/dist/index.css')
+}
 
 async function bootstrapApp() {
   const app = createApp(App)
@@ -19,7 +24,13 @@ async function bootstrapApp() {
   app.use(pinia)
   app.use(router)
 
-  const ui = await initBilitoolkitUi(pinia)
+  let useTestData = false
+
+  try {
+    useTestData = appEnv.DEV && !(await toolkitApi.system.ping())
+  } catch {}
+
+  const ui = await initBilitoolkitUi(pinia, useTestData)
 
   // 暂停之前运行的任务
   // TODO 改成任务组

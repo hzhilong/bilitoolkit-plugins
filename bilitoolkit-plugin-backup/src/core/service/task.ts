@@ -5,10 +5,18 @@ import type { OperationType } from '@/core/types/operation'
 import type { Data } from '@/core/types/data-module'
 
 export class TaskService {
-  async getById(taskId: TaskId, errorMsg = '任务不存在'): Promise<Task> {
+  async getById<O extends OperationType = OperationType>(
+    taskId: TaskId,
+    errorMsg: string | null = '任务不存在',
+  ): Promise<Task<O>> {
     const task = await db.task.get(taskId)
-    if (!task) throw new Error(errorMsg)
-    return task
+    if (errorMsg !== null && !task) throw new Error(errorMsg)
+    return task as Task<O>
+  }
+
+  async getByIds<O extends OperationType = OperationType>(taskIds: TaskId[]): Promise<Task<O>[]> {
+    const tasks = await db.task.bulkGet(taskIds)
+    return tasks as Task<O>[]
   }
 
   async create<O extends OperationType = OperationType, D extends Data = Data>(options: TaskCreateOptions) {

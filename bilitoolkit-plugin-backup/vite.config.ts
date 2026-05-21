@@ -20,10 +20,20 @@ export default defineConfig((configEnv: ConfigEnv) => {
       vueJsx(),
       vueDevTools(),
       AutoImport({
-        resolvers: [ElementPlusResolver()],
+        include: [/\.vue$/, /\.vue\?vue$/, /\.[jt]sx$/],
+        resolvers: [
+          ElementPlusResolver({
+            importStyle: configEnv.mode === 'development' ? false : 'css',
+          }),
+        ],
       }),
       Components({
-        resolvers: [ElementPlusResolver()],
+        include: [/\.vue$/, /\.vue\?vue$/, /\.[jt]sx$/],
+        resolvers: [
+          ElementPlusResolver({
+            importStyle: configEnv.mode === 'development' ? false : 'css',
+          }),
+        ],
       }),
       // bundle-stats 插件
       //      bundleStats({

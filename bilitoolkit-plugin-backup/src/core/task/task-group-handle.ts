@@ -91,7 +91,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     }
 
     try {
-      await setProgress(0, `${operationName}任务组准备中`)
+      await setProgress(0, `任务组准备中`)
       // 开始执行前检查中止信号
       checkAbortSignal(abortSignal)
       abortHandler = abortTask
@@ -156,7 +156,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
         await taskGroupService.markCompleted(groupId)
         onStatusChange?.('completed')
       }
-      await setProgress(100, `${operationName}任务组执行成功`)
+      await setProgress(100, `执行成功`)
       resolve()
     } catch (error) {
       // 被中止

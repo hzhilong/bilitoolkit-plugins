@@ -13,8 +13,21 @@ const handleMenuSelect = (menu: PluginMenuData) => {
 </script>
 
 <template>
-  <plugin-page-header :menus="menus" :active-index="route.path" @handle-menu-select="handleMenuSelect" />
-  <RouterView />
+  <div class="plugin-page">
+    <plugin-page-header :menus="menus" :active-index="route.path" @handle-menu-select="handleMenuSelect" />
+    <RouterView class="plugin-page-content" />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+.plugin-page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .plugin-page-content {
+    flex: 1;
+  }
+}
+</style>

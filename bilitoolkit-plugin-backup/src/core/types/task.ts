@@ -8,7 +8,12 @@ import type { Data } from '@/core/types/data-module'
 
 export type TaskId = Task['id']
 
-export type TaskType = 'normal' | 'batch'
+export const TaskTypeMap = {
+  normal: '普通模式',
+  batch: '分批处理模式',
+} as const
+
+export type TaskType = keyof typeof TaskTypeMap
 
 /**
  * 任务状态映射数据

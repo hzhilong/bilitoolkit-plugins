@@ -1,13 +1,13 @@
 <script setup lang="ts" generic="O extends OperationType = OperationType">
-import { type OperationType, OperationTypeMap } from '@/core/types/operation'
-import { type TaskGroup, TaskGroupStatusMap, type TaskGroupStatus } from '@/core/types/task-group'
-import { computed, reactive, watch } from 'vue'
+import { type OperationType } from '@/core/types/operation'
+import { type TaskGroup, type TaskGroupStatus } from '@/core/types/task-group'
+import { computed, reactive, watch, onUnmounted } from 'vue'
 import type { Task, TaskStatus, TaskId } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
-import { inArray } from '@/core/utils/array'
 import { AppTooltip, IconButton } from 'bilitoolkit-ui'
 import type { GroupExecuteContext, OnProgress, OnStatusChange } from '@/core/types/execute'
 import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
+import { useTaskGroupDisplay } from '@/composables/useTaskGroupDisplay'
 
 const props = withDefaults(
   defineProps<{
@@ -28,16 +28,11 @@ const cardStyles = computed(() => {
   }
 })
 const taskGroup = defineModel<TaskGroup<O>>({ required: true })
-const taskGroupState = computed(() => {
-  return TaskGroupStatusMap[taskGroup.value.status]
-})
-const operationType = computed(() => {
-  return OperationTypeMap[taskGroup.value.operationType]
-})
-const createdAt = computed(() => {
-  return new Date(taskGroup.value.createdAt).toLocaleString()
-})
+
 const items = reactive<Task[]>([])
+const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinueExecBatch, canCancel } =
+  useTaskGroupDisplay(taskGroup, () => items)
+
 const init = async () => {
   const list = []
   const lastId = taskGroup.value.id
@@ -60,28 +55,8 @@ watch(
   },
   { immediate: true },
 )
-// 任务项进度数据
-const itemsProgressData = computed(() => {
-  const completedCount = items.filter((item) =>
-    inArray<TaskStatus>(item.status, ['batchCompleted', 'completed']),
-  ).length
-  return {
-    completedCount,
-    total: items.length,
-  }
-})
-// 是否有分批处理任务
-const hasBatchTask = computed(() => {
-  return items.some((item) => item.type === 'batch')
-})
-// 是否可以继续执行分批处理
-const canContinueExecBatch = computed(() => {
-  return taskGroup.value.status === 'batchCompleted'
-})
-const canCancel = computed(() => {
-  return taskGroup.value.status === 'running'
-})
-const handleItemsStatusChange = (id: TaskId, progress: number | undefined, msg: string | undefined) => {
+
+const handleItemsProgressChange = (id: TaskId, progress: number | undefined, msg: string | undefined) => {
   items.forEach((task) => {
     if (task.id === id) {
       task.progress = progress ?? task.progress
@@ -89,26 +64,46 @@ const handleItemsStatusChange = (id: TaskId, progress: number | undefined, msg: 
     }
   })
 }
+const handleItemsStatusChange = (id: TaskId, status: TaskStatus) => {
+  items.forEach((task) => {
+    if (task.id === id) {
+      task.status = status
+    }
+  })
+}
 const { execTaskGroup } = useExecTaskGroup()
+let canceled = false
+onUnmounted(() => {
+  canceled = true
+})
 // 构建执行上下文
 const buildExecContext = () => {
   const onStatusChange = (status: TaskGroupStatus) => {
-    taskGroup.value.status = status
+    if (!canceled) {
+      taskGroup.value.status = status
+    }
   }
   const onProgress = async (progress: number | undefined, msg: string | undefined) => {
-    taskGroup.value.progress = progress ?? taskGroup.value.progress
-    taskGroup.value.progressMsg = msg ?? taskGroup.value.progressMsg
+    if (!canceled) {
+      taskGroup.value.progress = progress ?? taskGroup.value.progress
+      taskGroup.value.progressMsg = msg ?? taskGroup.value.progressMsg
+    }
   }
   const onItemsProgress = items.map((item) => {
     const id = item.id
     const onProgress: OnProgress = async (progress: number | undefined, msg: string | undefined) => {
-      handleItemsStatusChange(id, progress, msg)
+      if (!canceled) {
+      }
+      handleItemsProgressChange(id, progress, msg)
     }
     return onProgress
   })
   const onItemsStatusChange = items.map((item) => {
+    const id = item.id
     const onStatusChange: OnStatusChange<TaskStatus> = (status: TaskStatus) => {
-      item.status = status
+      if (!canceled) {
+        handleItemsStatusChange(id, status)
+      }
     }
     return onStatusChange
   })

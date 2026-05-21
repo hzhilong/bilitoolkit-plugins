@@ -10,7 +10,8 @@ const db = new Dexie(appEnv.APP_NPM_NAME) as Dexie & {
 
 db.version(1).stores({
   task: '++id, operationType, dataType, status, createdAt',
-  taskGroup: '++id, operationType, status, createdAt',
+  taskGroup:
+    '++id, operationType, status, createdAt, [status+createdAt], [operationType+createdAt], [status+operationType+createdAt]',
 })
 
 export { db }

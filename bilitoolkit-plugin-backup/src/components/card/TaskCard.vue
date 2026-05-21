@@ -1,9 +1,10 @@
 <script setup lang="ts" generic="O extends OperationType = OperationType">
-import { type OperationType, OperationTypeMap } from '@/core/types/operation'
+import { type OperationType } from '@/core/types/operation'
 import { computed } from 'vue'
-import { type Task, TaskStatusMap } from '@/core/types/task'
+import { type Task } from '@/core/types/task'
 import { IconButton, AppTooltip } from 'bilitoolkit-ui'
 import { useDataModule } from '@/composables/useDataModule'
+import { useTaskDisplay } from '@/composables/useTaskDisplay'
 
 export interface TaskCardProps {
   task: Task
@@ -16,15 +17,7 @@ const props = withDefaults(defineProps<TaskCardProps>(), {
   showBoxShadow: true,
 })
 
-const taskState = computed(() => {
-  return TaskStatusMap[props.task.status]
-})
-const operationType = computed(() => {
-  return OperationTypeMap[props.task.operationType]
-})
-const createdAt = computed(() => {
-  return new Date(props.task.createdAt).toLocaleString()
-})
+const { operationType, taskState, createdAt } = useTaskDisplay(() => props.task)
 const { dataModuleColor, dataModuleName } = useDataModule(() => props.task.dataType)
 const cardStyles = computed(() => {
   return {

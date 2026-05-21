@@ -85,8 +85,8 @@ const handleSubmit = async () => {
       v-model="visible"
       width="76%"
       style="max-width: 600px; min-width: 400px; max-height: 90vh; overflow: hidden"
-      :close-on-click-modal="true"
-      :close-on-press-escape="true"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
       :show-close="true"
       align-center
     >

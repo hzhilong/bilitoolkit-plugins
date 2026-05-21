@@ -3,6 +3,7 @@ import type { DataType } from '@/core/types/data-type'
 import type { ExecuteOptions } from '@/core/types/execute'
 import type { TaskId } from '@/core/types/task'
 import type { UserInfoWithCookie } from '@ybgnb/bili-api'
+import type { MaxLengthArray } from '@ybgnb/utils'
 
 /**
  * 任务组状态映射数据
@@ -82,3 +83,11 @@ export type CreateTaskGroup<O extends OperationType = OperationType> = Pick<
   TaskGroup<O>,
   'operationType' | 'user' | 'items'
 >
+
+/**
+ * 任务组过滤条件
+ */
+export type TaskGroupFilters = Partial<Pick<TaskGroup, 'operationType' | 'status'>> & {
+  /** 插件时间 */
+  createdAt?: MaxLengthArray<number, 2>
+}
