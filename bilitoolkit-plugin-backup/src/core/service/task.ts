@@ -50,7 +50,7 @@ export class TaskService {
   ): Promise<Task> {
     const result = {
       success: false,
-      msg: `任务已被取消`,
+      msg: `任务已取消`,
       ...payload,
     } as TaskResult<O, D>
     await db.task.update(taskId, {

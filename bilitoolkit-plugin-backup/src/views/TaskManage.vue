@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { type TaskGroupFilters, TaskGroupStatusMap, type TaskGroup, type TaskGroupId } from '@/core/types/task-group'
-import { ref } from 'vue'
+import { ref, useTemplateRef, onUnmounted, onMounted } from 'vue'
 import { taskGroupService } from '@/core/service/task-group'
 import { PageTable, type PageParams, BiliUserInfo } from 'bilitoolkit-ui'
 import type { ElForm } from 'element-plus'
 import { OperationTypeMap } from '@/core/types/operation'
 import { default as TaskGroupItemsTag } from '@/components/tags/TaskGroupItemsTag'
 import { formatCreatedAt, formatOperationType, formatTaskGroupStatus } from '@/utils/formatter'
+import { eventBus } from '@/utils/event-bus'
+import type { ComponentExposed } from 'vue-component-type-helpers'
 
 const params = ref<TaskGroupFilters>({
   operationType: undefined,
@@ -27,11 +29,25 @@ const handleOpenModal = (row: TaskGroup) => {
   taskGroupModalId.value = row.id
   taskGroupModalVisible.value = true
 }
+
+const tableRef = useTemplateRef<ComponentExposed<typeof PageTable<TaskGroup, TaskGroupFilters>>>('tableRef')
+
+const onRefresh = () => {
+  tableRef.value?.refresh()
+}
+
+onMounted(() => {
+  eventBus.on('refreshTaskGroups', onRefresh)
+})
+
+onUnmounted(() => {
+  eventBus.off('refreshTaskGroups', onRefresh)
+})
 </script>
 
 <template>
   <div class="task-group-container">
-    <PageTable :fetch-page="fetchPage" :page-sizes="[20]" :query-params="params" @reset="resetQuery">
+    <PageTable ref="tableRef" :fetch-page="fetchPage" :page-sizes="[20]" :query-params="params" @reset="resetQuery">
       <ElTableColumn align="center" prop="id" label="id"></ElTableColumn>
       <ElTableColumn align="center" prop="createdAt" label="创建时间" :formatter="formatCreatedAt"></ElTableColumn>
       <ElTableColumn align="center" prop="operationType" label="类型" :formatter="formatOperationType"></ElTableColumn>
@@ -43,15 +59,7 @@ const handleOpenModal = (row: TaskGroup) => {
       <ElTableColumn align="center" prop="status" label="状态" :formatter="formatTaskGroupStatus"></ElTableColumn>
       <ElTableColumn align="center" prop="progress" label="进度">
         <template #default="{ row }: { row: TaskGroup }">
-          <el-progress
-            class="task-group-progress"
-            :percentage="row.progress"
-            :stroke-width="12"
-            :show-text="false"
-            :striped="row.status === 'running'"
-            :striped-flow="row.status === 'running'"
-          ></el-progress>
-          <span>{{ row.progressMsg }}</span>
+          <span>{{ row.progressMsg ?? '' }}</span>
         </template>
       </ElTableColumn>
       <ElTableColumn align="center" prop="items" label="数据">

@@ -37,7 +37,7 @@ export const useTaskGroupDisplay = <O extends OperationType = OperationType>(
     return itemsData.some((item) => item.type === 'batch')
   })
   // 是否可以继续执行分批处理
-  const canContinueExecBatch = computed(() => {
+  const canContinue = computed(() => {
     const taskGroupData = toValue(taskGroup)
     return taskGroupData.status === 'batchCompleted'
   })
@@ -46,5 +46,5 @@ export const useTaskGroupDisplay = <O extends OperationType = OperationType>(
     const taskGroupData = toValue(taskGroup)
     return taskGroupData.status === 'running'
   })
-  return { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinueExecBatch, canCancel }
+  return { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinue, canCancel }
 }

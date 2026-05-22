@@ -15,11 +15,12 @@ export const exportTxtFile = async (
   batchProgress?: BatchProgress,
 ): Promise<BackupAsset> => {
   const { fileName, filePath } = getBackupFilePath(dataType, rootPath, target, batchProgress)
+  const root = await toolkitApi.file.getRootDir()
   await toolkitApi.file.write(filePath, new TextEncoder().encode(content))
   return {
     type: target,
     name: DataTypeMap[dataType].name,
     fileName: fileName,
-    filePath: filePath,
+    filePath: [root, filePath].join('/').replace(/\/+/g, '/'),
   }
 }

@@ -1,19 +1,47 @@
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
-import type { ExecuteContext } from '@/core/types/execute'
+import type { ExecuteContext, BaseExecuteOptions } from '@/core/types/execute'
 import type { Task, TaskResult } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
 import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError } from '@ybgnb/utils'
 import type { DataModule, Data } from '@/core/types/data-module'
 import { checkAbortSignal } from '@/core/utils/abort'
+import { inArray } from '@/core/utils/array'
+
+const assertCanExecute = async (task: Task) => {
+  if (task.status !== 'pending') {
+    if (task.status !== 'batchCompleted') {
+      throw new Error('任务已结束，不可再次执行')
+    } else {
+      if (!inArray(task.operationType, ['backup', 'restore'])) {
+        throw new Error(`内部错误，[${task.operationType}] 不支持分批处理`)
+      } else {
+        const batchOptions = (task.executeOptions as BaseExecuteOptions<'backup' | 'restore', 'batch'> | undefined)
+          ?.batchOptions
+        if (!batchOptions) {
+          throw new Error(`内部错误，batchOptions 为空`)
+        }
+        const batchProgress = (task.result as TaskResult<'backup' | 'restore'> | undefined)?.batchProgress
+        if (!batchProgress) {
+          throw new Error(`内部错误，batchProgress 为空`)
+        }
+        // 分批处理的执行参数
+        batchOptions.startBatch = batchProgress.nextBatch
+        batchOptions.pageParams = batchProgress.nextBatchPageParams
+        batchOptions.pageNum = batchProgress.nextBatch
+      }
+    }
+  }
+}
 
 /**
  * 执行任务
  */
-export const executeTask = <O extends OperationType = OperationType, D extends Data = Data>(
+export const executeTask = async <O extends OperationType = OperationType, D extends Data = Data>(
   context: ExecuteContext,
   dataModule: DataModule<D>,
   task: Task<O>,
 ): Promise<TaskResult<O, D>> => {
+  await assertCanExecute(task)
   const { user, onProgress, onStatusChange, abortSignal, clientId } = context
   const { operationType, id: taskId } = task
   const operationName = OperationTypeMap[operationType]
@@ -32,7 +60,7 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
 
     // 中止任务
     const abortTask = async () => {
-      await setProgress(undefined, `${operationName}任务已被取消`)
+      await setProgress(undefined, `${operationName}任务已取消`)
       await taskService.markAborted(taskId)
       onStatusChange?.('cancelled')
       reject(createAbortError())
@@ -67,7 +95,7 @@ export const executeTask = <O extends OperationType = OperationType, D extends D
         onStatusChange?.('completed')
       }
 
-      await setProgress(100, `${operationName}任务执行成功`)
+      await setProgress(100, result.msg ?? `${operationName}任务执行成功`)
       resolve(result)
     } catch (error: unknown) {
       // 被中止

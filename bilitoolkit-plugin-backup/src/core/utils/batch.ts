@@ -21,7 +21,7 @@ export const getBatchBackupData = async <D extends Data = Data>(
 
   // 这里的分批处理大小不能直接赋值为分页大小
   // 批次配置：batchSize（每批目标条数），startBatch（起始批次编号，从1开始）
-  const { batchSize, startBatch, pageParams } = batchOptions
+  const { batchSize, startBatch, pageParams, pageNum: startPageNum } = batchOptions
   const { onProgress } = context
 
   // 空数据的结果
@@ -30,6 +30,8 @@ export const getBatchBackupData = async <D extends Data = Data>(
     batchProgress: {
       isFinished: true,
       nextBatch: startBatch,
+      nextBatchPageNum: startPageNum,
+      nextBatchPageParams: {},
     } satisfies BatchProgress,
   }
 
@@ -52,15 +54,18 @@ export const getBatchBackupData = async <D extends Data = Data>(
   }
   // 数据源分页大小
   const pageSize = dataModule.getPageSize()
+  // 实际每批次获取的数据大小
+  const actualBatchSize = Math.ceil(batchSize / pageSize) * pageSize
   // 当前批次需要获取的数据大小
-  const currBatchRemainingSize = total ? Math.min(total - (startBatch - 1) * batchSize, batchSize) : batchSize
+  const currBatchRemainingSize = total ? Math.min(total - (startBatch - 1) * actualBatchSize, batchSize) : batchSize
   // 当前批次需要获取的分页数据次数
   const currBatchRemainingCount = Math.ceil(currBatchRemainingSize / pageSize)
   // 记录最后一次分页的数据
   let lastPageData: PageDataWithNextParams<D> | null = null
   // 当前批次已获取的数据
   const list: D[] = []
-  for (let pageNum = 0; pageNum <= currBatchRemainingCount; pageNum++) {
+  let currPageNum = startPageNum
+  for (let i = 0; i < currBatchRemainingCount; i++, currPageNum++) {
     lastPageData = await dataModule.fetchPage(context, {
       // 这里已包含 pageNum
       pageParams: lastPageData ? lastPageData.nextParams : pageParams,
@@ -71,8 +76,8 @@ export const getBatchBackupData = async <D extends Data = Data>(
     } else {
       if (onProgress) {
         await onProgress(
-          (100 * pageNum) / currBatchRemainingCount,
-          `[批次 ${startBatch}] 第 ${pageNum}/${currBatchRemainingCount} 页 • 获取 ${items.length} 条 • (累计 ${list.length}/${currBatchRemainingSize})`,
+          (100 * currPageNum) / currBatchRemainingCount,
+          `[批次 ${startBatch}] 第 ${i + 1}/${currBatchRemainingCount} 页 • 获取 ${items.length} 条 • (累计 ${list.length}/${currBatchRemainingSize})`,
         )
       }
       list.push(...items)
@@ -85,12 +90,14 @@ export const getBatchBackupData = async <D extends Data = Data>(
   const batchProgress: BatchProgress = {
     isFinished: !lastPageData.hasNext,
     nextBatch: startBatch + 1,
-    nextPageParams: lastPageData?.nextParams,
+    nextBatchPageParams: lastPageData.nextParams,
+    nextBatchPageNum: currPageNum,
   }
 
   if (total !== null) {
-    batchProgress.remainingDataCount = Math.max(total - startBatch * batchSize, 0)
+    batchProgress.remainingDataCount = Math.max(total - startBatch * actualBatchSize, 0)
     batchProgress.remainingBatchCount = Math.ceil(batchProgress.remainingDataCount / batchSize)
+    batchProgress.totalBatchCount = Math.ceil(total / actualBatchSize)
   }
 
   return {

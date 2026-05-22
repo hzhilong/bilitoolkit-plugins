@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="O extends OperationType = OperationType">
 import { type OperationType } from '@/core/types/operation'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { type Task } from '@/core/types/task'
 import { IconButton, AppTooltip } from 'bilitoolkit-ui'
 import { useDataModule } from '@/composables/useDataModule'
@@ -25,6 +25,10 @@ const cardStyles = computed(() => {
     '--data-type-color': dataModuleColor.value,
   }
 })
+const modalVisible = ref<boolean>(false)
+const handleOpenModal = () => {
+  modalVisible.value = true
+}
 </script>
 
 <template>
@@ -37,7 +41,7 @@ const cardStyles = computed(() => {
       </div>
       <div class="task-status" :class="task.status">{{ taskState }}</div>
       <div class="card-actions">
-        <IconButton icon="information-2" tip="任务详情" />
+        <IconButton icon="information-2" tip="任务详情" @click="handleOpenModal" />
       </div>
     </div>
     <el-progress
@@ -50,8 +54,9 @@ const cardStyles = computed(() => {
     />
     <div class="footer">
       <div class="task-time">{{ createdAt }}</div>
-      <AppTooltip class="task-progress-msg" :content="task.progressMsg ?? ''"></AppTooltip>
+      <AppTooltip class="task-progress-msg" :content="task.result?.msg ?? task.progressMsg ?? ''"></AppTooltip>
     </div>
+    <TaskModal :taskId="task?.id" v-model="modalVisible"></TaskModal>
   </div>
 </template>
 
@@ -89,7 +94,7 @@ const cardStyles = computed(() => {
       padding: 0 6px;
       color: color-mix(in srgb, var(--status-color), #000 10%);
       --status-color: var(--el-color-info);
-      background-color: color-mix(in srgb, var(--status-color), transparent 90%);
+      background-color: color-mix(in srgb, var(--status-color), transparent 80%);
 
       &.pending {
         --status-color: var(--el-color-info);
@@ -115,7 +120,7 @@ const cardStyles = computed(() => {
       align-items: center;
       flex-wrap: nowrap;
       color: var(--el-color-primary);
-      > * {
+      .icon-btn {
         border-radius: 50%;
       }
     }

@@ -69,7 +69,6 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
   }
 
   const { onProgress, abortSignal, onStatusChange, onItemsStatusChange, onItemsProgress } = groupContext
-  const operationName = OperationTypeMap[taskGroup.operationType]
 
   return new Promise<void>(async (resolve, reject) => {
     // 设置进度

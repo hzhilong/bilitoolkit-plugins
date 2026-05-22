@@ -16,6 +16,7 @@ export interface ExecuteConfigProps<PO extends OperationType = OperationType> {
   user: TargetUser
   operationType: PO
   dataType: DataType
+  viewMode?: boolean
 }
 
 const props = withDefaults(defineProps<ExecuteConfigProps<O>>(), {})
@@ -35,15 +36,15 @@ defineExpose({
 </script>
 
 <template>
-  <div class="execute-config" :style="{ '--data-type-color': dataModuleColor }">
-    <div class="header">
+  <div class="execute-config" :class="viewMode ? 'readonly' : ''" :style="{ '--data-type-color': dataModuleColor }">
+    <div class="header" v-if="!viewMode">
       <span class="data-module-name">{{ dataModuleName }}</span>
       <span class="data-module-desc" v-if="operationType === 'backup' && dataModuleBackupDesc">{{
         dataModuleBackupDesc
       }}</span>
     </div>
-    <el-form class="form" ref="formRef" :model="options" label-width="auto" label-position="left">
-      <el-form-item label="备份模式" prop="mode">
+    <el-form class="form" ref="formRef" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
+      <el-form-item v-if="!viewMode" label="备份模式" prop="mode">
         <el-radio-group size="default" v-model="options.mode">
           <el-radio-button value="normal">普通模式</el-radio-button>
           <el-radio-button v-if="isBatchable(registeredModulesMap[dataType])" value="batch"
@@ -52,7 +53,7 @@ defineExpose({
         </el-radio-group>
       </el-form-item>
       <template v-if="options.operationType === 'backup'">
-        <el-form-item label="导出目录" prop="rootPath">
+        <el-form-item v-if="!viewMode" label="导出目录" prop="rootPath">
           <el-text type="info">{{ (options as BackupOptions).rootPath }}</el-text>
         </el-form-item>
         <el-form-item label="导出格式" prop="exportTargets">
@@ -117,13 +118,15 @@ defineExpose({
 <style scoped lang="scss">
 .execute-config {
   //  --el-color-primary: var(--data-type-color);
-  border-radius: 12px;
-  border-left: 4px solid var(--data-type-color);
   overflow: hidden;
-  padding: 20px;
-  background-color: var(--app-color-background);
-  box-shadow: 0 2px 4px 2px var(--app-color-foreground-transparent-10);
 
+  &:not(.readonly) {
+    border-radius: 12px;
+    border-left: 4px solid var(--data-type-color);
+    padding: 20px;
+    background-color: var(--app-color-background);
+    box-shadow: 0 2px 4px 2px var(--app-color-foreground-transparent-10);
+  }
   .header {
     margin-bottom: 20px;
 

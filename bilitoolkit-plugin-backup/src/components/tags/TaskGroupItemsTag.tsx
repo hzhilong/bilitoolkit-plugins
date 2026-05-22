@@ -10,7 +10,7 @@ const TaskGroupItemsTag = (props: Pick<TaskGroup, 'items'>) => {
     const bgColor = `color-mix(in srgb, ${color}, transparent 90%)`
     const borderColor = `color-mix(in srgb, ${color}, transparent 40%)`
     ul.push(
-      <ElTag color={bgColor} key={item.dataType} style={{ color: color, borderColor: borderColor }}>
+      <ElTag disable-transitions color={bgColor} key={item.dataType} style={{ color: color, borderColor: borderColor }}>
         {DataTypeMap[item.dataType].name}
       </ElTag>,
     )

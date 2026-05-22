@@ -11,7 +11,7 @@ export type ExportTarget = 'json' | 'video' | 'audio' | 'other'
  * 目标的扩展名
  */
 export const TargetExtension: Record<ExportTarget, string> = {
-  json: '.txt',
+  json: '.json',
   video: '.mp4',
   audio: '.mp3',
   other: '',

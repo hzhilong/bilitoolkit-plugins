@@ -164,11 +164,11 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
     // 导出备份资源
     const assets = await this.exportBackupAsset(context, task as Task<'backup', D>, backupOptions, list, batchProgress)
     let msg
-    if (batchProgress.remainingDataCount !== undefined && batchProgress.remainingBatchCount !== undefined) {
+    if (batchProgress.totalBatchCount) {
       // 分批处理进度有剩余批次的信息
-      msg = `[${batchOptions.startBatch}/${batchProgress.remainingBatchCount}] 已备份 ${this.getDataTotalDesc(list)}`
+      msg = `批次 [${batchOptions.startBatch}/${batchProgress.totalBatchCount}] 已备份 ${this.getDataTotalDesc(list)}`
     } else {
-      msg = `[${batchOptions.startBatch}] 已备份 ${this.getDataTotalDesc(list)}`
+      msg = `批次 [${batchOptions.startBatch}] 已备份 ${this.getDataTotalDesc(list)}`
     }
     return {
       success: true,

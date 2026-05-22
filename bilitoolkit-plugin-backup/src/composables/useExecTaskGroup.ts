@@ -101,9 +101,14 @@ export const useExecTaskGroup = () => {
     }
   }
 
+  const cancelTaskGroup = async (groupId: TaskGroupId) => {
+    return await taskSchedule.abortTaskGroup(groupId)
+  }
+
   return {
     assertUserLoggedIn,
     assertNoActiveTask,
     execTaskGroup,
+    cancelTaskGroup,
   }
 }

@@ -4,10 +4,12 @@ import { type TaskGroup, type TaskGroupStatus } from '@/core/types/task-group'
 import { computed, reactive, watch, onUnmounted } from 'vue'
 import type { Task, TaskStatus, TaskId } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
-import { AppTooltip, IconButton } from 'bilitoolkit-ui'
+import { AppTooltip, IconButton, showToast } from 'bilitoolkit-ui'
 import type { GroupExecuteContext, OnProgress, OnStatusChange } from '@/core/types/execute'
 import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import { useTaskGroupDisplay } from '@/composables/useTaskGroupDisplay'
+import { taskGroupService } from '@/core/service/task-group'
+import { eventBus } from '@/utils/event-bus'
 
 const props = withDefaults(
   defineProps<{
@@ -30,7 +32,7 @@ const cardStyles = computed(() => {
 const taskGroup = defineModel<TaskGroup<O>>({ required: true })
 
 const items = reactive<Task[]>([])
-const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinueExecBatch, canCancel } =
+const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinue, canCancel } =
   useTaskGroupDisplay(taskGroup, () => items)
 
 const init = async () => {
@@ -71,7 +73,7 @@ const handleItemsStatusChange = (id: TaskId, status: TaskStatus) => {
     }
   })
 }
-const { execTaskGroup } = useExecTaskGroup()
+const { execTaskGroup, cancelTaskGroup } = useExecTaskGroup()
 let canceled = false
 onUnmounted(() => {
   canceled = true
@@ -93,8 +95,8 @@ const buildExecContext = () => {
     const id = item.id
     const onProgress: OnProgress = async (progress: number | undefined, msg: string | undefined) => {
       if (!canceled) {
+        handleItemsProgressChange(id, progress, msg)
       }
-      handleItemsProgressChange(id, progress, msg)
     }
     return onProgress
   })
@@ -118,6 +120,15 @@ const buildExecContext = () => {
 const exec = async () => {
   await execTaskGroup(buildExecContext(), taskGroup.value.id)
 }
+const cancel = async () => {
+  if (await cancelTaskGroup(taskGroup.value.id)) {
+    showToast('任务组已取消')
+  } else {
+    showToast('任务组取消失败，可能已执行完成')
+  }
+  taskGroup.value = await taskGroupService.getById<O>(taskGroup.value.id)
+  eventBus.emit('refreshTaskGroups')
+}
 </script>
 
 <template>
@@ -128,8 +139,14 @@ const exec = async () => {
       <span class="task-group-status" :class="taskGroup.status">{{ taskGroupState }}</span>
       <span v-if="hasBatchTask" class="task-group-batch-flag">包含分批处理任务</span>
       <div class="card-actions">
-        <IconButton v-if="canContinueExecBatch" icon="play" tip="继续执行分批处理的任务" />
-        <IconButton v-if="canCancel" icon="close-circle" tip="取消任务组" />
+        <IconButton
+          v-if="canContinue"
+          icon="play"
+          tip="继续执行分批处理的任务"
+          confirm="是否继续执行分批处理的任务？"
+          @click="exec"
+        />
+        <IconButton v-if="canCancel" icon="close-circle" tip="取消执行" confirm="是否取消执行？" @click="cancel" />
       </div>
     </div>
     <div class="card-body">
@@ -203,7 +220,7 @@ const exec = async () => {
       margin-left: 20px;
       color: color-mix(in srgb, var(--status-color), #000 10%);
       --status-color: var(--el-color-info);
-      background-color: color-mix(in srgb, var(--status-color), transparent 90%);
+      background-color: color-mix(in srgb, var(--status-color), transparent 80%);
 
       &.pending {
         --status-color: var(--el-color-info);
@@ -224,6 +241,13 @@ const exec = async () => {
     }
 
     .task-group-batch-flag {
+      margin-left: 10px;
+      font-size: 12px;
+      border-radius: 20px;
+      padding: 0 6px;
+      color: color-mix(in srgb, var(--el-color-primary), #000 10%);
+      --status-color: var(--el-color-info);
+      background-color: var(--app-color-primary-transparent-20);
     }
 
     .card-actions {
@@ -233,7 +257,7 @@ const exec = async () => {
       flex-wrap: nowrap;
       color: var(--el-color-primary);
 
-      > * {
+      .icon-btn {
         border-radius: 50%;
       }
     }

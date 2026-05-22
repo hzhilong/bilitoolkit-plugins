@@ -42,6 +42,10 @@ export interface BatchProgress {
   remainingDataCount?: number
   /** 剩余批次 */
   remainingBatchCount?: number
-  /** 下一页的查询参数 */
-  nextPageParams?: RequestParams
+  /** 总批次 */
+  totalBatchCount?: number
+  /** 下一分批开始的查询参数 */
+  nextBatchPageParams: RequestParams
+  /** 下一分批开始的页码 */
+  nextBatchPageNum: number
 }
