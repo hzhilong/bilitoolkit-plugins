@@ -15,23 +15,12 @@ export type Data = any
 /**
  * 模块树形数据
  */
-export interface TreeData extends Data {
-  children: Data[]
+export type TreeData<C extends Data> = {
+  children: C[]
 }
 
 /**
  * 数据模块
- *
- * 约定规则：
- * 1. 任务模式分为 normal（单次执行）与 batch（分批续跑执行）。
- * 2. 数据范围（DataRange）用于描述本次操作的数据选择范围。
- * 3. 多层数据结构（如两层树形数据）仅支持：
- *    - all：处理全部数据
- *    - tree：按层级路径选择指定数据
- *      - 第一层多选，第二层 all
- *      - 第一层单选，第二层 all/page
- *    不支持全局 page / list 模式。
- * 4. 多层数据暂不支持 batch 模式。
  */
 export interface DataModule<D extends Data = Data> {
   /** 数据类型 */
@@ -42,8 +31,6 @@ export interface DataModule<D extends Data = Data> {
   operations: OperationType[]
   /** 备份时可选的数据范围类型 */
   backupDataRangeTypes: BackupDataRangeType[]
-  /** 树形范围的选项（仅支持两层） */
-  treeRangeOptions?: TreeRangeOptions<D>
   /** 备份支持的导出目标 */
   exportTargets: ExportTarget[]
 
@@ -53,11 +40,11 @@ export interface DataModule<D extends Data = Data> {
     task: Task<O, D>,
   ) => Promise<TaskResult<O, D>>
 
-  /** 构建分页大小（备份时的数据接口分页策略） */
+  /** 构建分页大小（备份时的数据接口分页策略，树形数据表示第二层的分页大小） */
   getPageSize: () => number
 
-  /** 获取数据总条数 */
-  fetchTotal?: FetchTotal<D>
+  /** 获取总数 */
+  fetchTotal?: FetchTotal
 
   /** 获取分页数据（单个数据要包装为数组） */
   fetchPage: FetchPage<D>
@@ -66,36 +53,75 @@ export interface DataModule<D extends Data = Data> {
   fetchAll: FetchAll<D>
 }
 
-export type FetchTotal<D extends Data = Data> = [D] extends [TreeData]
-  ? (context: ExecuteContext, query?: FetchTreeQuery) => Promise<number>
-  : (context: ExecuteContext) => Promise<number>
+/**
+ * 树形数据模块
+ *
+ * 约定规则：
+ * 1. 多层数据结构（如两层树形数据）仅支持：
+ *    - all：处理全部数据
+ *    - tree：按层级路径选择指定数据
+ *      - 第一层多选，第二层 all
+ *      - 第一层单选，第二层 all/page
+ *    不支持全局 page / list 模式。
+ * 2. 多层数据暂不支持 batch 模式。
+ */
+export interface TreeDataModule<P extends TreeData<C>, C extends Data> extends DataModule<P> {
+  /** 树形范围的选项（仅支持两层） */
+  treeRangeOptions: TreeRangeOptions<P>
 
-export type FetchAll<D extends Data = Data> = [D] extends [TreeData]
-  ? (context: ExecuteContext, query?: FetchTreeQuery) => Promise<D[]>
-  : (context: ExecuteContext) => Promise<D[]>
+  /** 通过id获取父节点数据（必须一一对应） */
+  fetchAllByIds: FetchAllByIds<P, C>
 
-export type FetchPage<D extends Data = Data> = [D] extends [TreeData]
-  ? (context: ExecuteContext, params: FetchPageParams, query?: FetchTreeQuery) => Promise<PageDataWithNextParams<D>>
-  : (context: ExecuteContext, params: FetchPageParams) => Promise<PageDataWithNextParams<D>>
+  /** 父节点标题，主要用作多层数据模块的进度显示 */
+  getParentNodeTitle: (parent: P) => string
+
+  /** 获取子节点总数 */
+  fetchChildrenTotal?: FetchChildrenTotal<P, C>
+
+  /** 获取子节点分页数据 */
+  fetchChildrenPage: FetchChildrenPage<P, C>
+
+  /** 获取所有子节点 */
+  fetchChildrenAll: FetchChildrenAll<P, C>
+}
+
+/**
+ * 是否为树形数据模块
+ */
+export const isTreeDataModule = (module: DataModule<Data>): module is TreeDataModule<TreeData<Data>, Data> => {
+  return 'treeRangeOptions' in module
+}
+
+export type FetchTotal = (context: ExecuteContext) => Promise<number>
+export type FetchChildrenTotal<P extends TreeData<C>, C extends Data> = (
+  context: ExecuteContext,
+  parent: P,
+) => Promise<number>
+
+export type FetchPage<D extends Data = Data> = (
+  context: ExecuteContext,
+  params: FetchPageParams,
+) => Promise<PageDataWithNextParams<D>>
+
+export type FetchChildrenPage<P extends TreeData<C>, C extends Data> = (
+  context: ExecuteContext,
+  params: FetchPageParams,
+  parent: P,
+) => Promise<PageDataWithNextParams<C>>
+
+export type FetchAll<D extends Data = Data> = (context: ExecuteContext) => Promise<D[]>
+
+export type FetchAllByIds<P extends TreeData<C>, C extends Data> = (
+  context: ExecuteContext,
+  ids: string[],
+) => Promise<P[]>
+
+export type FetchChildrenAll<P extends TreeData<C>, C extends Data> = (
+  context: ExecuteContext,
+  parent: P,
+) => Promise<C[]>
 
 /**
  * 获取分页数据的参数
  */
 export type FetchPageParams = Omit<PageOptions, 'total' | 'pageSize'>
-
-/**
- * 树形数据选择条件
- */
-export type FetchTreeQuery =
-  | {
-      // 获取第一层的数据
-      level: 1
-      // 第一层 id 集合
-      level1Ids: string[]
-    }
-  | {
-      // 获取第二层的数据
-      level: 2
-      // 第一层 id
-      level1Id: string
-    }

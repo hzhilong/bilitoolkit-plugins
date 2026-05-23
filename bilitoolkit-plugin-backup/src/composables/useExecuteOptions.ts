@@ -11,6 +11,7 @@ import {
 import type { ExecuteConfigProps } from '@/components/form/ExecuteConfig.vue'
 import type { DataRangeType } from '@/core/types/data-range'
 import { useDataModule } from '@/composables/useDataModule'
+import { isTreeDataModule } from '@/core/types/data-module'
 
 export const useExecuteOptions = <O extends OperationType = OperationType>(
   props: MaybeRefOrGetter<ExecuteConfigProps<O>>,
@@ -52,7 +53,7 @@ export const useExecuteOptions = <O extends OperationType = OperationType>(
     if (operationType === 'backup') {
       return dataModule.value.backupDataRangeTypes
     } else if (operationType === 'restore') {
-      if (!dataModule.value.treeRangeOptions) {
+      if (!isTreeDataModule(dataModule.value)) {
         return ['all', 'list', 'page']
       } else {
         return ['all', 'tree']

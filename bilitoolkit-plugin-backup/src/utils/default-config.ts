@@ -33,6 +33,7 @@ export const getDefaultBackupOptions = (
   user: TargetUser,
   dataType: DataType,
   taskType: TaskType,
+  backupPath?: string,
 ): ExecuteOptions<'backup'> => {
   const module = registeredModulesMap[dataType]
   if (taskType === 'normal') {
@@ -40,7 +41,7 @@ export const getDefaultBackupOptions = (
       operationType: 'backup',
       mode: 'normal',
       dataRange: defaultAllDataRange,
-      rootPath: getBackupRootPath(user),
+      rootPath: backupPath ?? getBackupRootPath(user),
       exportTargets: ['json'],
     } satisfies BackupNormalOptions
   }
@@ -57,7 +58,7 @@ export const getDefaultBackupOptions = (
         pageParams: {},
         pageNum: 1,
       },
-      rootPath: getBackupRootPath(user),
+      rootPath: backupPath ?? getBackupRootPath(user),
       exportTargets: ['json'],
     } satisfies BackupBatchOptions
   }
@@ -120,10 +121,11 @@ export const getDefaultExecuteOptions = <O extends OperationType = OperationType
   operationType: O,
   dataType: DataType,
   taskType: T,
+  backupPath?: string,
 ): ExecuteOptions<O> => {
   switch (operationType) {
     case 'backup':
-      return getDefaultBackupOptions(user, dataType, taskType) as ExecuteOptions<O>
+      return getDefaultBackupOptions(user, dataType, taskType, backupPath) as ExecuteOptions<O>
     case 'restore':
       return getDefaultRestoreOptions(user, dataType, taskType) as ExecuteOptions<O>
     case 'clear':

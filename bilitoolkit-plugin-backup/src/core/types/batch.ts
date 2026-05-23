@@ -1,10 +1,10 @@
-import type { DataModule } from '@/core/types/data-module'
+import type { DataModule, Data } from '@/core/types/data-module'
 import type { RequestParams } from '@ybgnb/bili-api'
 
 /**
  * 可分批处理的数据模块
  */
-export interface BatchableModule extends DataModule {
+export interface BatchableModule<D extends Data = Data> extends DataModule<D> {
   /** 可分批处理的大小 */
   batchSizes: number[]
 }
@@ -12,7 +12,7 @@ export interface BatchableModule extends DataModule {
 /**
  * 是否为可批处理的模块
  */
-export const isBatchable = (module: DataModule): module is BatchableModule => {
+export const isBatchable = <D extends Data = Data>(module: DataModule<D>): module is BatchableModule<D> => {
   return 'batchSizes' in module && Array.isArray(module.batchSizes)
 }
 

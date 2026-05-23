@@ -1,4 +1,3 @@
-import type { RequestParams } from '@ybgnb/bili-api'
 import type { TreeData, Data } from '@/core/types/data-module'
 
 export const DataRangeTypeMap = {
@@ -34,7 +33,7 @@ export interface ListDataRange {
 export interface PageDataRange {
   type: 'page'
   ranges: [number, number]
-  pageParams?: RequestParams
+  //  pageParams?: RequestParams
 }
 
 /**
@@ -42,7 +41,7 @@ export interface PageDataRange {
  */
 export interface TreeNodeDataRange {
   id: string
-  childrenDataRanges: DataRange<'all' | 'page'>
+  childrenDataRange: AllDataRange | PageDataRange
 }
 
 /**
@@ -76,7 +75,7 @@ export type TreeRangeOption<LEVEL extends 1 | 2> = LEVEL extends 1
 /**
  * 树形范围选项集
  */
-export type TreeRangeOptions<D extends Data = Data> = [D] extends [TreeData]
+export type TreeRangeOptions<D extends Data = Data> = [D] extends [TreeData<Data>]
   ? [TreeRangeOption<1>, TreeRangeOption<2>]
   : undefined
 

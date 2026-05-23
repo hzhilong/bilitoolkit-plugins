@@ -10,6 +10,7 @@ import ExecuteConfig from '@/components/form/ExecuteConfig.vue'
 import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import { toTargetUser } from '@/core/utils/convert'
 import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
+import { getBackupRootPath } from '@/core/utils/file'
 
 const props = defineProps<{
   operationType: O
@@ -23,6 +24,8 @@ const resetExecuteOptions = () => {
   if (!props.user) {
     items.splice(0, items.length)
   } else {
+    // 如果是备份的话，统一文件根目录
+    const backupPath = props.operationType === 'backup' ? getBackupRootPath(toTargetUser(props.user)) : undefined
     items.splice(
       0,
       items.length,
@@ -34,6 +37,7 @@ const resetExecuteOptions = () => {
             props.operationType,
             dataType,
             'normal',
+            backupPath,
           ),
         }
       }),

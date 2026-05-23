@@ -1,11 +1,11 @@
-import { ToView } from '@/core/modules/toview'
+import { ToViewModule } from '@/core/modules/toview'
 import type { DataModule } from '@/core/types/data-module'
 import type { DataType } from '@/core/types/data-type'
 
 /**
  * 注册的模块
  */
-export const registeredModules: DataModule[] = [new ToView()]
+export const registeredModules: DataModule[] = [new ToViewModule()]
 
 /**
  * 注册的模块映射

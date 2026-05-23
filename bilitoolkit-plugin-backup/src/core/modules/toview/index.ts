@@ -7,16 +7,14 @@ import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
 import { toolkitApi } from 'bilitoolkit-ui'
 import { biliApi } from 'bilitoolkit-runtime/biliapi'
-import type { BatchableModule } from '@/core/types/batch'
 import { publicClient } from '@/core/commom/client'
 
-export class ToView extends BaseModule<ToViewItem> implements BatchableModule {
+export class ToViewModule extends BaseModule<ToViewItem> {
   dataType: DataType = 'to_view'
   dataTypeName: string = DataTypeMap[this.dataType].name
   operations: OperationType[] = ['backup', 'restore', 'clear']
-  backupDataRangeTypes: BackupDataRangeType[] = ['all', 'page']
+  backupDataRangeTypes: BackupDataRangeType[] = ['all']
   exportTargets: ExportTarget[] = ['json']
-  batchSizes = [30, 50, 100]
 
   fetchTotal = async (context: ExecuteContext): Promise<number> => {
     return (await toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.getTotal)) ?? 0
