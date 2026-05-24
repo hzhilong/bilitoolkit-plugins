@@ -18,6 +18,7 @@ const params = ref<TaskGroupFilters>({
 const fetchPage = (pageParams: PageParams, filters: TaskGroupFilters) => {
   return taskGroupService.fetchPage(pageParams, filters)
 }
+
 const resetQuery = () => {
   params.value.operationType = undefined
   params.value.status = undefined
@@ -48,21 +49,39 @@ onUnmounted(() => {
 <template>
   <div class="task-group-container">
     <PageTable ref="tableRef" :fetch-page="fetchPage" :page-sizes="[20]" :query-params="params" @reset="resetQuery">
-      <ElTableColumn align="center" prop="id" label="id"></ElTableColumn>
-      <ElTableColumn align="center" prop="createdAt" label="创建时间" :formatter="formatCreatedAt"></ElTableColumn>
-      <ElTableColumn align="center" prop="operationType" label="类型" :formatter="formatOperationType"></ElTableColumn>
+      <ElTableColumn align="center" prop="id" label="id" min-width="30px"></ElTableColumn>
+      <ElTableColumn
+        align="center"
+        prop="createdAt"
+        label="创建时间"
+        :formatter="formatCreatedAt"
+        minWidth="80px"
+      ></ElTableColumn>
+      <ElTableColumn
+        align="center"
+        prop="operationType"
+        label="类型"
+        :formatter="formatOperationType"
+        width="50px"
+      ></ElTableColumn>
       <ElTableColumn align="center" prop="user" label="用户">
         <template #default="{ row }: { row: TaskGroup }">
           <BiliUserInfo :user="row.user" />
         </template>
       </ElTableColumn>
-      <ElTableColumn align="center" prop="status" label="状态" :formatter="formatTaskGroupStatus"></ElTableColumn>
+      <ElTableColumn
+        align="center"
+        prop="status"
+        label="状态"
+        :formatter="formatTaskGroupStatus"
+        width="80px"
+      ></ElTableColumn>
       <ElTableColumn align="center" prop="progress" label="进度">
         <template #default="{ row }: { row: TaskGroup }">
           <span>{{ row.progressMsg ?? '' }}</span>
         </template>
       </ElTableColumn>
-      <ElTableColumn align="center" prop="items" label="数据">
+      <ElTableColumn align="center" prop="items" label="数据" width="200px">
         <template #default="{ row }: { row: TaskGroup }">
           <TaskGroupItemsTag :items="row.items"></TaskGroupItemsTag>
         </template>
@@ -94,5 +113,11 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .task-group-container {
   margin-top: 20px;
+
+  ::v-deep(.cell):has(.user-info) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 </style>

@@ -8,6 +8,7 @@ import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import router from '@/router'
 import { appEnv } from '@ybgnb/vite-env/common'
+import { setDevMode } from 'bilitoolkit-runtime'
 
 if (appEnv.DEV) {
   import('element-plus/dist/index.css')
@@ -30,12 +31,16 @@ async function bootstrapApp() {
     useTestData = appEnv.DEV && !(await toolkitApi.system.ping())
   } catch {}
 
-  const ui = await initBilitoolkitUi(pinia, useTestData)
+  const ui = await initBilitoolkitUi(pinia, {
+    useTestData,
+    isDev: appEnv.DEV,
+  })
 
   // 暂停之前运行的任务
   // TODO 改成任务组
 
   app.use(ui)
+  setDevMode(appEnv.DEV)
   // Vue 组件中发生的错误
   app.config.errorHandler = handleError
   // 捕捉那些没有被catch处理的Promise错误

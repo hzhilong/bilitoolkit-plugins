@@ -16,7 +16,7 @@ export const TaskGroupStatusMap = {
   // 暂停
   paused: '已暂停',
   // 批次完成
-  batchCompleted: '批次已完成',
+  batchCompleted: '批次完成',
   // 完成
   completed: '已完成',
   // 失败
