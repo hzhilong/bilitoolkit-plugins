@@ -49,6 +49,7 @@ declare module 'vue' {
     TaskGroupModal: typeof import('./src/components/modal/TaskGroupModal.vue')['default']
     TaskGroupTable: typeof import('./src/components/table/TaskGroupTable.vue')['default']
     TaskModal: typeof import('./src/components/modal/TaskModal.vue')['default']
+    TreeSelectModal: typeof import('./src/components/modal/TreeSelectModal.vue')['default']
     UserCookieModal: typeof import('./src/components/modal/UserCookieModal.vue')['default']
   }
   export interface GlobalDirectives {
@@ -95,5 +96,6 @@ declare global {
   const TaskGroupModal: typeof import('./src/components/modal/TaskGroupModal.vue')['default']
   const TaskGroupTable: typeof import('./src/components/table/TaskGroupTable.vue')['default']
   const TaskModal: typeof import('./src/components/modal/TaskModal.vue')['default']
+  const TreeSelectModal: typeof import('./src/components/modal/TreeSelectModal.vue')['default']
   const UserCookieModal: typeof import('./src/components/modal/UserCookieModal.vue')['default']
 }

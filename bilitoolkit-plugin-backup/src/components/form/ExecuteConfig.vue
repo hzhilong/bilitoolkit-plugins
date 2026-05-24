@@ -3,14 +3,15 @@ import { type DataType } from '@/core/types/data-type'
 import type { OperationType } from '@/core/types/operation'
 import type { ExecuteOptions, TargetUser } from '@/core/types/execute'
 import { registeredModulesMap } from '@/core/modules/register'
-import { useTemplateRef } from 'vue'
+import { useTemplateRef, ref } from 'vue'
 import { ElForm } from 'element-plus'
 import { isBatchable, type BatchableModule } from '@/core/types/batch'
-import { DataRangeTypeMap } from '@/core/types/data-range'
-import type { BackupOptions } from '@/core/types/backup'
+import { DataRangeTypeMap, type TreeNodeDataRange, type TreeDataRange } from '@/core/types/data-range'
+import type { BackupOptions, BackupNormalOptions } from '@/core/types/backup'
 import { useDataModule } from '@/composables/useDataModule'
 import { useExecuteOptions } from '@/composables/useExecuteOptions'
 import { AppIcon } from 'bilitoolkit-ui'
+import TreeSelectModal from '@/components/modal/TreeSelectModal.vue'
 
 export interface ExecuteConfigProps<PO extends OperationType = OperationType> {
   user: TargetUser
@@ -22,7 +23,7 @@ export interface ExecuteConfigProps<PO extends OperationType = OperationType> {
 const props = withDefaults(defineProps<ExecuteConfigProps<O>>(), {})
 const options = defineModel<ExecuteOptions<O>>({ required: true })
 const formRef = useTemplateRef<InstanceType<typeof ElForm>>('formRef')
-const { dataModuleName, dataModuleColor, dataModuleBackupDesc } = useDataModule(() => props.dataType)
+const { isTreeModule, dataModuleName, dataModuleColor, dataModuleBackupDesc } = useDataModule(() => props.dataType)
 const { onChangeDataRangeType, dataRangeTypes, dataApiPageSize } = useExecuteOptions(() => props, options)
 
 const validate = async () => {
@@ -33,6 +34,22 @@ const validate = async () => {
 defineExpose({
   validate,
 })
+
+const getTreeNodeDataRangeInfo = (node: TreeNodeDataRange) => {
+  const children = node.childrenDataRange
+  const cType = children.type
+  const pageInfo = cType === 'page' ? ` [${children.ranges[0]} - ${children.ranges[1]}]` : ''
+  return `● ${node._name}${pageInfo}`
+}
+const treeModalNodes = ref<TreeNodeDataRange[]>([])
+const treeModalVisible = ref<boolean>(false)
+const handleOpenTreeModal = (nodes: TreeNodeDataRange[]) => {
+  treeModalNodes.value = nodes
+  treeModalVisible.value = true
+}
+const handleTreeRangeSubmit = (nodes: TreeNodeDataRange[]) => {
+  ;((options.value as BackupNormalOptions).dataRange as TreeDataRange).nodes = nodes
+}
 </script>
 
 <template>
@@ -92,6 +109,23 @@ defineExpose({
           </el-form-item>
         </template>
         <!--     // TODO 待完善其他数据范围选中组件-->
+        <template v-if="options.dataRange.type === 'tree' && operationType !== 'clear'">
+          <el-form-item label="已选数据">
+            <div class="tree-form-item">
+              <div class="tree-range-info" v-for="node in options.dataRange.nodes" :key="node._id">
+                {{ getTreeNodeDataRangeInfo(node) }}
+              </div>
+              <el-button
+                v-if="!viewMode"
+                type="primary"
+                size="small"
+                @click="handleOpenTreeModal(options.dataRange.nodes)"
+                style="width: fit-content"
+                >选择</el-button
+              >
+            </div>
+          </el-form-item>
+        </template>
       </template>
       <template v-if="options.mode === 'batch'">
         <el-form-item label="分批大小" prop="batchOptions.batchSize">
@@ -112,6 +146,16 @@ defineExpose({
         </el-form-item>
       </template>
     </el-form>
+
+    <TreeSelectModal
+      v-if="isTreeModule"
+      :operation-type="operationType"
+      :data-type="dataType"
+      v-model:visible="treeModalVisible"
+      v-model:nodes="treeModalNodes"
+      @submit="handleTreeRangeSubmit"
+    >
+    </TreeSelectModal>
   </div>
 </template>
 
@@ -144,6 +188,17 @@ defineExpose({
   }
 
   > .form {
+  }
+
+  .tree-form-item {
+    display: flex;
+    flex-direction: column;
+    padding-right: 2px;
+    text-wrap: nowrap;
+
+    .tree-range-info {
+      text-wrap: nowrap;
+    }
   }
 }
 </style>

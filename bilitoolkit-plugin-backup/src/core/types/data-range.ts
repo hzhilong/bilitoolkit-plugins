@@ -4,7 +4,7 @@ export const DataRangeTypeMap = {
   all: '所有数据',
   list: '列表数据',
   page: '分页数据',
-  tree: '多层数据',
+  tree: '自选范围',
 } as const
 
 /**
@@ -39,8 +39,7 @@ export interface PageDataRange {
 /**
  * 树节点的数据范围信息
  */
-export interface TreeNodeDataRange {
-  id: string
+export type TreeNodeDataRange = Pick<TreeData<Data>, '_id' | '_name'> & {
   childrenDataRange: AllDataRange | PageDataRange
 }
 
@@ -52,14 +51,13 @@ export interface TreeNodeDataRange {
 export interface TreeDataRange {
   type: 'tree'
   /** 树节点的数据范围信息的集合 */
-  // TODO 这里只能选择 backupDataRangeType 的子项
   nodes: TreeNodeDataRange[]
 }
 
 /**
- * 树形范围选项
+ * 树形范围的元数据
  */
-export type TreeRangeOption<LEVEL extends 1 | 2> = LEVEL extends 1
+export type TreeRangeMeta<LEVEL extends 1 | 2> = LEVEL extends 1
   ? {
       name: string
       /**
@@ -73,11 +71,9 @@ export type TreeRangeOption<LEVEL extends 1 | 2> = LEVEL extends 1
     }
 
 /**
- * 树形范围选项集
+ * 树形范围元数据
  */
-export type TreeRangeOptions<D extends Data = Data> = [D] extends [TreeData<Data>]
-  ? [TreeRangeOption<1>, TreeRangeOption<2>]
-  : undefined
+export type TreeRangeMetas = [TreeRangeMeta<1>, TreeRangeMeta<2>]
 
 /**
  * 数据范围

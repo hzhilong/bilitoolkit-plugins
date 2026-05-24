@@ -88,7 +88,6 @@ const handleSubmit = async () => {
       :title="`${OperationTypeMap[operationType]}任务配置`"
       v-model="visible"
       width="76%"
-      style="max-width: 600px; min-width: 400px; max-height: 90vh; overflow: hidden"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="true"
@@ -118,12 +117,21 @@ const handleSubmit = async () => {
 
 <style scoped lang="scss">
 .execute-config-modal ::v-deep(.el-dialog) {
-  //  background-color: var(--el-bg-color-page);
+  max-width: 600px;
+  min-width: 400px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  .el-dialog__body {
+    flex: 1;
+    overflow-y: auto;
+  }
 }
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   padding: 10px 8px;
 }
 </style>

@@ -52,5 +52,8 @@ export default defineConfig((configEnv: ConfigEnv) => {
       // 生成 Source Map => 开发环境日志打印时输出源码路径和行号
       // sourcemap: mode !== 'production',
     },
+    optimizeDeps: {
+      include: ['element-plus', 'element-plus/es', 'consola'],
+    },
   })
 })

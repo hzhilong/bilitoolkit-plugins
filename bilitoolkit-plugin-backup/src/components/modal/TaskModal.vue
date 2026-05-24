@@ -78,8 +78,12 @@ const handleShowAsset = (asset: BackupAsset) => {
           <el-descriptions-item label="操作类型">{{ operationType }}</el-descriptions-item>
           <el-descriptions-item label="目标用户"><AppTooltip :content="task.user.name" /></el-descriptions-item>
           <el-descriptions-item label="任务状态">{{ taskState }}</el-descriptions-item>
-          <el-descriptions-item label="任务进度">{{ task.progress }}/100 </el-descriptions-item>
-          <el-descriptions-item label="进度提示"><AppTooltip :content="task.progressMsg" /></el-descriptions-item>
+          <!--          <el-descriptions-item label="任务进度">{{ task.progress }}/100 </el-descriptions-item>-->
+          <el-descriptions-item label="进度提示">
+            <div class="task-progress-msg">
+              {{ task.progressMsg }}
+            </div>
+          </el-descriptions-item>
           <el-descriptions-item label="执行选项">
             <ExecuteConfig
               v-model="task.executeOptions"
@@ -162,5 +166,9 @@ const handleShowAsset = (asset: BackupAsset) => {
 }
 ::v-deep(.el-descriptions__label) {
   text-wrap: nowrap;
+}
+::v-deep(.el-descriptions) {
+  .task-progress-msg {
+  }
 }
 </style>

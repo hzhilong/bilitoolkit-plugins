@@ -20,7 +20,7 @@ async function getDataByPageRange<D>(
   fetchPage: (pageNum: number) => Promise<PageDataWithNextParams<D>>,
   logPrefix?: string,
 ) {
-  const items: D[] = []
+  const result: D[] = []
   const [startPageNum, endPageNum] = dataRange.ranges
   const pageTotal = endPageNum - startPageNum + 1
   logPrefix = logPrefix ? `${logPrefix.trim()} ` : ''
@@ -28,16 +28,16 @@ async function getDataByPageRange<D>(
   for (let i = startPageNum; i <= endPageNum; i++) {
     const { items, hasNext } = await fetchPage(i)
     if (items) {
-      items.push(...items)
+      result.push(...items)
       await context.onProgress?.(
         (100 * (i - startPageNum + 1)) / pageTotal,
-        `${logPrefix}第 ${i}/${endPageNum} 页 • 获取 ${items.length} 条 • 累计 ${items.length}`,
+        `${logPrefix}第 ${i}/${endPageNum} 页 • 获取 ${items.length} 条 • 累计 ${result.length}`,
       )
       await apiSleep(context.abortSignal)
       if (!hasNext) break
     }
   }
-  return items
+  return result
 }
 
 /**
@@ -67,14 +67,15 @@ async function getBackupDataByTreePageRange<P extends TreeData<C>, C extends Dat
   return getDataByPageRange(
     context,
     dataRange,
-    (pageNum) =>
-      dataModule.fetchChildrenPage(
+    async (pageNum) => {
+      return await dataModule.fetchChildrenPage(
         context,
         {
           pageNum,
         },
         parent,
-      ),
+      )
+    },
     dataModule.getParentNodeTitle(parent),
   )
 }
@@ -118,19 +119,21 @@ export const getBackupDataByRange = async <
     }
 
     //  - tree：按层级路径选择指定数据
-    //  - 第一层多选，第二层 all
-    //  - 第一层单选，第二层 all/page
     if (dataRange.type === 'tree') {
-      if (validateTreeDataRange(dataRange)) {
+      if (!validateTreeDataRange(dataRange)) {
         throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围选择参数无效`)
       }
 
       const { nodes } = dataRange
+      // 判断子节点范围选择的有效性
+      if (nodes.some((node) => !treeDataModule.childrenRangeOptions.includes(node.childrenDataRange.type))) {
+        throw new Error(`内部错误，[${dataModule.dataTypeName}] 子节点的范围选择参数无效`)
+      }
 
       // 获取第一层
       const selectParentList = await treeDataModule.fetchAllByIds(
         context,
-        nodes.map((n) => n.id),
+        nodes.map((n) => n._id),
       )
       if (selectParentList.length !== nodes.length) {
         throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围数据错误(node1)`)
@@ -156,20 +159,10 @@ export const getBackupDataByRange = async <
 
 /**
  * 校验树形范围选择的参数
- *   - 第一层多选，第二层 all
- *   - 第一层单选，第二层 all/page
  */
 export const validateTreeDataRange = ({ nodes }: TreeDataRange) => {
   if (nodes.length < 1) {
     return false
-  }
-  if (nodes.length > 1) {
-    for (const node of nodes) {
-      if (node.childrenDataRange.type === 'page') {
-        // 第一层多选时，第二层只允许 all
-        return false
-      }
-    }
   }
   return true
 }

@@ -1,6 +1,5 @@
 import type {
   FetchTotal,
-  FetchPage,
   FetchAll,
   Data,
   FetchChildrenTotal,
@@ -9,14 +8,17 @@ import type {
   TreeData,
   TreeDataModule,
   FetchAllByIds,
+  FetchPage,
+  FetchPageParams,
 } from '@/core/types/data-module'
 import type { DataType } from '@/core/types/data-type'
 import { type OperationType } from '@/core/types/operation'
 import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
-import type { TreeRangeOptions } from '@/core/types/data-range'
+import type { AllDataRange, PageDataRange, TreeRangeMetas } from '@/core/types/data-range'
 import { BaseModule } from '@/core/modules/base-module'
+import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 
 /**
  * 模块基类
@@ -33,8 +35,10 @@ export abstract class BaseTreeModule<P extends TreeData<C>, C extends Data>
   abstract operations: OperationType[]
   /** 备份时可选的数据范围类型 */
   abstract backupDataRangeTypes: BackupDataRangeType[]
-  /** 树形范围的选项（仅支持两层） */
-  abstract treeRangeOptions: TreeRangeOptions<P>
+  /** 树形范围的元数据（仅支持两层） */
+  abstract treeRangeMetas: TreeRangeMetas
+  /** 子节点可选择的数据范围 */
+  abstract childrenRangeOptions: (AllDataRange['type'] | PageDataRange['type'])[]
   /** 父节点名字，主要用作多层数据模块的日志显示 */
   abstract getParentNodeTitle: (parent: P) => string
   /** 备份支持的导出目标 */
@@ -45,8 +49,19 @@ export abstract class BaseTreeModule<P extends TreeData<C>, C extends Data>
   fetchTotal?: FetchTotal
   /** 获取子节点总数 */
   fetchChildrenTotal?: FetchChildrenTotal<P, C>
-  /** 获取分页数据（单个数据要包装为数组） */
-  abstract fetchPage: FetchPage<P>
+  /** 树形数据不支持全局 page，这里直接获取第一层所有数据 */
+  fetchPage: FetchPage = async (
+    context: ExecuteContext,
+    _params: FetchPageParams,
+  ): Promise<PageDataWithNextParams<P>> => {
+    const tags = await this.fetchAll(context)
+    return {
+      items: tags,
+      nextParams: {},
+      hasNext: false,
+      pageSize: tags.length,
+    }
+  }
   /** 获取子节点分页数据 */
   abstract fetchChildrenPage: FetchChildrenPage<P, C>
   /** 获取所有数据（单个数据要包装为数组） */

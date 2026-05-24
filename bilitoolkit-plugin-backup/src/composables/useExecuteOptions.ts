@@ -36,13 +36,13 @@ export const useExecuteOptions = <O extends OperationType = OperationType>(
         }
       }
       if (type === 'all') {
-        Object.assign(dataRange, defaultAllDataRange)
+        Object.assign(dataRange, defaultAllDataRange())
       } else if (type === 'page') {
-        Object.assign(dataRange, defaultPageDataRange)
+        Object.assign(dataRange, defaultPageDataRange())
       } else if (type === 'list') {
-        Object.assign(dataRange, defaultListDataRange)
+        Object.assign(dataRange, defaultListDataRange())
       } else if (type === 'tree') {
-        Object.assign(dataRange, defaultTreeDataRange)
+        Object.assign(dataRange, defaultTreeDataRange())
       }
     }
   }

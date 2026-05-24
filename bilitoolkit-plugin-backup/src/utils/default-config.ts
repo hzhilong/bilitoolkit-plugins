@@ -10,23 +10,31 @@ import type { ClearOptions } from '@/core/types/clear'
 import { isBatchable } from '@/core/types/batch'
 import { registeredModulesMap } from '@/core/modules/register'
 
-export const defaultAllDataRange: DataRange<'all'> = {
-  type: 'all',
+export function defaultAllDataRange(): DataRange<'all'> {
+  return {
+    type: 'all',
+  }
 }
 
-export const defaultPageDataRange: DataRange<'page'> = {
-  type: 'page',
-  ranges: [1, 1],
+export function defaultPageDataRange(): DataRange<'page'> {
+  return {
+    type: 'page',
+    ranges: [1, 1],
+  }
 }
 
-export const defaultListDataRange: DataRange<'list'> = {
-  type: 'list',
-  ranges: [],
+export function defaultListDataRange(): DataRange<'list'> {
+  return {
+    type: 'list',
+    ranges: [],
+  }
 }
 
-export const defaultTreeDataRange: DataRange<'tree'> = {
-  type: 'tree',
-  nodes: [],
+export function defaultTreeDataRange(): DataRange<'tree'> {
+  return {
+    type: 'tree',
+    nodes: [],
+  }
 }
 
 export const getDefaultBackupOptions = (
@@ -40,7 +48,7 @@ export const getDefaultBackupOptions = (
     return {
       operationType: 'backup',
       mode: 'normal',
-      dataRange: defaultAllDataRange,
+      dataRange: defaultAllDataRange(),
       rootPath: backupPath ?? getBackupRootPath(user),
       exportTargets: ['json'],
     } satisfies BackupNormalOptions
@@ -75,7 +83,7 @@ export const getDefaultRestoreOptions = (
     return {
       operationType: 'restore',
       mode: 'normal',
-      dataRange: defaultAllDataRange,
+      dataRange: defaultAllDataRange(),
       backupAssets: [],
     } satisfies RestoreNormalOptions
   }
@@ -107,7 +115,7 @@ export const getDefaultClearOptions = (
     return {
       operationType: 'clear',
       mode: 'normal',
-      dataRange: defaultAllDataRange,
+      dataRange: defaultAllDataRange(),
     } satisfies ClearOptions
   }
   if (taskType === 'batch') {

@@ -5,8 +5,14 @@ export type FollowTag = RelationTag & TreeData<Following>
 export type Following = Relation & Data
 
 export const toFollowTags = (relationTags: RelationTag[]): FollowTag[] => {
-  return relationTags.map((tag) => ({
-    ...tag,
-    children: [],
-  }))
+  return relationTags.map(
+    (tag) =>
+      ({
+        ...tag,
+        _id: String(tag.tagid),
+        _name: tag.name,
+        children: [],
+        childrenCount: tag.count,
+      }) satisfies FollowTag,
+  )
 }

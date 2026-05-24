@@ -4,20 +4,13 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
 import type { PageDataWithNextParams, PageOptions } from '@ybgnb/bili-api'
 import type { Task, TaskResult } from '@/core/types/task'
-import type { TreeRangeOptions } from '@/core/types/data-range'
+import type { AllDataRange, PageDataRange, TreeRangeMetas } from '@/core/types/data-range'
 
 /**
  * 模块数据
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Data = any
-
-/**
- * 模块树形数据
- */
-export type TreeData<C extends Data> = {
-  children: C[]
-}
 
 /**
  * 数据模块
@@ -54,20 +47,32 @@ export interface DataModule<D extends Data = Data> {
 }
 
 /**
+ * 模块树形数据
+ */
+export type TreeData<C extends Data> = {
+  children: C[]
+  childrenCount?: number
+  _id: string
+  _name: string
+}
+
+/**
  * 树形数据模块
  *
  * 约定规则：
  * 1. 多层数据结构（如两层树形数据）仅支持：
  *    - all：处理全部数据
  *    - tree：按层级路径选择指定数据
- *      - 第一层多选，第二层 all
- *      - 第一层单选，第二层 all/page
+ *      - 第一层可单选/多选，第二层 all/page
  *    不支持全局 page / list 模式。
  * 2. 多层数据暂不支持 batch 模式。
  */
-export interface TreeDataModule<P extends TreeData<C>, C extends Data> extends DataModule<P> {
-  /** 树形范围的选项（仅支持两层） */
-  treeRangeOptions: TreeRangeOptions<P>
+export interface TreeDataModule<P extends TreeData<C> = TreeData<Data>, C extends Data = Data> extends DataModule<P> {
+  /** 树形范围的元数据（仅支持两层） */
+  treeRangeMetas: TreeRangeMetas
+
+  /** 子节点可选择的数据范围 */
+  childrenRangeOptions: (AllDataRange['type'] | PageDataRange['type'])[]
 
   /** 通过id获取父节点数据（必须一一对应） */
   fetchAllByIds: FetchAllByIds<P, C>
@@ -89,7 +94,7 @@ export interface TreeDataModule<P extends TreeData<C>, C extends Data> extends D
  * 是否为树形数据模块
  */
 export const isTreeDataModule = (module: DataModule<Data>): module is TreeDataModule<TreeData<Data>, Data> => {
-  return 'treeRangeOptions' in module
+  return 'treeRangeMetas' in module
 }
 
 export type FetchTotal = (context: ExecuteContext) => Promise<number>

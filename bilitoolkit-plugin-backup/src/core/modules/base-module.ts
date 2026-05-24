@@ -173,7 +173,6 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
     } as TaskResult<'backup', D>
   }
 
-  // TODO 完善树形文件设计
   protected exportBackupAsset = async (
     { abortSignal, onProgress }: ExecuteContext,
     task: Task<'backup', D>,

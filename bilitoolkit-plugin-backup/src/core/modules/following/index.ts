@@ -5,34 +5,33 @@ import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
 import { toolkitApi } from 'bilitoolkit-ui'
 import { biliApi } from 'bilitoolkit-runtime/biliapi'
-import type { BatchableModule } from '@/core/types/batch'
 import { publicClient, invokeBiliApi } from '@/core/commom/client'
 import { type FollowTag, type Following, toFollowTags } from '@/core/modules/following/types'
-import type { TreeRangeOptions } from '@/core/types/data-range'
+import type { TreeRangeMetas } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { BaseTreeModule } from '@/core/modules/base-tree-module'
 
-export class FollowingModule extends BaseTreeModule<FollowTag, Following> implements BatchableModule {
-  dataType: DataType = 'follower'
+export class FollowingModule extends BaseTreeModule<FollowTag, Following> {
+  dataType: DataType = 'following'
   dataTypeName: string = DataTypeMap[this.dataType].name
   operations: OperationType[] = ['backup', 'restore', 'clear']
   backupDataRangeTypes: BackupDataRangeType[] = ['all', 'tree']
+  childrenRangeOptions: ('all' | 'page')[] = ['all', 'page']
   exportTargets: ExportTarget[] = ['json']
-  treeRangeOptions = [
+  treeRangeMetas: TreeRangeMetas = [
     {
       name: '关注分组',
       multipleSelectable: true,
     },
     { name: '关注UP' },
-  ] as TreeRangeOptions<FollowTag | Following>
-  batchSizes = [30, 50, 100, 200, 400]
+  ] as TreeRangeMetas
 
   getPageSize = () => {
-    return publicClient.relation.buildFollowingsPager().getPageSize()
+    return publicClient.relation.buildRelationPager(1).getPageSize()
   }
 
   getDataTotalDesc(list: FollowTag[]): string {
-    return `${list.length} 关注分组 · ${list.reduce((t, i) => t + (i.list?.length ?? 0), 0)} 关注用户`
+    return `${list.length} 关注分组 · ${list.reduce((t, i) => t + (i.children.length ?? 0), 0)} 关注用户`
   }
 
   getParentNodeTitle = (parent: FollowTag) => {
@@ -50,19 +49,6 @@ export class FollowingModule extends BaseTreeModule<FollowTag, Following> implem
 
   fetchChildrenTotal = async (context: ExecuteContext, tag: FollowTag): Promise<number> => {
     return tag.count
-  }
-
-  fetchPage = async (
-    { clientId }: ExecuteContext,
-    _params: FetchPageParams,
-  ): Promise<PageDataWithNextParams<FollowTag>> => {
-    const tags = await this.getFollowTags(clientId)
-    return {
-      items: tags as FollowTag[],
-      nextParams: {},
-      hasNext: false,
-      pageSize: tags.length,
-    }
   }
 
   fetchChildrenPage = async (
