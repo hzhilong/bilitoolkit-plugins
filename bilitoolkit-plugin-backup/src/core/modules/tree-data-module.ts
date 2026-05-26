@@ -4,6 +4,8 @@ import type { ExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import type { TreeRangeMetas, DataRangeType } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
+import type { BaseRestoreResult } from '@/core/types/restore'
+import { getErrorMessage } from '@ybgnb/utils'
 
 /**
  * 树形数据模块
@@ -16,15 +18,15 @@ import type { PageDataWithNextParams } from '@ybgnb/bili-api'
  *    不支持全局 page / list 模式。
  * 2. 多层数据暂不支持 batch 模式。
  */
-export abstract class TreeDataModule<P extends TreeData<C>, C extends Data> extends DataModule<P> {
+export abstract class TreeDataModule<
+  P extends TreeData<C> = TreeData<Data>,
+  C extends Data = Data,
+> extends DataModule<P> {
   /** 树形范围的元数据（仅支持两层） */
   abstract treeRangeMetas: TreeRangeMetas
 
   /** 子节点可选择的数据范围 */
   abstract childrenRangeOptions: Exclude<DataRangeType, 'tree'>[]
-
-  /** 父节点名字，主要用作多层数据模块的日志显示 */
-  abstract getParentNodeTitle(parent: P): string
 
   /** 获取子节点总数 */
   fetchChildrenTotal?(context: ExecuteContext, parent: P): Promise<number>
@@ -52,6 +54,13 @@ export abstract class TreeDataModule<P extends TreeData<C>, C extends Data> exte
       pageSize: tags.length,
     }
   }
+  /** 获取子节点标题 */
+  abstract getChildrenDataTitle(child: C): string
+
+  /** 还原父节点数据 */
+  abstract restoreData(context: ExecuteContext, data: P): Promise<void>
+  /** 还原子节点数据 */
+  abstract restoreChildrenData(context: ExecuteContext, children: C): Promise<void>
 
   /** 获取所有子节点数据 */
   protected baseFetchChildrenAll = async (context: ExecuteContext, parent: P): Promise<C[]> => {
@@ -63,7 +72,7 @@ export abstract class TreeDataModule<P extends TreeData<C>, C extends Data> exte
 
     let pageNum = 1
     const list = []
-    const parentTitle = `${this.getParentNodeTitle?.(parent)?.trim() ?? ''} `
+    const parentTitle = `${this.getDataTitle(parent).trim() ?? ''} `
 
     let total: number | undefined = undefined
     if (this.fetchChildrenTotal) {
@@ -106,5 +115,95 @@ export abstract class TreeDataModule<P extends TreeData<C>, C extends Data> exte
       pageNum++
     }
     return list
+  }
+
+  protected async baseRestoreData(context: ExecuteContext, list: P[]): Promise<BaseRestoreResult<P>> {
+    if (list.length === 0) {
+      context.onProgress?.(1, '读取的数据为空')
+      throw new Error('读取的数据为空')
+    }
+
+    const successItems: P[] = []
+    const failedItems: P[] = []
+    context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
+    // 先整体还原父节点
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i]
+      const progress = Math.floor(((i + 1) * 100) / list.length)
+      try {
+        await this.restoreData(context, item)
+        successItems.push(item)
+        context.onProgress?.(progress, `还原分组成功 [${this.getDataTitle(item)}]`)
+      } catch (e) {
+        context.onProgress?.(progress, `还原分组失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`)
+        failedItems.push(item)
+      }
+      await apiSleep(context.abortSignal)
+    }
+    // 再一个一个还原子节点数据
+    const cResult = await this.baseRestoreAllChildren(context, successItems)
+    failedItems.push(...cResult.failedItems)
+
+    return {
+      successDataDesc: this.getDataTotalDesc(cResult.successItems),
+      failedDataDesc: failedItems.length > 0 ? this.getDataTotalDesc(failedItems) : '',
+      failedItems,
+    }
+  }
+
+  protected async baseRestoreAllChildren(
+    context: ExecuteContext,
+    parentList: P[],
+  ): Promise<{
+    successItems: P[]
+    failedItems: P[]
+  }> {
+    const successItems: P[] = []
+    const failedItems: P[] = []
+
+    const dataCount = parentList.reduce((acc, cur) => {
+      return acc + cur.children.length
+    }, 0)
+    let processedCount = 0
+
+    for (const parent of parentList) {
+      const { children, ...onlyParent } = parent
+
+      const successChildItems: C[] = []
+      const failedChildItems: C[] = []
+
+      for (const child of children) {
+        const progress = Math.floor((processedCount * 100) / dataCount)
+        try {
+          await this.restoreChildrenData(context, child)
+          successChildItems.push(child)
+          context.onProgress?.(progress, `还原数据成功 [${this.getChildrenDataTitle(child)}]`)
+        } catch (e) {
+          context.onProgress?.(
+            progress,
+            `还原数据失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
+          )
+          failedChildItems.push(child)
+        }
+        await apiSleep(context.abortSignal)
+        processedCount++
+      }
+
+      successItems.push({
+        ...onlyParent,
+        children: successChildItems,
+      } as P)
+      if (failedChildItems.length > 0) {
+        failedItems.push({
+          ...onlyParent,
+          children: failedChildItems,
+        } as P)
+      }
+    }
+
+    return {
+      successItems,
+      failedItems,
+    }
   }
 }

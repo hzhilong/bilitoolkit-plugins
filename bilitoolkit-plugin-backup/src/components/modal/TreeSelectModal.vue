@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="P extends TreeData<C>, C extends Data">
 import type { TreeData, Data } from '@/core/types/data-module'
 import { type TreeNodeDataRange, DataRangeTypeMap, type DataRangeType } from '@/core/types/data-range'
-import { ref, watch, computed, useTemplateRef } from 'vue'
+import { ref, watch, computed, useTemplateRef, toRaw } from 'vue'
 import { useLoadingData, showWarning, showError } from 'bilitoolkit-ui'
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { DataType } from '@/core/types/data-type'
@@ -103,7 +103,7 @@ const handleSubmit = async () => {
   }
 
   const result = []
-  for (const parent of parentList.value) {
+  for (const parent of toRaw(parentList.value)) {
     if (parent.__selected) {
       const config = parent.__childrenDataRange
       result.push({

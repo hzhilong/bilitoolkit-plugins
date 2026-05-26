@@ -10,15 +10,16 @@ import type {
   BackupNormalOptions,
 } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
-import { createAbortError } from '@ybgnb/utils'
+import { createAbortError, getErrorMessage } from '@ybgnb/utils'
 import { taskService } from '@/core/service/task'
-import { getBatchBackupData } from '@/core/utils/batch'
+import { getBatchBackupData, getBatchRestoreData } from '@/core/utils/batch'
 import { exportTxtFile } from '@/core/utils/export'
-import { getBackupDataByRange } from '@/core/utils/data-range'
+import { getBackupDataByRange, getRestoreDataByRange } from '@/core/utils/data-range'
 import { apiSleep } from '@/core/utils/sleep'
 import type { Task, TaskResult } from '@/core/types/task'
 import type { BatchProgress } from '@/core/types/batch'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
+import type { RestoreNormalOptions, RestoreBatchOptions, BaseRestoreResult } from '@/core/types/restore'
 
 /**
  * 模块基类
@@ -39,6 +40,8 @@ export abstract class DataModule<D extends Data = Data> {
    * @description 比如 '1个收藏夹，256个视频' 或者 '用户偏好设置'
    */
   abstract getDataTotalDesc(list: D[]): string
+  /** 获取数据标题 */
+  abstract getDataTitle(data: D): string
   /** 分页大小（备份时的数据接口分页策略，树形数据表示第二层的分页大小） */
   abstract getPageSize(): number
   /** 获取数据总条数 */
@@ -47,6 +50,9 @@ export abstract class DataModule<D extends Data = Data> {
   abstract fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<D>>
   /** 获取所有数据（单个数据要包装为数组） */
   abstract fetchAll(context: ExecuteContext): Promise<D[]>
+
+  /** 还原数据 */
+  abstract restoreData(context: ExecuteContext, data: D): Promise<void>
 
   /** 获取所有数据 */
   protected async baseFetchAll(context: ExecuteContext): Promise<D[]> {
@@ -122,17 +128,17 @@ export abstract class DataModule<D extends Data = Data> {
   protected async handleBackup(context: ExecuteContext, task: Task<'backup', D>): Promise<TaskResult<'backup', D>> {
     if (task.executeOptions.mode === 'batch') {
       // 分批模式
-      return await this.handleBatchBackup(task, context)
+      return await this.handleBatchBackup(context, task)
     } else {
       // 普通模式
-      return await this.handleNormalBackup(task, context)
+      return await this.handleNormalBackup(context, task)
     }
   }
 
   /**
    * 处理普通模式备份
    */
-  protected async handleNormalBackup(task: Task<'backup', D>, context: ExecuteContext) {
+  protected async handleNormalBackup(context: ExecuteContext, task: Task<'backup', D>) {
     const backupOptions = task.executeOptions as BackupNormalOptions
     // 获取备份数据
     const list = await getBackupDataByRange(this, backupOptions.dataRange, context)
@@ -148,7 +154,7 @@ export abstract class DataModule<D extends Data = Data> {
   /**
    * 处理分批模式备份
    */
-  protected async handleBatchBackup(task: Task<'backup', D>, context: ExecuteContext) {
+  protected async handleBatchBackup(context: ExecuteContext, task: Task<'backup', D>) {
     const backupOptions = task.executeOptions as BackupBatchOptions
     const { batchOptions } = backupOptions
     // 获取分批次处理的备份数据
@@ -202,5 +208,81 @@ export abstract class DataModule<D extends Data = Data> {
       }
     }
     return assets
+  }
+
+  protected async handleRestore(context: ExecuteContext, task: Task<'restore', D>): Promise<TaskResult<'restore', D>> {
+    const backedUpTask = await taskService.getById<'backup'>(task.executeOptions.backupTaskId)
+    context.onProgress?.(1, '获取数据中...')
+    if (task.executeOptions.mode === 'batch') {
+      // 分批模式
+      return await this.handleBatchRestore(context, task, backedUpTask)
+    } else {
+      // 普通模式
+      return await this.handleNormalRestore(context, task, backedUpTask)
+    }
+  }
+
+  protected async handleNormalRestore(
+    context: ExecuteContext,
+    task: Task<'restore', D>,
+    backedUpTask: Task<'backup', D>,
+  ): Promise<TaskResult<'restore', D>> {
+    const options = task.executeOptions as RestoreNormalOptions
+    // 获取选取的备份数据
+    const list = await getRestoreDataByRange(this, options.dataRange, context, backedUpTask)
+    const restoreResult = await this.baseRestoreData(context, list)
+    // 开始还原
+    return {
+      success: true,
+      msg: `已还原 ${this.getDataTotalDesc(list)}`,
+      ...restoreResult,
+    } as TaskResult<'restore', D>
+  }
+
+  protected async handleBatchRestore(
+    context: ExecuteContext,
+    task: Task<'restore', D>,
+    backedUpTask: Task<'backup', D>,
+  ): Promise<TaskResult<'restore', D>> {
+    const options = task.executeOptions as RestoreBatchOptions
+    const { batchOptions } = options
+    // 获取分批次处理的备份数据
+    const { list, batchProgress } = await getBatchRestoreData<D>(this, batchOptions, context, backedUpTask)
+    const restoreResult = await this.baseRestoreData(context, list)
+    return {
+      success: true,
+      msg: `批次 [${batchOptions.startBatch}/${batchProgress.totalBatchCount}] 已还原${this.getDataTotalDesc(list)}`,
+      batchProgress: batchProgress,
+      ...restoreResult,
+    } as TaskResult<'restore', D>
+  }
+
+  protected async baseRestoreData(context: ExecuteContext, list: D[]): Promise<BaseRestoreResult<D>> {
+    if (list.length === 0) {
+      context.onProgress?.(1, '读取的数据为空')
+      throw new Error('读取的数据为空')
+    }
+    const successItems: D[] = []
+    const failedItems: D[] = []
+    context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i]
+      const progress = Math.floor(((i + 1) * 100) / list.length)
+      try {
+        await this.restoreData(context, item)
+        successItems.push(item)
+        context.onProgress?.(progress, `还原数据成功 [${this.getDataTitle(item)}]`)
+      } catch (e) {
+        context.onProgress?.(progress, `还原数据失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`)
+        // TODO 失败次数过多直接结束？可配置，放在上下文
+        failedItems.push(item)
+      }
+      await apiSleep(context.abortSignal)
+    }
+    return {
+      successDataDesc: this.getDataTotalDesc(successItems),
+      failedDataDesc: failedItems.length > 0 ? this.getDataTotalDesc(failedItems) : '',
+      failedItems,
+    }
   }
 }

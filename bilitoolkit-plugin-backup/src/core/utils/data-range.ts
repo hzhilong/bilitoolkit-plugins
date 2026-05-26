@@ -3,11 +3,12 @@ import { type Data, type TreeData, isTreeData, isTreeDataModule } from '@/core/t
 import type { DataRange, DataRangeType, TreeDataRange, PageDataRange } from '@/core/types/data-range'
 import type { BackupDataRangeType, BackupAsset } from '@/core/types/backup'
 import { apiSleep } from '@/core/utils/sleep'
-import type { PageDataWithNextParams } from '@ybgnb/bili-api'
+import { type PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { Task } from '@/core/types/task'
 import { readJsonFile } from '@/core/utils/file'
 import type { DataModule } from '@/core/modules/data-module'
 import type { TreeDataModule } from '@/core/modules/tree-data-module'
+import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 
 /**
  * 通过分页范围获取数据
@@ -74,18 +75,14 @@ async function getBackupDataByTreePageRange<P extends TreeData<C>, C extends Dat
         parent,
       )
     },
-    dataModule.getParentNodeTitle(parent),
+    dataModule.getDataTitle(parent),
   )
 }
 
 /**
  * 通过范围获取备份数据
  */
-export const getBackupDataByRange = async <
-  D extends Data = Data,
-  T extends DataRangeType = BackupDataRangeType,
-  P extends TreeData<Data> = TreeData<Data>,
->(
+export const getBackupDataByRange = async <D extends Data = Data, T extends DataRangeType = BackupDataRangeType>(
   dataModule: DataModule<D>,
   dataRange: DataRange<T>,
   context: ExecuteContext,
@@ -101,16 +98,16 @@ export const getBackupDataByRange = async <
     }
   } else {
     // 2. 树形数据的模块
-    const treeDataModule = dataModule as unknown as TreeDataModule<P, D>
+    const treeDataModule = dataModule as unknown as TreeDataModule
 
     if (dataRange.type === 'all') {
-      const parentList: P[] = await treeDataModule.fetchAll(context)
+      const parentList: TreeData<Data>[] = await treeDataModule.fetchAll(context)
       for (let i = 0; i < parentList.length; i++) {
         const parent = parentList[i]
         parent.children = await treeDataModule.fetchChildrenAll(context, parent)
         parent.childrenSize = parent.children.length
       }
-      return parentList as unknown as D[]
+      return parentList as D[]
     }
 
     if (dataRange.type === 'page') {
@@ -150,7 +147,7 @@ export const getBackupDataByRange = async <
         parent.childrenSize = parent.children.length
       }
 
-      return selectParentList as unknown as D[]
+      return selectParentList as D[]
     }
   }
 
@@ -199,4 +196,56 @@ export const getDataByBackupTask = async <D extends Data = Data>(
   }
 
   return list
+}
+
+/**
+ * 通过范围获取需要还原的数据
+ */
+export const getRestoreDataByRange = async <D extends Data = Data, T extends DataRangeType = BackupDataRangeType>(
+  dataModule: DataModule<D>,
+  dataRange: DataRange<T>,
+  context: ExecuteContext,
+  backedUpTask: Task<'backup', D>,
+): Promise<D[]> => {
+  const allData = await getDataByBackupTask(backedUpTask)
+  const pageSize = RESTORE_PAGE_SIZE
+
+  if (dataRange.type === 'all') {
+    return allData
+  }
+
+  if (!isTreeDataModule(dataModule)) {
+    if (dataRange.type === 'page') {
+      const [startPage, endPage] = dataRange.ranges
+      return allData.slice((startPage - 1) * pageSize, endPage * pageSize)
+    }
+  } else {
+    if (dataRange.type === 'tree') {
+      if (!validateTreeDataRange(dataRange)) {
+        throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围选择参数无效`)
+      }
+
+      const allTreeData = allData as TreeData<Data>[]
+      const { nodes } = dataRange
+      const parentIds = new Map(nodes.map((node) => [node._id, node.childrenDataRange]))
+
+      const result: TreeData<Data>[] = []
+      for (const parent of allTreeData) {
+        if (parentIds.has(parent._id)) {
+          const childrenRange = parentIds.get(parent._id)!
+          if (childrenRange.type === 'all') {
+            result.push(parent)
+          } else if (childrenRange.type === 'page') {
+            const [startPage, endPage] = childrenRange.ranges
+            parent.children = parent.children.slice((startPage - 1) * pageSize, endPage * pageSize)
+            parent.childrenSize = parent.children.length
+            result.push(parent)
+          }
+        }
+      }
+      return result as D[]
+    }
+  }
+
+  throw new Error(`内部错误，[${dataModule.dataTypeName}]暂不支持该还原范围类型[${dataRange.type}]`)
 }

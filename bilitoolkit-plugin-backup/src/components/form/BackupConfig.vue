@@ -110,7 +110,7 @@ defineExpose({
           <el-form-item label="分页范围" prop="dataRange.ranges" v-if="options.dataRange.ranges">
             <el-col :span="11"
               ><el-input
-                v-model="options.dataRange.ranges[0]"
+                v-model.number="options.dataRange.ranges[0]"
                 type="number"
                 placeholder="请输入开始页面"
                 :min="1"
@@ -121,7 +121,7 @@ defineExpose({
             </el-col>
             <el-col :span="11"
               ><el-input
-                v-model="options.dataRange.ranges[1]"
+                v-model.number="options.dataRange.ranges[1]"
                 type="number"
                 placeholder="请输入结束页面"
                 :min="1"

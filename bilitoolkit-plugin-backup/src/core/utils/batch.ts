@@ -4,6 +4,9 @@ import type { ExecuteContext } from '@/core/types/execute'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
 import type { DataModule } from '@/core/modules/data-module'
+import type { Task } from '@/core/types/task'
+import { isTreeDataModule } from '@/core/types/data-module'
+import { getDataByBackupTask } from '@/core/utils/data-range'
 
 /**
  * 获取分批次处理的备份数据
@@ -99,6 +102,50 @@ export const getBatchBackupData = async <D extends Data = Data>(
     batchProgress.remainingDataCount = Math.max(total - startBatch * actualBatchSize, 0)
     batchProgress.remainingBatchCount = Math.ceil(batchProgress.remainingDataCount / batchSize)
     batchProgress.totalBatchCount = Math.ceil(total / actualBatchSize)
+  }
+
+  return {
+    list,
+    batchProgress,
+  }
+}
+
+/**
+ * 获取分批次处理的还原数据
+ */
+export const getBatchRestoreData = async <D extends Data = Data>(
+  dataModule: DataModule<D>,
+  batchOptions: BatchOptions,
+  context: ExecuteContext,
+  backedUpTask: Task<'backup', D>,
+): Promise<{
+  batchProgress: BatchProgress
+  list: D[]
+}> => {
+  if (!isBatchable(dataModule) || isTreeDataModule(dataModule)) {
+    throw new Error(`内部错误，[${dataModule.dataType}]不支持分批处理`)
+  }
+
+  // 这里的分批处理大小不能直接赋值为分页大小
+  // 批次配置：batchSize（每批目标条数），startBatch（起始批次编号，从1开始）
+  const { batchSize, startBatch } = batchOptions
+
+  const allData = await getDataByBackupTask(backedUpTask)
+
+  const total = allData.length
+  const list = allData.slice((startBatch - 1) * batchSize, startBatch * batchSize)
+  const remainingDataCount = Math.max(total - startBatch * batchSize, 0)
+  const remainingBatchCount = Math.ceil(remainingDataCount / batchSize)
+  const totalBatchCount = Math.ceil(total / batchSize)
+
+  const batchProgress: BatchProgress = {
+    isFinished: remainingDataCount <= 0,
+    nextBatch: startBatch + 1,
+    nextBatchPageParams: {},
+    nextBatchPageNum: startBatch + 1,
+    remainingDataCount,
+    remainingBatchCount,
+    totalBatchCount,
   }
 
   return {

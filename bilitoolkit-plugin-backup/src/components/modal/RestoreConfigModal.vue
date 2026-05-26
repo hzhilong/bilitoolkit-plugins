@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, useTemplateRef, reactive } from 'vue'
+import { watch, useTemplateRef, ref, toRaw } from 'vue'
 import { showError } from 'bilitoolkit-ui'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
 import { getDefaultExecuteOptions } from '@/utils/default-config'
@@ -15,14 +15,14 @@ const props = defineProps<{
 }>()
 
 const visible = defineModel({ required: true, type: Boolean })
-const items: Pick<TaskGroupItem<'restore'>, 'dataType' | 'executeOptions'>[] = reactive([])
+const items = ref<Pick<TaskGroupItem<'restore'>, 'dataType' | 'executeOptions'>[]>([])
 
 const init = async () => {
   assertUserLoggedIn(props.user)
   // 设置默认的执行参数
-  items.splice(
+  items.value.splice(
     0,
-    items.length,
+    items.value.length,
     ...props.tasks.map((task) => {
       return {
         dataType: task.dataType,
@@ -68,7 +68,7 @@ const handleSubmit = async () => {
   emit('submit', {
     operationType: 'restore',
     user: props.user,
-    items: items,
+    items: toRaw(items.value),
   })
 }
 </script>

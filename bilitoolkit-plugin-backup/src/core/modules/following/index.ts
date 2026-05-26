@@ -34,8 +34,12 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
     return `${list.length} 关注分组 · ${list.reduce((t, i) => t + (i.childrenSize ?? 0), 0)} 关注用户`
   }
 
-  getParentNodeTitle(parent: FollowTag) {
-    return `关注分组 [${parent.name}]`
+  getDataTitle(data: FollowTag): string {
+    return `关注分组: ${data.name}`
+  }
+
+  getChildrenDataTitle(child: Following): string {
+    return `关注用户: ${child.name}`
   }
 
   private async getFollowTags(clientId: string) {
@@ -72,5 +76,14 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
 
   fetchChildrenAll(context: ExecuteContext, tag: FollowTag): Promise<Following[]> {
     return this.baseFetchChildrenAll(context, tag)
+  }
+
+  restoreData(context: ExecuteContext, data: FollowTag): Promise<void> {
+    // TODO 还原关注前，查看空间、信息等操作的防风控->可配置
+    throw new Error('Method not implemented.')
+  }
+
+  restoreChildrenData(context: ExecuteContext, children: any): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 }

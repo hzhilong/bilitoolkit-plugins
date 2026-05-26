@@ -36,17 +36,24 @@ export type RestoreOptions = RestoreBatchOptions | RestoreNormalOptions
  */
 export interface RestoredData<D extends Data = Data> {
   // 原数据
-  original: D
+  original: D[]
   // 成功还原的数据
-  restored: D
+  restored: D[]
+}
+
+export interface BaseRestoreResult<D extends Data = Data> {
+  /** 已还原的数据描述 */
+  successDataDesc: string
+  /** 还原失败的数据描述 */
+  failedDataDesc: string
+  /** 还原失败的数据 */
+  failedItems: D[]
 }
 
 /**
  * 还原结果
  */
-export type RestoreResult<D extends Data = Data> = {
-  /** 已还原的数据 */
-  restoredData?: RestoredData<D>
+export interface RestoreResult<D extends Data = Data> extends BaseRestoreResult<D> {
   /** 分批处理的进度 */
   batchProgress?: BatchProgress
 }

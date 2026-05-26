@@ -16,6 +16,14 @@ export class ToViewModule extends DataModule<ToViewItem> {
   backupDataRangeTypes: BackupDataRangeType[] = ['all']
   exportTargets: ExportTarget[] = ['json']
 
+  getDataTotalDesc(list: ToViewItem[]): string {
+    return `${list.length} 条稍后再看`
+  }
+
+  getDataTitle(data: ToViewItem): string {
+    return data.title
+  }
+
   async fetchTotal(context: ExecuteContext): Promise<number> {
     return (await toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.getTotal)) ?? 0
   }
@@ -28,11 +36,10 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.fetchPageWithNextParams, params)
   }
 
-  getDataTotalDesc(list: ToViewItem[]): string {
-    return `${list.length} 条稍后再看`
-  }
-
   fetchAll(context: ExecuteContext): Promise<ToViewItem[]> {
     return this.baseFetchAll(context)
+  }
+  restoreData(context: ExecuteContext, data: ToViewItem): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 }

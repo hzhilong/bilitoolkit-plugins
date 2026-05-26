@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, useTemplateRef, reactive } from 'vue'
+import { watch, useTemplateRef, ref, toRaw } from 'vue'
 import { showError } from 'bilitoolkit-ui'
 import type { DataType } from '@/core/types/data-type'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
@@ -15,17 +15,17 @@ const props = defineProps<{
   user: User
 }>()
 const visible = defineModel({ required: true, type: Boolean })
-const items: Pick<TaskGroupItem<'backup'>, 'dataType' | 'executeOptions'>[] = reactive([])
+const items = ref<Pick<TaskGroupItem<'backup'>, 'dataType' | 'executeOptions'>[]>([])
 const itemRefs = useTemplateRef<ComponentExposed<typeof BackupConfig>[]>('itemRefs')
 const resetAllExecuteOptions = () => {
   if (!props.user) {
-    items.splice(0, items.length)
+    items.value.splice(0, items.value.length)
   } else {
     // 备份统一文件根目录
     const backupPath = getBackupRootPath(props.user)
-    items.splice(
+    items.value.splice(
       0,
-      items.length,
+      items.value.length,
       ...props.dataTypes.map((dataType) => {
         return {
           dataType: dataType,
@@ -71,7 +71,7 @@ const handleSubmit = async () => {
   emit('submit', {
     operationType: 'backup',
     user: props.user,
-    items: items,
+    items: toRaw(items.value),
   })
 }
 </script>
