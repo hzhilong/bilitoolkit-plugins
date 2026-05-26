@@ -1,17 +1,20 @@
 <script setup lang="ts" generic="P extends TreeData<C>, C extends Data">
 import type { TreeData, Data } from '@/core/types/data-module'
-import { type TreeNodeDataRange, DataRangeTypeMap } from '@/core/types/data-range'
+import { type TreeNodeDataRange, DataRangeTypeMap, type DataRangeType } from '@/core/types/data-range'
 import { ref, watch, computed, useTemplateRef } from 'vue'
-import { useLoadingData, showWarning } from 'bilitoolkit-ui'
+import { useLoadingData, showWarning, showError } from 'bilitoolkit-ui'
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { DataType } from '@/core/types/data-type'
 import { useTreeDataModule } from '@/composables/useDataModule'
-import { useUser } from '@/composables/useUser'
 import { biliClientStore } from '@/stores/bili-client'
+import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
+import type { User } from '@/core/types/execute'
 
 const props = defineProps<{
+  user: User
   operationType: OperationType
   dataType: DataType
+  backedUpData?: P[]
 }>()
 type ParentNode = P & {
   __selected: boolean
@@ -20,28 +23,42 @@ type ParentNode = P & {
     ranges: [number, number]
   }
 }
+
 const visible = defineModel<boolean>('visible', { required: true })
 const defaultNodes = defineModel<TreeNodeDataRange[]>('nodes', { required: true })
 
 const { loading, loadingData } = useLoadingData()
 const { treeDataModule, treeTopMeta } = useTreeDataModule<P, C>(() => props.dataType)
-const pageSize = computed(() => treeDataModule.value.getPageSize())
+const pageSize = computed(() => {
+  return props.operationType === 'backup' ? treeDataModule.value.getPageSize() : RESTORE_PAGE_SIZE
+})
 const title = computed(() => {
   return `请选择需要${OperationTypeMap[props.operationType]}的${treeTopMeta.value.name}`
 })
-const childrenRangeOptions = computed(() => treeDataModule.value.childrenRangeOptions)
-const { user, targetUser } = useUser()
+const childrenRangeOptions = computed<DataRangeType[]>(() => {
+  return props.operationType === 'backup' ? treeDataModule.value.childrenRangeOptions : ['all', 'page']
+})
 const parentList = ref<ParentNode[]>([])
 const formRef = useTemplateRef<InstanceType<typeof ElForm>>('formRef')
 
 const init = loadingData(async () => {
-  if (!targetUser.value) throw new Error(`用户未登录`)
-  parentList.value = (
-    await treeDataModule.value.fetchAll({
-      user: targetUser.value,
-      clientId: await biliClientStore.get(user.value),
+  let list: P[] = []
+  if (props.operationType === 'backup') {
+    list = await treeDataModule.value.fetchAll({
+      user: props.user,
+      clientId: await biliClientStore.get(props.user),
     })
-  ).map((parent) => {
+  } else {
+    if (!props.backedUpData) {
+      visible.value = false
+      showError(`内部错误，不存在备份数据`)
+      return
+    }
+
+    list = props.backedUpData
+  }
+
+  parentList.value = list.map((parent) => {
     const selectNode = defaultNodes.value.find((n) => n._id === parent._id)
     return {
       ...parent,
@@ -163,7 +180,7 @@ const handleChildrenChange = (index: number) => {
             <div class="">
               <el-checkbox class="item-checkbox" v-model="p.__selected" @change="handleItemSelect(index)">
                 <span class="item-title">{{ p._name }}</span>
-                <span class="item-count">{{ p.childrenCount != null ? p.childrenCount : '' }}</span>
+                <span class="item-count">{{ p.childrenTotal != null ? p.childrenTotal : '' }}</span>
               </el-checkbox>
             </div>
             <div v-if="p.__selected" class="children-config">
@@ -190,14 +207,14 @@ const handleChildrenChange = (index: number) => {
                   type="number"
                   v-model.number="p.__childrenDataRange.ranges[0]"
                   :min="1"
-                  :max="p.childrenCount ? Math.ceil(p.childrenCount / pageSize) : Infinity"
+                  :max="p.childrenTotal ? Math.ceil(p.childrenTotal / pageSize) : Infinity"
                 ></el-input>
                 <span>-</span>
                 <el-input
                   type="number"
                   v-model.number="p.__childrenDataRange.ranges[1]"
                   :min="1"
-                  :max="p.childrenCount ? Math.ceil(p.childrenCount / pageSize) : Infinity"
+                  :max="p.childrenTotal ? Math.ceil(p.childrenTotal / pageSize) : Infinity"
                 ></el-input>
                 <span class="page-size">每页{{ pageSize }}</span>
               </el-form-item>

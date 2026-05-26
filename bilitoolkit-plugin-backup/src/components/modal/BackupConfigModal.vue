@@ -1,44 +1,37 @@
-<script setup lang="ts" generic="O extends OperationType = OperationType">
+<script setup lang="ts">
 import { watch, useTemplateRef, reactive } from 'vue'
 import { showError } from 'bilitoolkit-ui'
 import type { DataType } from '@/core/types/data-type'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
 import { getDefaultExecuteOptions } from '@/utils/default-config'
-import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { ComponentExposed } from 'vue-component-type-helpers'
-import ExecuteConfig from '@/components/form/ExecuteConfig.vue'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
-import { toTargetUser } from '@/core/utils/convert'
 import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import { getBackupRootPath } from '@/core/utils/file'
+import BackupConfig from '@/components/form/BackupConfig.vue'
+import type { User } from '@/core/types/execute'
 
 const props = defineProps<{
-  operationType: O
   dataTypes: DataType[]
-  user: UserInfoWithCookie
+  user: User
 }>()
 const visible = defineModel({ required: true, type: Boolean })
-const items: Pick<TaskGroupItem<O>, 'dataType' | 'executeOptions'>[] = reactive([])
-const itemRefs = useTemplateRef<ComponentExposed<typeof ExecuteConfig<O>>[]>('itemRefs')
-const resetExecuteOptions = () => {
+const items: Pick<TaskGroupItem<'backup'>, 'dataType' | 'executeOptions'>[] = reactive([])
+const itemRefs = useTemplateRef<ComponentExposed<typeof BackupConfig>[]>('itemRefs')
+const resetAllExecuteOptions = () => {
   if (!props.user) {
     items.splice(0, items.length)
   } else {
-    // 如果是备份的话，统一文件根目录
-    const backupPath = props.operationType === 'backup' ? getBackupRootPath(toTargetUser(props.user)) : undefined
+    // 备份统一文件根目录
+    const backupPath = getBackupRootPath(props.user)
     items.splice(
       0,
       items.length,
       ...props.dataTypes.map((dataType) => {
         return {
           dataType: dataType,
-          executeOptions: getDefaultExecuteOptions<O, 'normal'>(
-            toTargetUser(props.user),
-            props.operationType,
-            dataType,
-            'normal',
+          executeOptions: getDefaultExecuteOptions<'backup', 'normal'>(props.user, 'backup', dataType, 'normal', {
             backupPath,
-          ),
+          }),
         }
       }),
     )
@@ -55,13 +48,13 @@ watch(visible, (newVal) => {
       visible.value = false
       return
     }
-    resetExecuteOptions()
+    resetAllExecuteOptions()
   }
 })
 
 const emit = defineEmits<{
   (e: 'cancel'): void
-  (e: 'submit', taskGroup: CreateTaskGroupOptions<O>): void
+  (e: 'submit', taskGroup: CreateTaskGroupOptions<'backup'>): void
 }>()
 
 const handleCancel = () => {
@@ -74,8 +67,9 @@ const handleSubmit = async () => {
   for (const itemRef of itemRefs.value!) {
     if (!(await itemRef.validate())) return
   }
+  visible.value = false
   emit('submit', {
-    operationType: props.operationType,
+    operationType: 'backup',
     user: props.user,
     items: items,
   })
@@ -85,7 +79,7 @@ const handleSubmit = async () => {
 <template>
   <div class="execute-config-modal">
     <el-dialog
-      :title="`${OperationTypeMap[operationType]}任务配置`"
+      title="备份任务配置"
       v-model="visible"
       width="76%"
       :close-on-click-modal="false"
@@ -94,12 +88,11 @@ const handleSubmit = async () => {
       align-center
     >
       <div class="content" v-if="user && items.length > 0">
-        <ExecuteConfig
+        <BackupConfig
           ref="itemRefs"
           v-for="item in items"
           :key="item.dataType"
-          :user="toTargetUser(user)"
-          :operation-type="operationType"
+          :user="user"
           :data-type="item.dataType"
           v-model="item.executeOptions"
         />
@@ -116,22 +109,5 @@ const handleSubmit = async () => {
 </template>
 
 <style scoped lang="scss">
-.execute-config-modal ::v-deep(.el-dialog) {
-  max-width: 600px;
-  min-width: 400px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  .el-dialog__body {
-    flex: 1;
-    overflow-y: auto;
-  }
-}
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 10px 8px;
-}
+@use '@/assets/scss/execute-config-modal';
 </style>

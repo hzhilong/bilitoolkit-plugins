@@ -1,7 +1,7 @@
-import type { ExecuteOptions, TargetUser } from '@/core/types/execute'
+import type { ExecuteOptions, User } from '@/core/types/execute'
 import type { OperationType } from '@/core/types/operation'
 import { type DataType } from '@/core/types/data-type'
-import type { TaskType } from '@/core/types/task'
+import type { TaskType, TaskId } from '@/core/types/task'
 import type { BackupNormalOptions, BackupBatchOptions } from '@/core/types/backup'
 import type { DataRange } from '@/core/types/data-range'
 import { getBackupRootPath } from '@/core/utils/file'
@@ -23,13 +23,6 @@ export function defaultPageDataRange(): DataRange<'page'> {
   }
 }
 
-export function defaultListDataRange(): DataRange<'list'> {
-  return {
-    type: 'list',
-    ranges: [],
-  }
-}
-
 export function defaultTreeDataRange(): DataRange<'tree'> {
   return {
     type: 'tree',
@@ -38,10 +31,10 @@ export function defaultTreeDataRange(): DataRange<'tree'> {
 }
 
 export const getDefaultBackupOptions = (
-  user: TargetUser,
+  user: User,
   dataType: DataType,
   taskType: TaskType,
-  backupPath?: string,
+  backupPath: string,
 ): ExecuteOptions<'backup'> => {
   const module = registeredModulesMap[dataType]
   if (taskType === 'normal') {
@@ -74,17 +67,18 @@ export const getDefaultBackupOptions = (
 }
 
 export const getDefaultRestoreOptions = (
-  _user: TargetUser,
+  _user: User,
   dataType: DataType,
   taskType: TaskType,
+  backupTaskId: TaskId,
 ): ExecuteOptions<'restore'> => {
   const module = registeredModulesMap[dataType]
   if (taskType === 'normal') {
     return {
+      backupTaskId: backupTaskId,
       operationType: 'restore',
       mode: 'normal',
       dataRange: defaultAllDataRange(),
-      backupAssets: [],
     } satisfies RestoreNormalOptions
   }
   if (taskType === 'batch') {
@@ -92,6 +86,7 @@ export const getDefaultRestoreOptions = (
       throw new Error(`内部错误，[${module.dataTypeName}]不支持分批处理`)
     }
     return {
+      backupTaskId: backupTaskId,
       operationType: 'restore',
       mode: 'batch',
       batchOptions: {
@@ -100,17 +95,12 @@ export const getDefaultRestoreOptions = (
         pageParams: {},
         pageNum: 1,
       },
-      backupAssets: [],
     } satisfies RestoreBatchOptions
   }
   throw new Error(`内部错误，存在未被支持的任务模式[${taskType}]`)
 }
 
-export const getDefaultClearOptions = (
-  user: TargetUser,
-  dataType: DataType,
-  taskType: TaskType,
-): ExecuteOptions<'clear'> => {
+export const getDefaultClearOptions = (user: User, dataType: DataType, taskType: TaskType): ExecuteOptions<'clear'> => {
   if (taskType === 'normal') {
     return {
       operationType: 'clear',
@@ -124,18 +114,38 @@ export const getDefaultClearOptions = (
   throw new Error(`内部错误，存在未被支持的任务模式[${taskType}]`)
 }
 
+/**
+ * 额外的执行配置
+ */
+export type ExtraExecuteOptions<O extends OperationType = OperationType> = [O] extends ['backup']
+  ? {
+      /** 备份时需要指定备份文件根路径 */
+      backupPath: string
+      /** 还原时需要指定备份任务ID */
+      backupTaskId?: never
+    }
+  : [O] extends ['restore']
+    ? {
+        backupPath?: never
+        backupTaskId: TaskId
+      }
+    : {
+        backupPath?: never
+        backupTaskId?: never
+      }
+
 export const getDefaultExecuteOptions = <O extends OperationType = OperationType, T extends TaskType = TaskType>(
-  user: TargetUser,
+  user: User,
   operationType: O,
   dataType: DataType,
   taskType: T,
-  backupPath?: string,
+  options: ExtraExecuteOptions<O>,
 ): ExecuteOptions<O> => {
   switch (operationType) {
     case 'backup':
-      return getDefaultBackupOptions(user, dataType, taskType, backupPath) as ExecuteOptions<O>
+      return getDefaultBackupOptions(user, dataType, taskType, options.backupPath!) as ExecuteOptions<O>
     case 'restore':
-      return getDefaultRestoreOptions(user, dataType, taskType) as ExecuteOptions<O>
+      return getDefaultRestoreOptions(user, dataType, taskType, options.backupTaskId!) as ExecuteOptions<O>
     case 'clear':
       return getDefaultClearOptions(user, dataType, taskType) as ExecuteOptions<O>
   }

@@ -1,14 +1,11 @@
-import {
-  type DataModule,
-  type TreeDataModule,
-  isTreeDataModule,
-  type TreeData,
-  type Data,
-} from '@/core/types/data-module'
+import { type TreeData, type Data, isTreeDataModule } from '@/core/types/data-module'
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import { type MaybeRefOrGetter, computed, toValue } from 'vue'
 import { registeredModulesMap } from '@/core/modules/register'
 import { DATA_TYPE_COLORS } from '@/common/config'
+import { isBatchable, type BatchableModule } from '@/core/types/batch'
+import type { DataModule } from '@/core/modules/data-module'
+import type { TreeDataModule } from '@/core/modules/tree-data-module'
 
 export const useDataModule = (dataType: MaybeRefOrGetter<DataType>) => {
   const dataModule = computed<DataModule>(() => {
@@ -23,18 +20,40 @@ export const useDataModule = (dataType: MaybeRefOrGetter<DataType>) => {
   const dataModuleColor = computed(() => {
     return DATA_TYPE_COLORS[dataModule.value.dataType]
   })
-  const dataModuleBackupDesc = computed(() => {
+
+  const backupDesc = computed(() => {
     return DataTypeMap[dataModule.value.dataType].backupDesc
   })
+
   const isTreeModule = computed(() => {
     return isTreeDataModule(dataModule.value)
   })
+
+  const isBatchModule = computed(() => {
+    return isBatchable(dataModule.value)
+  })
+
+  const exportTargets = computed(() => {
+    return registeredModulesMap[dataModule.value.dataType].exportTargets
+  })
+
+  const batchSizes = computed(() => {
+    if (isBatchModule.value) {
+      return (dataModule.value as unknown as BatchableModule).batchSizes
+    } else {
+      return []
+    }
+  })
+
   return {
     dataModule,
     dataModuleName,
     dataModuleColor,
-    dataModuleBackupDesc,
+    backupDesc,
+    exportTargets,
     isTreeModule,
+    isBatchModule,
+    batchSizes,
   }
 }
 
@@ -46,27 +65,19 @@ export const useTreeDataModule = <P extends TreeData<C>, C extends Data>(dataTyp
     return module as unknown as TreeDataModule<P, C>
   })
 
-  const dataModuleName = computed(() => {
-    return treeDataModule.value.dataTypeName
-  })
+  const { dataModule: _, ...bastRest } = useDataModule(dataType)
 
-  const dataModuleColor = computed(() => {
-    return DATA_TYPE_COLORS[treeDataModule.value.dataType]
-  })
-  const dataModuleBackupDesc = computed(() => {
-    return DataTypeMap[treeDataModule.value.dataType].backupDesc
-  })
   const treeRangeMetas = computed(() => {
     return treeDataModule.value.treeRangeMetas
   })
+
   const treeTopMeta = computed(() => {
     return treeRangeMetas.value[0]
   })
+
   return {
+    ...bastRest,
     treeDataModule,
-    dataModuleName,
-    dataModuleColor,
-    dataModuleBackupDesc,
     treeRangeMetas,
     treeTopMeta,
   }

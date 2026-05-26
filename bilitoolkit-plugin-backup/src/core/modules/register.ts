@@ -1,5 +1,5 @@
+import { DataModule } from '@/core/modules/data-module'
 import { ToViewModule } from '@/core/modules/toview'
-import type { DataModule } from '@/core/types/data-module'
 import type { DataType } from '@/core/types/data-type'
 import { FollowingModule } from '@/core/modules/following'
 

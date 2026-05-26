@@ -2,12 +2,11 @@ import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { TaskGroupItem, CreateTaskGroupOptions, TaskGroupId } from '@/core/types/task-group'
 import { taskService } from '@/core/service/task'
 import { toolkitApi } from 'bilitoolkit-ui'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import { inArray } from '@/core/utils/array'
 import type { Task } from '@/core/types/task'
 import { executeTask } from '@/core/task/task-handle'
 import { registeredModulesMap } from '@/core/modules/register'
-import type { ExecuteContext, GroupExecuteContext } from '@/core/types/execute'
+import type { ExecuteContext, GroupExecuteContext, User } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import { taskGroupService } from '@/core/service/task-group'
 import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError, CommonError } from '@ybgnb/utils'
@@ -21,10 +20,7 @@ export const createTaskGroup = async <O extends OperationType = OperationType>(o
   for (const { executeOptions, dataType } of options.items) {
     const { id } = await taskService.create({
       type: executeOptions.mode === 'batch' ? 'batch' : 'normal',
-      user: {
-        uid: options.user.mid,
-        name: options.user.name,
-      },
+      user: options.user,
       executeOptions: executeOptions,
       operationType: options.operationType,
       dataType: dataType,
@@ -44,7 +40,7 @@ export const createTaskGroup = async <O extends OperationType = OperationType>(o
 /**
  * 创建 bili-api 客户端
  */
-const createBiliClient = async (user: UserInfoWithCookie) => {
+const createBiliClient = async (user: User) => {
   const clientConfig = await toolkitApi.bili.createBiliClient({
     context: {
       userCookie: user.userCookie,
@@ -99,10 +95,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       const clientId = await createBiliClient(taskGroup.user)
 
       const context: ExecuteContext = {
-        user: {
-          uid: taskGroup.user.mid,
-          name: taskGroup.user.name,
-        },
+        user: taskGroup.user,
         clientId: clientId,
         abortSignal: groupContext.abortSignal,
       }

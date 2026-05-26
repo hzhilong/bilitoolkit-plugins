@@ -1,8 +1,7 @@
 import type { OperationType } from '@/core/types/operation'
 import type { DataType } from '@/core/types/data-type'
-import type { ExecuteOptions } from '@/core/types/execute'
+import type { ExecuteOptions, User } from '@/core/types/execute'
 import type { TaskId } from '@/core/types/task'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import type { MaxLengthArray } from '@ybgnb/utils'
 
 /**
@@ -41,7 +40,7 @@ export interface TaskGroup<O extends OperationType = OperationType> {
   /** 操作类型 */
   operationType: O
   /** 执行目标用户 */
-  user: UserInfoWithCookie
+  user: User
   /** 任务组状态 */
   status: TaskGroupStatus
   /** 任务进度 */
@@ -90,4 +89,5 @@ export type CreateTaskGroup<O extends OperationType = OperationType> = Pick<
 export type TaskGroupFilters = Partial<Pick<TaskGroup, 'operationType' | 'status'>> & {
   /** 插件时间 */
   createdAt?: MaxLengthArray<number, 2>
+  statusArr?: TaskGroupStatus[]
 }

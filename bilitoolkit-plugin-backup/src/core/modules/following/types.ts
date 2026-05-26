@@ -12,7 +12,8 @@ export const toFollowTags = (relationTags: RelationTag[]): FollowTag[] => {
         _id: String(tag.tagid),
         _name: tag.name,
         children: [],
-        childrenCount: tag.count,
+        childrenSize: 0,
+        childrenTotal: tag.count,
       }) satisfies FollowTag,
   )
 }

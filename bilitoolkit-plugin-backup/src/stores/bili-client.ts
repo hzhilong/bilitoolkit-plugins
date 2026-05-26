@@ -1,12 +1,12 @@
 import { toolkitApi } from 'bilitoolkit-ui'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
+import type { User } from '@/core/types/execute'
 
 const allClient = new Map<number, string>()
 /**
  * biliClient 的存储实例
  */
 export const biliClientStore = {
-  get: async (user?: UserInfoWithCookie | null) => {
+  get: async (user?: User | null) => {
     if (!user || !user.mid) throw new Error('用户未登录')
 
     if (allClient.has(user.mid)) return allClient.get(user.mid)!

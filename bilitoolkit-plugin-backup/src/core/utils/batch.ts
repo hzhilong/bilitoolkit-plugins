@@ -1,8 +1,9 @@
-import type { DataModule, Data } from '@/core/types/data-module'
+import type { Data } from '@/core/types/data-module'
 import { type BatchOptions, isBatchable, type BatchProgress } from '@/core/types/batch'
 import type { ExecuteContext } from '@/core/types/execute'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
+import type { DataModule } from '@/core/modules/data-module'
 
 /**
  * 获取分批次处理的备份数据

@@ -1,4 +1,4 @@
-import type { DataModule, FetchTotal, FetchPage, FetchAll, Data } from '@/core/types/data-module'
+import type { Data, FetchPageParams } from '@/core/types/data-module'
 import type { DataType } from '@/core/types/data-type'
 import { type OperationType } from '@/core/types/operation'
 import type {
@@ -18,11 +18,12 @@ import { getBackupDataByRange } from '@/core/utils/data-range'
 import { apiSleep } from '@/core/utils/sleep'
 import type { Task, TaskResult } from '@/core/types/task'
 import type { BatchProgress } from '@/core/types/batch'
+import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 
 /**
  * 模块基类
  */
-export abstract class BaseModule<D extends Data> implements DataModule<D> {
+export abstract class DataModule<D extends Data = Data> {
   /** 数据类型 */
   abstract dataType: DataType
   /** 数据类型名称 */
@@ -33,23 +34,22 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
   abstract backupDataRangeTypes: BackupDataRangeType[]
   /** 备份支持的导出目标 */
   abstract exportTargets: ExportTarget[]
-  /** 分页大小（备份时的数据接口分页策略，树形数据表示第二层的分页大小） */
-  abstract getPageSize: () => number
-  /** 获取数据总条数 */
-  fetchTotal?: FetchTotal
-  /** 获取分页数据（单个数据要包装为数组） */
-  abstract fetchPage: FetchPage<D>
-  /** 获取所有数据（单个数据要包装为数组） */
-  abstract fetchAll: FetchAll<D>
-
   /**
    * 获取数据总数的描述信息（这里不方便统一，因为存在多层级数据/单个数据）
    * @description 比如 '1个收藏夹，256个视频' 或者 '用户偏好设置'
    */
   abstract getDataTotalDesc(list: D[]): string
+  /** 分页大小（备份时的数据接口分页策略，树形数据表示第二层的分页大小） */
+  abstract getPageSize(): number
+  /** 获取数据总条数 */
+  fetchTotal?(context: ExecuteContext): Promise<number>
+  /** 获取分页数据（单个数据要包装为数组） */
+  abstract fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<D>>
+  /** 获取所有数据（单个数据要包装为数组） */
+  abstract fetchAll(context: ExecuteContext): Promise<D[]>
 
   /** 获取所有数据 */
-  protected baseFetchAll = async (context: ExecuteContext): Promise<D[]> => {
+  protected async baseFetchAll(context: ExecuteContext): Promise<D[]> {
     const onProgress = async (progress?: number, msg?: string) => {
       if (context.onProgress) {
         await context.onProgress(progress, msg)
@@ -106,10 +106,10 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
    * 子类需要实现的具体执行操作
    * @protected
    */
-  public executeTask = async <O extends OperationType = OperationType>(
+  public async executeTask<O extends OperationType = OperationType>(
     context: ExecuteContext,
     task: Task<O, D>,
-  ): Promise<TaskResult<O, D>> => {
+  ): Promise<TaskResult<O, D>> {
     if (task.executeOptions.operationType === 'backup') {
       return (await this.handleBackup(context, task as Task<'backup', D>)) as TaskResult<O, D>
     } else if (task.executeOptions.operationType === 'restore') {
@@ -119,10 +119,7 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
     }
   }
 
-  protected handleBackup = async (
-    context: ExecuteContext,
-    task: Task<'backup', D>,
-  ): Promise<TaskResult<'backup', D>> => {
+  protected async handleBackup(context: ExecuteContext, task: Task<'backup', D>): Promise<TaskResult<'backup', D>> {
     if (task.executeOptions.mode === 'batch') {
       // 分批模式
       return await this.handleBatchBackup(task, context)
@@ -173,13 +170,13 @@ export abstract class BaseModule<D extends Data> implements DataModule<D> {
     } as TaskResult<'backup', D>
   }
 
-  protected exportBackupAsset = async (
+  protected async exportBackupAsset(
     { abortSignal, onProgress }: ExecuteContext,
     task: Task<'backup', D>,
     options: BackupOptions,
     data: D[],
     batchProgress?: BatchProgress,
-  ) => {
+  ) {
     const assets: BackupAsset[] = []
     // 遍历配置的可导出资源
     for (const exportTarget of options.exportTargets) {

@@ -1,15 +1,13 @@
 import type { ExecuteContext } from '@/core/types/execute'
-import {
-  type DataModule,
-  type Data,
-  type TreeData,
-  isTreeDataModule,
-  type TreeDataModule,
-} from '@/core/types/data-module'
+import { type Data, type TreeData, isTreeData, isTreeDataModule } from '@/core/types/data-module'
 import type { DataRange, DataRangeType, TreeDataRange, PageDataRange } from '@/core/types/data-range'
-import type { BackupDataRangeType } from '@/core/types/backup'
+import type { BackupDataRangeType, BackupAsset } from '@/core/types/backup'
 import { apiSleep } from '@/core/utils/sleep'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
+import type { Task } from '@/core/types/task'
+import { readJsonFile } from '@/core/utils/file'
+import type { DataModule } from '@/core/modules/data-module'
+import type { TreeDataModule } from '@/core/modules/tree-data-module'
 
 /**
  * 通过分页范围获取数据
@@ -110,6 +108,7 @@ export const getBackupDataByRange = async <
       for (let i = 0; i < parentList.length; i++) {
         const parent = parentList[i]
         parent.children = await treeDataModule.fetchChildrenAll(context, parent)
+        parent.childrenSize = parent.children.length
       }
       return parentList as unknown as D[]
     }
@@ -148,6 +147,7 @@ export const getBackupDataByRange = async <
         } else {
           parent.children = await getBackupDataByTreePageRange(context, treeDataModule, childrenDataRange, parent)
         }
+        parent.childrenSize = parent.children.length
       }
 
       return selectParentList as unknown as D[]
@@ -165,4 +165,38 @@ export const validateTreeDataRange = ({ nodes }: TreeDataRange) => {
     return false
   }
   return true
+}
+
+/**
+ * 获取备份任务已备份的数据
+ */
+export const getDataByBackupTask = async <D extends Data = Data>(
+  task: Task<'backup', D>,
+  excludeChildNodes?: boolean,
+) => {
+  const assets = task.result?.backupAssets
+
+  if (!assets || !assets.length) return []
+
+  const list = []
+
+  for (const asset of assets) {
+    if (asset.type === 'json') {
+      list.push(...(await readJsonFile<D[]>(asset as BackupAsset<'json'>)))
+    }
+  }
+
+  const isTree = list.length > 0 && isTreeData(list[0])
+
+  // 排除子节点数据
+  if (isTree && excludeChildNodes) {
+    list.forEach((node) => {
+      const treeNode = node as TreeData<Data>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (treeNode as any)['children']
+      treeNode.children = []
+    })
+  }
+
+  return list
 }

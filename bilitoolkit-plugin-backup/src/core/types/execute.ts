@@ -5,14 +5,7 @@ import type { RestoreOptions } from '@/core/types/restore'
 import type { ClearOptions } from '@/core/types/clear'
 import type { TaskType, TaskId, TaskStatus } from '@/core/types/task'
 import type { TaskGroupStatus } from '@/core/types/task-group'
-
-/**
- * 目标用户
- */
-export interface TargetUser {
-  uid: number
-  name: string
-}
+import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 
 /**
  * 进度回调
@@ -24,12 +17,14 @@ export type OnProgress = (progress?: number, msg?: string) => Promise<void>
  */
 export type OnStatusChange<S extends TaskStatus | TaskGroupStatus> = (status: S) => void
 
+export type User = UserInfoWithCookie
+
 /**
  * 执行上下文
  */
 export interface ExecuteContext {
   /** 目标用户 */
-  user: TargetUser
+  user: User
   /** bili client id */
   clientId: string
   /** 进度回调 */

@@ -2,10 +2,10 @@
 import { type TaskGroupFilters, TaskGroupStatusMap, type TaskGroup, type TaskGroupId } from '@/core/types/task-group'
 import { ref, useTemplateRef, onUnmounted, onMounted } from 'vue'
 import { taskGroupService } from '@/core/service/task-group'
-import { PageTable, type PageParams, BiliUserInfo } from 'bilitoolkit-ui'
+import { PageTable, type PageParams, BiliUserInfo, PluginPageContent } from 'bilitoolkit-ui'
 import type { ElForm } from 'element-plus'
 import { OperationTypeMap } from '@/core/types/operation'
-import { default as TaskGroupItemsTag } from '@/components/tags/TaskGroupItemsTag'
+import { TaskGroupItemsTag } from '@/components/tags/TaskGroupItemsTag'
 import { formatCreatedAt, formatOperationType, formatTaskGroupStatus } from '@/utils/formatter'
 import { eventBus } from '@/utils/event-bus'
 import type { ComponentExposed } from 'vue-component-type-helpers'
@@ -47,7 +47,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="task-group-container">
+  <plugin-page-content class="task-group-container">
     <PageTable ref="tableRef" :fetch-page="fetchPage" :page-sizes="[20]" :query-params="params" @reset="resetQuery">
       <ElTableColumn align="center" prop="id" label="id" min-width="30px"></ElTableColumn>
       <ElTableColumn
@@ -86,7 +86,7 @@ onUnmounted(() => {
           <TaskGroupItemsTag :items="row.items"></TaskGroupItemsTag>
         </template>
       </ElTableColumn>
-      <ElTableColumn align="center" label="操作">
+      <ElTableColumn align="center" label="操作" width="70px">
         <template #default="{ row }: { row: TaskGroup }">
           <ElButton type="primary" link @click="handleOpenModal(row)">查看</ElButton>
         </template>
@@ -107,13 +107,11 @@ onUnmounted(() => {
       </template>
     </PageTable>
     <TaskGroupModal :taskGroupId="taskGroupModalId" :autoExec="false" v-model="taskGroupModalVisible"></TaskGroupModal>
-  </div>
+  </plugin-page-content>
 </template>
 
 <style scoped lang="scss">
 .task-group-container {
-  margin-top: 20px;
-
   ::v-deep(.cell):has(.user-info) {
     display: flex;
     flex-direction: column;

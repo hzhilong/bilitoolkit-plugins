@@ -85,14 +85,44 @@ export class TaskGroupService {
    */
   async fetchPage(pageParams: PageParams, filters: TaskGroupFilters) {
     const { pageNum, pageSize } = pageParams
-    const { operationType, status, createdAt } = filters ?? {}
+    const { operationType, status, createdAt, statusArr } = filters ?? {}
     const offset = (pageNum - 1) * pageSize
     const createdAt0 = createdAt?.[0] ?? Dexie.minKey
     const createdAt1 = createdAt?.[1] ?? Dexie.maxKey
 
     let query
 
-    if (status != null && operationType != null) {
+    if (statusArr && statusArr.length) {
+      const list = (
+        await Promise.all(
+          statusArr.map((status) => {
+            if (operationType != null) {
+              return db.taskGroup
+                .where('[status+operationType+createdAt]')
+                .between([status, operationType, createdAt0], [status, operationType, createdAt1])
+                .toArray()
+            }
+
+            return db.taskGroup
+              .where('[status+createdAt]')
+              .between([status, createdAt0], [status, createdAt1])
+              .toArray()
+          }),
+        )
+      )
+        .flat()
+        .sort((a, b) => b.createdAt - a.createdAt)
+
+      const count = list.length
+
+      return {
+        data: list.slice(offset, offset + pageSize),
+        pageNum: pageNum,
+        pageSize: pageSize,
+        totalPages: Math.ceil(count / pageSize),
+        total: count,
+      } satisfies PageResult<TaskGroup>
+    } else if (status != null && operationType != null) {
       query = db.taskGroup
         .where('[status+operationType+createdAt]')
         .between([status, operationType, createdAt0], [status, operationType, createdAt1])
@@ -105,8 +135,11 @@ export class TaskGroupService {
     } else {
       query = db.taskGroup.where('createdAt').between(createdAt0, createdAt1)
     }
+
     const list = await query.reverse().offset(offset).limit(pageSize).toArray()
+
     const count = await query.count()
+
     return {
       data: list,
       pageNum: pageNum,

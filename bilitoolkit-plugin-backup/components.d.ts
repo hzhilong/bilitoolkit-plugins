@@ -12,6 +12,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BackupConfig: typeof import('./src/components/form/BackupConfig.vue')['default']
+    BackupConfigModal: typeof import('./src/components/modal/BackupConfigModal.vue')['default']
+    BackupTaskSelectModal: typeof import('./src/components/modal/BackupTaskSelectModal.vue')['default']
+    ClearConfig: typeof import('./src/components/form/ClearConfig.vue')['default']
+    ClearConfigModal: typeof import('./src/components/modal/ClearConfigModal.vue')['default']
     DataTypeCard: typeof import('./src/components/datatype/DataTypeCard.vue')['default']
     DataTypeList: typeof import('./src/components/datatype/DataTypeList.vue')['default']
     DataTypeSelect: typeof import('./src/components/DataTypeSelect.vue')['default']
@@ -41,7 +46,8 @@ declare module 'vue' {
     ElText: typeof import('element-plus/es')['ElText']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ExecuteConfig: typeof import('./src/components/form/ExecuteConfig.vue')['default']
-    ExecuteConfigModal: typeof import('./src/components/modal/ExecuteConfigModal.vue')['default']
+    RestoreConfig: typeof import('./src/components/form/RestoreConfig.vue')['default']
+    RestoreConfigModal: typeof import('./src/components/modal/RestoreConfigModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TaskCard: typeof import('./src/components/card/TaskCard.vue')['default']
@@ -59,6 +65,11 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const BackupConfig: typeof import('./src/components/form/BackupConfig.vue')['default']
+  const BackupConfigModal: typeof import('./src/components/modal/BackupConfigModal.vue')['default']
+  const BackupTaskSelectModal: typeof import('./src/components/modal/BackupTaskSelectModal.vue')['default']
+  const ClearConfig: typeof import('./src/components/form/ClearConfig.vue')['default']
+  const ClearConfigModal: typeof import('./src/components/modal/ClearConfigModal.vue')['default']
   const DataTypeCard: typeof import('./src/components/datatype/DataTypeCard.vue')['default']
   const DataTypeList: typeof import('./src/components/datatype/DataTypeList.vue')['default']
   const DataTypeSelect: typeof import('./src/components/DataTypeSelect.vue')['default']
@@ -88,7 +99,8 @@ declare global {
   const ElText: typeof import('element-plus/es')['ElText']
   const ElTooltip: typeof import('element-plus/es')['ElTooltip']
   const ExecuteConfig: typeof import('./src/components/form/ExecuteConfig.vue')['default']
-  const ExecuteConfigModal: typeof import('./src/components/modal/ExecuteConfigModal.vue')['default']
+  const RestoreConfig: typeof import('./src/components/form/RestoreConfig.vue')['default']
+  const RestoreConfigModal: typeof import('./src/components/modal/RestoreConfigModal.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
   const TaskCard: typeof import('./src/components/card/TaskCard.vue')['default']

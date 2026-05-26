@@ -1,5 +1,5 @@
 import type { OperationType } from '@/core/types/operation'
-import type { TargetUser, ExecuteOptions } from '@/core/types/execute'
+import type { ExecuteOptions, User } from '@/core/types/execute'
 import type { DataType } from '@/core/types/data-type'
 import type { BackupResult } from '@/core/types/backup'
 import type { RestoreResult } from '@/core/types/restore'
@@ -60,7 +60,7 @@ export interface Task<O extends OperationType = OperationType, D extends Data = 
   /** 数据类型 */
   dataType: DataType
   /** 执行目标用户 */
-  user: TargetUser
+  user: User
   /** 执行选项 */
   executeOptions: ExecuteOptions<O>
   /** 任务状态 */

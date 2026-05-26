@@ -5,21 +5,34 @@ import { useLoadingData, AppTooltip, toolkitApi } from 'bilitoolkit-ui'
 import type { TaskId, Task, TaskResult } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
 import { useTaskDisplay } from '@/composables/useTaskDisplay'
-import type { BaseExecuteOptions } from '@/core/types/execute'
+import type { BaseExecuteOptions, ExecuteOptions } from '@/core/types/execute'
 import type { BatchOptions } from '@/core/types/batch'
-import type { BackupAsset, BackupResult } from '@/core/types/backup'
+import type { BackupAsset, BackupResult, BackupOptions } from '@/core/types/backup'
+import BackupConfig from '@/components/form/BackupConfig.vue'
+import ClearConfig from '@/components/form/ClearConfig.vue'
+import RestoreConfig from '@/components/form/RestoreConfig.vue'
+import type { RestoreOptions } from '@/core/types/restore'
+import type { ClearOptions } from '@/core/types/clear'
 
 const props = defineProps<{
   taskId: TaskId
 }>()
 const task = ref<Task<O>>()
 const { loading, loadingData, hasLoaded } = useLoadingData()
+
+// 还原用的备份任务
+const backupTaskForRestore = ref<Task<'backup'>>()
+
 const init = loadingData(async () => {
   const taskId = props.taskId
   if (taskId) {
-    const oldData = await taskService.getById<O>(taskId)
+    const taskData = await taskService.getById<O>(taskId)
     if (taskId === props.taskId) {
-      task.value = oldData
+      task.value = taskData
+      if (taskData.operationType === 'restore') {
+        const executeOptions = taskData.executeOptions as ExecuteOptions<'restore'>
+        backupTaskForRestore.value = await taskService.getById(executeOptions.backupTaskId)
+      }
     }
   } else {
     task.value = undefined
@@ -85,13 +98,29 @@ const handleShowAsset = (asset: BackupAsset) => {
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="执行选项">
-            <ExecuteConfig
-              v-model="task.executeOptions"
+            <BackupConfig
+              v-if="task.operationType === 'backup'"
+              v-model="task.executeOptions as BackupOptions"
               :viewMode="true"
               :dataType="task.dataType"
-              :operationType="task.operationType"
               :user="task.user"
-            ></ExecuteConfig>
+            ></BackupConfig>
+            <RestoreConfig
+              v-else-if="task.operationType === 'restore' && backupTaskForRestore"
+              v-model="task.executeOptions as RestoreOptions"
+              :viewMode="true"
+              :dataType="task.dataType"
+              :user="task.user"
+              :backup-task="backupTaskForRestore"
+            >
+            </RestoreConfig>
+            <ClearConfig
+              v-else-if="task.operationType === 'clear'"
+              v-model="task.executeOptions as ClearOptions"
+              :viewMode="true"
+              :dataType="task.dataType"
+              :user="task.user"
+            ></ClearConfig>
           </el-descriptions-item>
         </el-descriptions>
         <el-descriptions v-if="task?.result" border title="执行结果">
@@ -99,11 +128,11 @@ const handleShowAsset = (asset: BackupAsset) => {
           <el-descriptions-item label="结果说明">{{ task.result.msg }}</el-descriptions-item>
           <template v-if="backupAssets">
             <el-descriptions-item label="备份资源">
-              <ul>
-                <li v-for="asset in backupAssets" :key="asset.name">
+              <div>
+                <div v-for="asset in backupAssets" :key="asset.name">
                   <el-button link type="primary" @click="handleShowAsset(asset)">{{ asset.fileName }}</el-button>
-                </li>
-              </ul>
+                </div>
+              </div>
             </el-descriptions-item>
           </template>
         </el-descriptions>

@@ -2,7 +2,7 @@ import type { TreeData, Data } from '@/core/types/data-module'
 
 export const DataRangeTypeMap = {
   all: '所有数据',
-  list: '列表数据',
+  //  list: '列表数据',
   page: '分页数据',
   tree: '自选范围',
 } as const
@@ -80,10 +80,10 @@ export type TreeRangeMetas = [TreeRangeMeta<1>, TreeRangeMeta<2>]
  */
 export type DataRange<T extends DataRangeType = DataRangeType> = T extends 'all'
   ? AllDataRange
-  : T extends 'list'
-    ? ListDataRange
-    : T extends 'page'
-      ? PageDataRange
-      : T extends 'tree'
-        ? TreeDataRange
-        : never
+  : //  : T extends 'list'
+    //    ? ListDataRange
+    T extends 'page'
+    ? PageDataRange
+    : T extends 'tree'
+      ? TreeDataRange
+      : never

@@ -1,0 +1,41 @@
+.execute-config {
+  //  --el-color-primary: var(--data-type-color);
+  overflow: hidden;
+
+  &:not(.readonly) {
+    border-radius: 12px;
+    border-left: 4px solid var(--data-type-color);
+    padding: 20px;
+    background-color: var(--app-color-background);
+    box-shadow: 0 2px 4px 2px var(--app-color-foreground-transparent-10);
+  }
+  .header {
+    margin-bottom: 20px;
+
+    .data-module-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--data-type-color);
+    }
+
+    .data-module-desc {
+      font-size: 12px;
+      margin-left: 12px;
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  > .form {
+  }
+
+  .tree-form-item {
+    display: flex;
+    flex-direction: column;
+    padding-right: 2px;
+    text-wrap: nowrap;
+
+    .tree-range-info {
+      text-wrap: nowrap;
+    }
+  }
+}

@@ -1,15 +1,15 @@
-import type { BackupAsset } from '@/core/types/backup'
 import type { DataRange } from '@/core/types/data-range'
 import type { BaseExecuteOptions } from '@/core/types/execute'
 import type { BatchProgress } from '@/core/types/batch'
 import type { Data } from '@/core/types/data-module'
+import type { TaskId } from '@/core/types/task'
 
 /**
  * 基础还原选项
  */
 export interface BaseRestoreOptions {
-  /** 需要从哪些还原资源还原（暂时只支持json） */
-  backupAssets: BackupAsset<'json'>[]
+  /** 从哪个备份任务还原 */
+  backupTaskId: TaskId
 }
 
 /**
@@ -23,7 +23,7 @@ export type RestoreBatchOptions = BaseRestoreOptions & BaseExecuteOptions<'resto
 export type RestoreNormalOptions = BaseRestoreOptions &
   BaseExecuteOptions<'restore', 'normal'> & {
     /** 数据范围 */
-    dataRange: DataRange<'all' | 'page' | 'list'>
+    dataRange: DataRange<'all' | 'page' | 'tree'>
   }
 
 /**

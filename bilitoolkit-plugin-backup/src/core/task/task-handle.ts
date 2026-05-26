@@ -3,9 +3,10 @@ import type { ExecuteContext, BaseExecuteOptions } from '@/core/types/execute'
 import type { Task, TaskResult } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
 import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError } from '@ybgnb/utils'
-import type { DataModule, Data } from '@/core/types/data-module'
+import type { Data } from '@/core/types/data-module'
 import { checkAbortSignal } from '@/core/utils/abort'
 import { inArray } from '@/core/utils/array'
+import type { DataModule } from '@/core/modules/data-module'
 
 const assertCanExecute = async (task: Task) => {
   if (task.status !== 'pending') {

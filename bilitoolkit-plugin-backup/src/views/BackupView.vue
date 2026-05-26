@@ -37,17 +37,16 @@ const taskGroupModalVisible = ref(false)
 <template>
   <plugin-page-content>
     <div class="header">
-      <p class="desc">请选择需要备份的数据类型：</p>
+      <div class="title">请选择需要备份的数据类型：</div>
       <div class="options">
         <el-checkbox v-model="isSelectAll" @change="selectAll">选中所有</el-checkbox>
       </div>
     </div>
     <DataTypeList :options="allDataTypes" v-model="selectedDataTypes" />
     <el-button @click="visibleExecuteConfigModal = true" :disabled="hasActiveTaskGroup || !user">下一步</el-button>
-    <ExecuteConfigModal
+    <BackupConfigModal
       v-if="user"
       v-model="visibleExecuteConfigModal"
-      :operation-type="'backup'"
       :data-types="selectedDataTypes"
       :user="user"
       @submit="handleExecTaskGroup"
@@ -66,11 +65,9 @@ const taskGroupModalVisible = ref(false)
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-}
 
-.log-print-box {
-  flex: 1;
-  min-height: 0;
-  line-height: 1.4;
+  .title {
+    font-size: 14px;
+  }
 }
 </style>
