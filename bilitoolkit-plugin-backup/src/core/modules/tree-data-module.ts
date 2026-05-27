@@ -72,11 +72,11 @@ export abstract class TreeDataModule<
 
     let pageNum = 1
     const list = []
-    const parentTitle = `${this.getDataTitle(parent).trim() ?? ''} `
+    const parentTitle = `${this.getDataTitle(parent).trim() ?? ''} • `
 
     let total: number | undefined = undefined
     if (this.fetchChildrenTotal) {
-      await onProgress(1, `正在获取 ${parentTitle}数据条数`)
+      await onProgress(1, `正在获取 ${parentTitle}总数`)
       total = await this.fetchChildrenTotal(context, parent)
       await apiSleep(context.signal)
     }

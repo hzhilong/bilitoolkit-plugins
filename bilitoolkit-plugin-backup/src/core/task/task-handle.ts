@@ -7,6 +7,7 @@ import type { Data } from '@/core/types/data-module'
 import { checkAbortSignal } from '@/core/utils/abort'
 import { inArray } from '@/core/utils/array'
 import type { DataModule } from '@/core/modules/data-module'
+import { taskLogService } from '@/core/service/task-log'
 
 const assertCanExecute = async (task: Task) => {
   if (task.status !== 'pending') {
@@ -57,6 +58,12 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
         await onProgress(intProgress, msg)
       }
       await taskService.updateProgress(taskId, intProgress, msg)
+      if (msg) {
+        await taskLogService.create({
+          taskId,
+          content: msg,
+        })
+      }
     }
 
     // 中止任务

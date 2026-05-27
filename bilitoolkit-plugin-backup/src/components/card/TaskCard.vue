@@ -5,6 +5,7 @@ import { type Task } from '@/core/types/task'
 import { IconButton, AppTooltip } from 'bilitoolkit-ui'
 import { useDataModule } from '@/composables/useDataModule'
 import { useTaskDisplay } from '@/composables/useTaskDisplay'
+import TaskLogsModal from '@/components/modal/TaskLogsModal.vue'
 
 export interface TaskCardProps {
   task: Task
@@ -29,6 +30,10 @@ const modalVisible = ref<boolean>(false)
 const handleOpenModal = () => {
   modalVisible.value = true
 }
+const logsModalVisible = ref<boolean>(false)
+const handleOpenLogModal = () => {
+  logsModalVisible.value = true
+}
 </script>
 
 <template>
@@ -42,6 +47,7 @@ const handleOpenModal = () => {
       <div class="task-status" :class="task.status">{{ taskState }}</div>
       <div class="card-actions">
         <IconButton icon="information-2" tip="任务详情" @click="handleOpenModal" />
+        <IconButton icon="chat-history" tip="任务日志" @click="handleOpenLogModal" />
       </div>
     </div>
     <el-progress
@@ -56,7 +62,8 @@ const handleOpenModal = () => {
       <div class="task-time">{{ createdAt }}</div>
       <AppTooltip class="task-progress-msg" :content="task.result?.msg ?? task.progressMsg ?? ''"></AppTooltip>
     </div>
-    <TaskModal :taskId="task?.id" v-model="modalVisible"></TaskModal>
+    <TaskModal :taskId="task.id" v-model="modalVisible"></TaskModal>
+    <TaskLogsModal :taskId="task.id" v-model="logsModalVisible"></TaskLogsModal>
   </div>
 </template>
 
