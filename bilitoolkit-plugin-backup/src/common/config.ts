@@ -1,4 +1,5 @@
 import type { DataType } from '@/core/types/data-type'
+import type { AppSettings } from '@/types/settings'
 
 export const DATA_TYPE_COLORS: Record<DataType, string> = {
   bangumi: '#a569bd',
@@ -11,6 +12,13 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   history: '#7f8c8d',
   to_view: '#e67e22',
 }
+
+export const DB_NAMES = {
+  APP_SETTINGS: 'app_settings',
+}
+
+export const defaultAppSettings: AppSettings = {}
+
 //
 const _1 = {
   1: '#b19cd9',

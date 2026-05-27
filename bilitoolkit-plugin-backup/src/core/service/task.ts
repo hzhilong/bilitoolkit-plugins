@@ -106,11 +106,14 @@ export class TaskService {
     return this.getById(taskId)
   }
 
+  /**
+   * 暂停运行中的任务
+   */
   async suspendRunningTask() {
     await db.task
       .where('status')
       .equals('running')
-      .modify({ status: 'failed', progressMsg: '任务已失效（应用重启后无法继续）' })
+      .modify({ status: 'failed', progressMsg: '任务执行中断（应用已退出）' })
   }
 }
 

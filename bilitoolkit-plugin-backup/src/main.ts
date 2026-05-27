@@ -8,6 +8,9 @@ import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import router from '@/router'
 import { appEnv } from '@ybgnb/vite-env/common'
+import { useAppSettingsStore } from '@/stores/app-settings'
+import { taskService } from '@/core/service/task'
+import { taskGroupService } from '@/core/service/task-group'
 
 if (appEnv.DEV) {
   import('element-plus/dist/index.css')
@@ -35,7 +38,9 @@ async function bootstrapApp() {
   })
 
   // 暂停之前运行的任务
-  // TODO 改成任务组
+  await taskService.suspendRunningTask()
+  await taskGroupService.suspendRunningTaskGroup()
+  await useAppSettingsStore().init()
 
   app.use(ui)
   // Vue 组件中发生的错误
