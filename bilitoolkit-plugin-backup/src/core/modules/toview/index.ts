@@ -41,7 +41,7 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return this.baseFetchAll(context)
   }
 
-  restoreData(_context: ExecuteContext, _data: ToViewItem): Promise<void> {
-    throw new Error('Method not implemented.')
+  async restoreData({ clientId, signal }: ExecuteContext, { aid }: ToViewItem): Promise<void> {
+    await invokeBiliApi(clientId, biliApi.toview.addToView, aid, { signal })
   }
 }

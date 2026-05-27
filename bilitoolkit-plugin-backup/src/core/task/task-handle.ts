@@ -79,7 +79,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
       // 开始执行前检查中止信号
       checkAbortSignal(signal)
       abortHandler = abortTask
-      signal?.addEventListener('abort', abortHandler)
+      //      signal?.addEventListener('abort', abortHandler)
 
       await taskService.markRunning(taskId)
       onStatusChange?.('running')

@@ -20,6 +20,8 @@ import type { Task, TaskResult } from '@/core/types/task'
 import type { BatchProgress } from '@/core/types/batch'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { RestoreNormalOptions, RestoreBatchOptions, BaseRestoreResult } from '@/core/types/restore'
+import { useAppSettingsStore } from '@/stores/app-settings'
+import { checkAbortSignal } from '@/core/utils/abort'
 
 /**
  * 模块基类
@@ -80,6 +82,7 @@ export abstract class DataModule<D extends Data = Data> {
       if (context.signal?.aborted) {
         break
       }
+      checkAbortSignal(context.signal)
       const pageParams = { pageNum }
       const pageData = await this.fetchPage(context, pageParams)
 
@@ -119,7 +122,7 @@ export abstract class DataModule<D extends Data = Data> {
     if (task.executeOptions.operationType === 'backup') {
       return (await this.handleBackup(context, task as Task<'backup', D>)) as TaskResult<O, D>
     } else if (task.executeOptions.operationType === 'restore') {
-      throw new Error('暂未支持')
+      return (await this.handleRestore(context, task as Task<'restore', D>)) as unknown as TaskResult<O, D>
     } else {
       throw new Error('暂未支持')
     }
@@ -230,7 +233,7 @@ export abstract class DataModule<D extends Data = Data> {
     const options = task.executeOptions as RestoreNormalOptions
     // 获取选取的备份数据
     const list = await getRestoreDataByRange(this, options.dataRange, context, backedUpTask)
-    const restoreResult = await this.baseRestoreData(context, list)
+    const restoreResult = await this.baseRestoreData(context, list.reverse())
     // 开始还原
     return {
       success: true,
@@ -248,10 +251,11 @@ export abstract class DataModule<D extends Data = Data> {
     const { batchOptions } = options
     // 获取分批次处理的备份数据
     const { list, batchProgress } = await getBatchRestoreData<D>(this, batchOptions, context, backedUpTask)
-    const restoreResult = await this.baseRestoreData(context, list)
+    const finalList = list.reverse()
+    const restoreResult = await this.baseRestoreData(context, finalList)
     return {
       success: true,
-      msg: `批次 [${batchOptions.startBatch}/${batchProgress.totalBatchCount}] 已还原${this.getDataTotalDesc(list)}`,
+      msg: `批次 [${batchOptions.startBatch}/${batchProgress.totalBatchCount}] 已还原${this.getDataTotalDesc(finalList)}`,
       batchProgress: batchProgress,
       ...restoreResult,
     } as TaskResult<'restore', D>
@@ -265,17 +269,26 @@ export abstract class DataModule<D extends Data = Data> {
     const successItems: D[] = []
     const failedItems: D[] = []
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
+    const restoreMaxFailures = useAppSettingsStore().appSettings.restoreMaxFailures
+    let failureCount = 0
     for (let i = 0; i < list.length; i++) {
+      checkAbortSignal(context.signal)
       const item = list[i]
       const progress = Math.floor(((i + 1) * 100) / list.length)
       try {
         await this.restoreData(context, item)
         successItems.push(item)
-        context.onProgress?.(progress, `还原数据成功 [${this.getDataTitle(item)}]`)
+        context.onProgress?.(progress, `[${i + 1}/${list.length}] 还原数据成功 [${this.getDataTitle(item)}]`)
       } catch (e) {
-        context.onProgress?.(progress, `还原数据失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`)
-        // TODO 失败次数过多直接结束？可配置，放在上下文
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${list.length}] 还原数据失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`,
+        )
         failedItems.push(item)
+        failureCount++
+        if (restoreMaxFailures !== 0 && failureCount > restoreMaxFailures) {
+          throw new Error('失败次数已超过限制，任务终止')
+        }
       }
       await apiSleep(context.signal)
     }

@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="P extends TreeData<C>, C extends Data">
 import type { TreeData, Data } from '@/core/types/data-module'
 import { ref, watch } from 'vue'
-import { useLoadingData, useSelectData } from 'bilitoolkit-ui'
+import { useLoadingData, useSelectData, showError } from 'bilitoolkit-ui'
 import type { TaskGroup } from '@/core/types/task-group'
 import type { Task } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
@@ -62,8 +62,13 @@ const handleCancel = () => {
 }
 
 const handleSubmit = async () => {
-  visible.value = false
-  emit('submit', getSelectedData())
+  const selectedData = getSelectedData()
+  if (!selectedData || selectedData.length === 0) {
+    showError('未选择数据')
+  } else {
+    visible.value = false
+    emit('submit', selectedData)
+  }
 }
 </script>
 

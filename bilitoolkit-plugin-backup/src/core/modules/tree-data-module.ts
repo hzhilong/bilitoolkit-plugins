@@ -6,6 +6,7 @@ import type { TreeRangeMetas, DataRangeType } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { BaseRestoreResult } from '@/core/types/restore'
 import { getErrorMessage } from '@ybgnb/utils'
+import { checkAbortSignal } from '@/core/utils/abort'
 
 /**
  * 树形数据模块
@@ -84,9 +85,7 @@ export abstract class TreeDataModule<
     let progress = 1
 
     while (true) {
-      if (context.signal?.aborted) {
-        break
-      }
+      checkAbortSignal(context.signal)
       const pageParams = { pageNum }
       const pageData = await this.fetchChildrenPage(context, pageParams, parent)
 
@@ -128,6 +127,7 @@ export abstract class TreeDataModule<
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
     // 先整体还原父节点
     for (let i = 0; i < list.length; i++) {
+      checkAbortSignal(context.signal)
       const item = list[i]
       const progress = Math.floor(((i + 1) * 100) / list.length)
       try {
@@ -167,21 +167,24 @@ export abstract class TreeDataModule<
     let processedCount = 0
 
     for (const parent of parentList) {
+      checkAbortSignal(context.signal)
       const { children, ...onlyParent } = parent
 
       const successChildItems: C[] = []
       const failedChildItems: C[] = []
 
-      for (const child of children) {
+      const list = children.reverse()
+      for (let i = 0; i < list.length; i++) {
+        const child = list[i]
         const progress = Math.floor((processedCount * 100) / dataCount)
         try {
           await this.restoreChildrenData(context, child)
           successChildItems.push(child)
-          context.onProgress?.(progress, `还原数据成功 [${this.getChildrenDataTitle(child)}]`)
+          context.onProgress?.(progress, `[${i + 1}/${list.length}] 还原数据成功 [${this.getChildrenDataTitle(child)}]`)
         } catch (e) {
           context.onProgress?.(
             progress,
-            `还原数据失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
+            `[${i + 1}/${list.length}] 还原数据失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
           )
           failedChildItems.push(child)
         }
