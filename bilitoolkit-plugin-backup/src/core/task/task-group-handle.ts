@@ -64,7 +64,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     throw new Error('任务组已结束，不可再执行')
   }
 
-  const { onProgress, abortSignal, onStatusChange, onItemsStatusChange, onItemsProgress } = groupContext
+  const { onProgress, signal, onStatusChange, onItemsStatusChange, onItemsProgress } = groupContext
 
   return new Promise<void>(async (resolve, reject) => {
     // 设置进度
@@ -88,16 +88,16 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     try {
       await setProgress(0, `任务组准备中`)
       // 开始执行前检查中止信号
-      checkAbortSignal(abortSignal)
+      checkAbortSignal(signal)
       abortHandler = abortTask
-      abortSignal?.addEventListener('abort', abortHandler)
+      signal?.addEventListener('abort', abortHandler)
 
       const clientId = await createBiliClient(taskGroup.user)
 
       const context: ExecuteContext = {
         user: taskGroup.user,
         clientId: clientId,
-        abortSignal: groupContext.abortSignal,
+        signal: groupContext.signal,
       }
 
       // 需要执行的任务
@@ -136,7 +136,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
           hasPendingBatchTasks = true
         }
         if (i < pendingTasks.length - 1) {
-          await apiSleep(groupContext.abortSignal)
+          await apiSleep(groupContext.signal)
         }
       }
       if (hasPendingBatchTasks) {
@@ -165,7 +165,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     } finally {
       // 清理取消监听器
       if (abortHandler) {
-        abortSignal?.removeEventListener('abort', abortHandler)
+        signal?.removeEventListener('abort', abortHandler)
       }
     }
   })

@@ -5,9 +5,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { toolkitApi } from 'bilitoolkit-ui'
-import { biliApi } from 'bilitoolkit-runtime/biliapi'
-import { publicClient } from '@/core/commom/client'
+import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
 
 export class ToViewModule extends DataModule<ToViewItem> {
   dataType: DataType = 'to_view'
@@ -24,22 +22,26 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return data.title
   }
 
-  async fetchTotal(context: ExecuteContext): Promise<number> {
-    return (await toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.getTotal)) ?? 0
+  async fetchTotal({ clientId, signal }: ExecuteContext): Promise<number> {
+    return (await invokeBiliApi(clientId, biliApi.toview.getTotal, { signal })) ?? 0
   }
 
   getPageSize() {
     return publicClient.toview.buildPager().getPageSize()
   }
 
-  fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<ToViewItem>> {
-    return toolkitApi.bili.invokeBiliApi(context.clientId, biliApi.toview.fetchPageWithNextParams, params)
+  async fetchPage(
+    { clientId, signal }: ExecuteContext,
+    params: FetchPageParams,
+  ): Promise<PageDataWithNextParams<ToViewItem>> {
+    return await invokeBiliApi(clientId, biliApi.toview.fetchPageWithNextParams, params, { signal })
   }
 
   fetchAll(context: ExecuteContext): Promise<ToViewItem[]> {
     return this.baseFetchAll(context)
   }
-  restoreData(context: ExecuteContext, data: ToViewItem): Promise<void> {
+
+  restoreData(_context: ExecuteContext, _data: ToViewItem): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }

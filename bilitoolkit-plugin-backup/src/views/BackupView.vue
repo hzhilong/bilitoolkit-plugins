@@ -32,6 +32,10 @@ const handleExecTaskGroup = async (taskGroup: CreateTaskGroupOptions<'backup'>) 
 }
 const taskGroupId = ref<number>()
 const taskGroupModalVisible = ref(false)
+
+const handleBackup = async () => {
+  visibleExecuteConfigModal.value = true
+}
 </script>
 
 <template>
@@ -43,7 +47,7 @@ const taskGroupModalVisible = ref(false)
       </div>
     </div>
     <DataTypeList :options="allDataTypes" v-model="selectedDataTypes" />
-    <el-button @click="visibleExecuteConfigModal = true" :disabled="hasActiveTaskGroup || !user">下一步</el-button>
+    <el-button @click="handleBackup" :disabled="hasActiveTaskGroup || !user">下一步</el-button>
     <BackupConfigModal
       v-if="user"
       v-model="visibleExecuteConfigModal"

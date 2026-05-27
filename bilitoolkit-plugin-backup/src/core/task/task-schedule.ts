@@ -15,8 +15,8 @@ export class TaskSchedule {
   async executeTaskGroup(context: GroupExecuteContext, groupId: TaskGroupId) {
     if (this.abortControllers.size > 0)
       throw new Error(`已有任务组[${this.abortControllers.keys().next().value}]正在执行`)
-    if (context.abortSignal?.aborted) {
-      throw context.abortSignal.reason
+    if (context.signal?.aborted) {
+      throw context.signal.reason
     }
     const abortController = new AbortController()
     try {
@@ -24,9 +24,7 @@ export class TaskSchedule {
       await executeTaskGroup(
         {
           ...context,
-          abortSignal: context.abortSignal
-            ? AbortSignal.any([context.abortSignal, abortController.signal])
-            : abortController.signal,
+          signal: context.signal ? AbortSignal.any([context.signal, abortController.signal]) : abortController.signal,
         },
         groupId,
       )

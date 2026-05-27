@@ -78,13 +78,13 @@ export abstract class TreeDataModule<
     if (this.fetchChildrenTotal) {
       await onProgress(1, `正在获取 ${parentTitle}数据条数`)
       total = await this.fetchChildrenTotal(context, parent)
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
     }
 
     let progress = 1
 
     while (true) {
-      if (context.abortSignal?.aborted) {
+      if (context.signal?.aborted) {
         break
       }
       const pageParams = { pageNum }
@@ -111,7 +111,7 @@ export abstract class TreeDataModule<
 
       if (!pageData.hasNext) break
 
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
       pageNum++
     }
     return list
@@ -138,7 +138,7 @@ export abstract class TreeDataModule<
         context.onProgress?.(progress, `还原分组失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`)
         failedItems.push(item)
       }
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
     }
     // 再一个一个还原子节点数据
     const cResult = await this.baseRestoreAllChildren(context, successItems)
@@ -185,7 +185,7 @@ export abstract class TreeDataModule<
           )
           failedChildItems.push(child)
         }
-        await apiSleep(context.abortSignal)
+        await apiSleep(context.signal)
         processedCount++
       }
 

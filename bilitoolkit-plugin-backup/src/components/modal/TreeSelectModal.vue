@@ -6,9 +6,9 @@ import { useLoadingData, showWarning, showError } from 'bilitoolkit-ui'
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { DataType } from '@/core/types/data-type'
 import { useTreeDataModule } from '@/composables/useDataModule'
-import { biliClientStore } from '@/stores/bili-client'
 import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 import type { User } from '@/core/types/execute'
+import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
 
 const props = defineProps<{
   user: User

@@ -71,13 +71,13 @@ export abstract class DataModule<D extends Data = Data> {
     await onProgress(1, `正在获取总数`)
     if (this.fetchTotal) {
       total = await this.fetchTotal(context)
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
     }
 
     let progress = 1
 
     while (true) {
-      if (context.abortSignal?.aborted) {
+      if (context.signal?.aborted) {
         break
       }
       const pageParams = { pageNum }
@@ -102,7 +102,7 @@ export abstract class DataModule<D extends Data = Data> {
 
       if (!pageData.hasNext) break
 
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
       pageNum++
     }
     return list
@@ -177,7 +177,7 @@ export abstract class DataModule<D extends Data = Data> {
   }
 
   protected async exportBackupAsset(
-    { abortSignal, onProgress }: ExecuteContext,
+    { signal, onProgress }: ExecuteContext,
     task: Task<'backup', D>,
     options: BackupOptions,
     data: D[],
@@ -186,7 +186,7 @@ export abstract class DataModule<D extends Data = Data> {
     const assets: BackupAsset[] = []
     // 遍历配置的可导出资源
     for (const exportTarget of options.exportTargets) {
-      if (abortSignal?.aborted) {
+      if (signal?.aborted) {
         // 已被取消，记录已导出的资源
         await taskService.markAborted(task.id, {
           backupAssets: assets,
@@ -277,7 +277,7 @@ export abstract class DataModule<D extends Data = Data> {
         // TODO 失败次数过多直接结束？可配置，放在上下文
         failedItems.push(item)
       }
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
     }
     return {
       successDataDesc: this.getDataTotalDesc(successItems),

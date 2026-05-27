@@ -32,7 +32,7 @@ async function getDataByPageRange<D>(
         (100 * (i - startPageNum + 1)) / pageTotal,
         `${logPrefix}第 ${i}/${endPageNum} 页 • 获取 ${items.length} 条 • 累计 ${result.length}`,
       )
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
       if (!hasNext) break
     }
   }

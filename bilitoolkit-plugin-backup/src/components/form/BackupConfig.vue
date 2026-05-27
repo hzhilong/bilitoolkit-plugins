@@ -11,7 +11,7 @@ import { useExecuteOptions } from '@/composables/useExecuteOptions'
 import { AppIcon, useLoadingData, showError } from 'bilitoolkit-ui'
 import TreeSelectModal from '@/components/modal/TreeSelectModal.vue'
 import { useTreeSelect } from '@/composables/useTreeSelect'
-import { biliClientStore } from '@/stores/bili-client'
+import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
 
 export interface BackupConfigProps {
   user: User

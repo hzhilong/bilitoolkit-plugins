@@ -37,7 +37,7 @@ export const useExecTaskGroup = () => {
 
   // 创建并执行任务组
   const execTaskGroup = async <O extends OperationType = OperationType>(
-    { abortSignal, ...restContext }: GroupExecuteContext,
+    { signal, ...restContext }: GroupExecuteContext,
     options: TaskGroupId | CreateTaskGroupOptions<O>,
   ) => {
     assertNoActiveTask()
@@ -46,7 +46,7 @@ export const useExecTaskGroup = () => {
     }
 
     const abortController = new AbortController()
-    checkAbortSignal(abortSignal)
+    checkAbortSignal(signal)
 
     const status = ref<TaskGroupStatus>('pending')
     const onStatusChange = (groupStatus: TaskGroupStatus) => {
@@ -57,7 +57,7 @@ export const useExecTaskGroup = () => {
     // 合并并创建一个新的上下文
     const context: GroupExecuteContext = {
       ...restContext,
-      abortSignal: abortSignal ? AbortSignal.any([abortSignal, abortController.signal]) : abortSignal,
+      signal: signal ? AbortSignal.any([signal, abortController.signal]) : abortController.signal,
       onStatusChange: onStatusChange,
     }
 

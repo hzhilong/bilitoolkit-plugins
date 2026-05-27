@@ -43,7 +43,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
   task: Task<O>,
 ): Promise<TaskResult<O, D>> => {
   await assertCanExecute(task)
-  const { user, onProgress, onStatusChange, abortSignal, clientId } = context
+  const { user, onProgress, onStatusChange, signal, clientId } = context
   const { operationType, id: taskId } = task
   const operationName = OperationTypeMap[operationType]
 
@@ -70,9 +70,9 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
     try {
       await setProgress(0, `${operationName}任务准备中`)
       // 开始执行前检查中止信号
-      checkAbortSignal(abortSignal)
+      checkAbortSignal(signal)
       abortHandler = abortTask
-      abortSignal?.addEventListener('abort', abortHandler)
+      signal?.addEventListener('abort', abortHandler)
 
       await taskService.markRunning(taskId)
       onStatusChange?.('running')
@@ -80,7 +80,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
         {
           user,
           clientId,
-          abortSignal,
+          signal: signal,
           onProgress: setProgress,
         },
         task,
@@ -113,7 +113,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
     } finally {
       // 清理取消监听器
       if (abortHandler) {
-        abortSignal?.removeEventListener('abort', abortHandler)
+        signal?.removeEventListener('abort', abortHandler)
       }
     }
   })

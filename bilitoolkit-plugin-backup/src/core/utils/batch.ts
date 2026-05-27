@@ -50,7 +50,7 @@ export const getBatchBackupData = async <D extends Data = Data>(
       // 数据为空 / 无更多数据可处理，分批处理已结束
       return emptyDataResult
     }
-    await apiSleep(context.abortSignal)
+    await apiSleep(context.signal)
   }
 
   if (onProgress) {
@@ -85,7 +85,7 @@ export const getBatchBackupData = async <D extends Data = Data>(
         )
       }
       list.push(...items)
-      await apiSleep(context.abortSignal)
+      await apiSleep(context.signal)
     }
   }
 

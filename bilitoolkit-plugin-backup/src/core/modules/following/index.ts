@@ -4,9 +4,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { toolkitApi } from 'bilitoolkit-ui'
-import { biliApi } from 'bilitoolkit-runtime/biliapi'
-import { publicClient, invokeBiliApi } from '@/core/commom/client'
+import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
 import { type FollowTag, type Following, toFollowTags } from '@/core/modules/following/types'
 import type { TreeRangeMetas } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
@@ -42,12 +40,12 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
     return `关注用户: ${child.name}`
   }
 
-  private async getFollowTags(clientId: string) {
-    return toFollowTags(await invokeBiliApi(clientId, biliApi.relation.getFollowTags))
+  private async getFollowTags({ clientId, signal }: ExecuteContext) {
+    return toFollowTags(await invokeBiliApi(clientId, biliApi.relation.getFollowTags, { signal }))
   }
 
-  async fetchTotal({ clientId }: ExecuteContext): Promise<number> {
-    const tags = await this.getFollowTags(clientId)
+  async fetchTotal(context: ExecuteContext): Promise<number> {
+    const tags = await this.getFollowTags(context)
     return tags.length ?? 0
   }
 
@@ -56,21 +54,21 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
   }
 
   async fetchChildrenPage(
-    { clientId }: ExecuteContext,
+    { clientId, signal }: ExecuteContext,
     params: FetchPageParams,
     tag: FollowTag,
   ): Promise<PageDataWithNextParams<Following>> {
-    return toolkitApi.bili.invokeBiliApi(clientId, biliApi.relation.fetchRelationPageWithNextParams, tag.tagid, params)
+    return invokeBiliApi(clientId, biliApi.relation.fetchRelationPageWithNextParams, tag.tagid, params, { signal })
   }
 
   fetchAll(context: ExecuteContext): Promise<FollowTag[]> {
     context.onProgress?.(undefined, `正在获取关注分组`)
-    return this.getFollowTags(context.clientId)
+    return this.getFollowTags(context)
   }
 
   async fetchAllByIds(context: ExecuteContext, ids: string[]) {
     context.onProgress?.(undefined, `正在获取关注分组`)
-    const list = await this.getFollowTags(context.clientId)
+    const list = await this.getFollowTags(context)
     return list.filter((item) => ids.includes(String(item.tagid)))
   }
 
@@ -78,12 +76,12 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
     return this.baseFetchChildrenAll(context, tag)
   }
 
-  restoreData(context: ExecuteContext, data: FollowTag): Promise<void> {
+  restoreData(_context: ExecuteContext, _data: FollowTag): Promise<void> {
     // TODO 还原关注前，查看空间、信息等操作的防风控->可配置
     throw new Error('Method not implemented.')
   }
 
-  restoreChildrenData(context: ExecuteContext, children: any): Promise<void> {
+  restoreChildrenData(_context: ExecuteContext, _children: Following): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }

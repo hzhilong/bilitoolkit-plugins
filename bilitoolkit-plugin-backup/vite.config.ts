@@ -53,7 +53,7 @@ export default defineConfig((configEnv: ConfigEnv) => {
       // sourcemap: mode !== 'production',
     },
     optimizeDeps: {
-      include: ['element-plus', 'element-plus/es', 'consola'],
+      include: ['element-plus', 'element-plus/es', 'consola', '@ybgnb/bili-api'],
     },
   })
 })

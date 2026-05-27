@@ -32,7 +32,7 @@ export interface ExecuteContext {
   /** 状态监听 */
   onStatusChange?: OnStatusChange<TaskGroupStatus>
   /** 取消信号 */
-  abortSignal?: AbortSignal
+  signal?: AbortSignal
 }
 
 /**
@@ -73,7 +73,7 @@ export type ExecuteResult = {
 /**
  * 任务组执行上下文
  */
-export type GroupExecuteContext = Pick<ExecuteContext, 'abortSignal' | 'onProgress' | 'onStatusChange'> & {
+export type GroupExecuteContext = Pick<ExecuteContext, 'signal' | 'onProgress' | 'onStatusChange'> & {
   /** 任务项进度监听 */
   onItemsProgress?: OnProgress[]
   /** 任务项状态监听 */
