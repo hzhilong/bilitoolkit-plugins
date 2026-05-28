@@ -17,7 +17,10 @@ export const DB_NAMES = {
   APP_SETTINGS: 'app_settings',
 }
 
-export const defaultAppSettings: AppSettings = {}
+export const defaultAppSettings: AppSettings = {
+  restoreMaxFailures: 0,
+  avoidRiskControl: true,
+}
 
 //
 const _1 = {

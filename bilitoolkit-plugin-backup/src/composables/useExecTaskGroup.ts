@@ -1,14 +1,15 @@
 import { useAppSessionStore } from '@/stores/app-session.js'
 import { logger } from '@/common/logger.js'
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
-import type { GroupExecuteContext, User } from '@/core/types/execute'
-import type { CreateTaskGroupOptions, TaskGroupStatus, TaskGroup, TaskGroupId } from '@/core/types/task-group'
+import type { GroupExecuteContext } from '@/core/types/execute'
+import type { TaskGroupStatus, TaskGroup, TaskGroupId } from '@/core/types/task-group'
 import { createTaskGroup } from '@/core/task/task-group-handle'
 import { taskSchedule } from '@/core/task/task-schedule'
 import { checkAbortSignal } from '@/core/utils/abort'
-import { ref, type MaybeRefOrGetter, toValue } from 'vue'
+import { ref } from 'vue'
 import { CommonError } from '@ybgnb/utils'
 import { taskGroupService } from '@/core/service/task-group'
+import { assertUserLoggedIn } from '@/utils/assert'
 
 export type CancelExecute = () => void
 
@@ -30,20 +31,12 @@ export const useExecTaskGroup = () => {
     return true
   }
 
-  const assertUserLoggedIn = (user: MaybeRefOrGetter<User>) => {
-    if (!toValue(user)) throw new CommonError(`用户未登录`)
-    return true
-  }
-
   // 创建并执行任务组
   const execTaskGroup = async <O extends OperationType = OperationType>(
     { signal, ...restContext }: GroupExecuteContext,
-    options: TaskGroupId | CreateTaskGroupOptions<O>,
+    options: TaskGroupId,
   ) => {
     assertNoActiveTask()
-    if (typeof options !== 'number') {
-      assertUserLoggedIn(options.user)
-    }
 
     const abortController = new AbortController()
     checkAbortSignal(signal)
@@ -105,7 +98,6 @@ export const useExecTaskGroup = () => {
   }
 
   return {
-    assertUserLoggedIn,
     assertNoActiveTask,
     execTaskGroup,
     cancelTaskGroup,

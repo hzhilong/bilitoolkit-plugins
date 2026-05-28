@@ -4,10 +4,10 @@ import { showError } from 'bilitoolkit-ui'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
 import { getDefaultExecuteOptions } from '@/utils/default-config'
 import type { ComponentExposed } from 'vue-component-type-helpers'
-import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import type RestoreConfig from '@/components/form/RestoreConfig.vue'
 import type { Task } from '@/core/types/task'
 import type { User } from '@/core/types/execute'
+import { assertUserLoggedIn } from '@/utils/assert'
 
 const props = defineProps<{
   tasks: Task<'backup'>[]
@@ -33,7 +33,6 @@ const init = async () => {
     }),
   )
 }
-const { assertUserLoggedIn } = useExecTaskGroup()
 
 watch(visible, (newVal) => {
   if (newVal) {

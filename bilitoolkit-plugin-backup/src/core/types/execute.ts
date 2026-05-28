@@ -6,6 +6,7 @@ import type { ClearOptions } from '@/core/types/clear'
 import type { TaskType, TaskId, TaskStatus } from '@/core/types/task'
 import type { TaskGroupStatus } from '@/core/types/task-group'
 import type { UserInfoWithCookie } from '@ybgnb/bili-api'
+import type { AppSettings } from '@/types/settings'
 
 /**
  * 进度回调
@@ -30,9 +31,11 @@ export interface ExecuteContext {
   /** 进度回调 */
   onProgress?: OnProgress
   /** 状态监听 */
-  onStatusChange?: OnStatusChange<TaskGroupStatus>
+  onStatusChange?: OnStatusChange<TaskStatus>
   /** 取消信号 */
   signal?: AbortSignal
+  /** 应用设置 */
+  appSettings: AppSettings
 }
 
 /**
@@ -73,9 +76,11 @@ export type ExecuteResult = {
 /**
  * 任务组执行上下文
  */
-export type GroupExecuteContext = Pick<ExecuteContext, 'signal' | 'onProgress' | 'onStatusChange'> & {
+export type GroupExecuteContext = Omit<ExecuteContext, 'onStatusChange'> & {
+  /** 状态监听 */
+  onStatusChange?: OnStatusChange<TaskGroupStatus>
   /** 任务项进度监听 */
   onItemsProgress?: OnProgress[]
   /** 任务项状态监听 */
-  onItemsStatusChange?: OnStatusChange<TaskGroupStatus>[]
+  onItemsStatusChange?: OnStatusChange<TaskStatus>[]
 }

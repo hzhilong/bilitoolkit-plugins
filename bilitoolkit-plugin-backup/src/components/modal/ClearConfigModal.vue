@@ -5,9 +5,9 @@ import type { DataType } from '@/core/types/data-type'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
 import { getDefaultExecuteOptions } from '@/utils/default-config'
 import type { ComponentExposed } from 'vue-component-type-helpers'
-import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import type ClearConfig from '@/components/form/ClearConfig.vue'
 import type { User } from '@/core/types/execute'
+import { assertUserLoggedIn } from '@/utils/assert'
 
 const props = defineProps<{
   dataTypes: DataType[]
@@ -32,7 +32,6 @@ const resetAllExecuteOptions = () => {
     )
   }
 }
-const { assertUserLoggedIn } = useExecTaskGroup()
 
 watch(visible, (newVal) => {
   if (newVal) {

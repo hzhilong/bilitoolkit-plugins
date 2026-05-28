@@ -11,8 +11,11 @@ const { appSettings } = storeToRefs(useAppSettingsStore())
       <setting-item title="还原最大允许失败次数" desc="0 为不限制">
         <el-input type="number" v-model.number="appSettings.restoreMaxFailures" :min="0" :max="10" />
       </setting-item>
-      <setting-item title="创建[收藏夹]达到上限后，将该收藏夹的视频移入默认收藏夹">
-        <el-switch />
+      <setting-item
+        title="启用防风控策略"
+        desc="部分数据在还原时可能触发风控。启用后将尝试降低风控触发概率，但效果未经过充分验证"
+      >
+        <el-switch v-model="appSettings.avoidRiskControl" />
       </setting-item>
     </setting-group>
   </plugin-page-content>

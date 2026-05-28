@@ -12,6 +12,8 @@ import { AppIcon, useLoadingData, showError } from 'bilitoolkit-ui'
 import TreeSelectModal from '@/components/modal/TreeSelectModal.vue'
 import { useTreeSelect } from '@/composables/useTreeSelect'
 import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { storeToRefs } from 'pinia'
+import { useAppSettingsStore } from '@/stores/app-settings'
 
 export interface BackupConfigProps {
   user: User
@@ -24,6 +26,7 @@ const props = withDefaults(defineProps<BackupConfigProps>(), {})
 const options = defineModel<ExecuteOptions<'backup'>>({ required: true })
 const { dataModule, dataModuleName, dataModuleColor, exportTargets, isTreeModule, isBatchModule, batchSizes } =
   useDataModule(() => props.dataType)
+const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const { dataRangeTypes, pageSize, onChangeDataRangeType } = useExecuteOptions<'backup'>(
   () => ({ operationType: 'backup', dataType: props.dataType, user: props.user }),
@@ -46,6 +49,7 @@ const init = loadingData(async () => {
     dataTotal.value = await dataModule.value.fetchTotal({
       user: props.user,
       clientId: await biliClientStore.get(props.user),
+      appSettings: appSettings.value,
     })
   }
 })

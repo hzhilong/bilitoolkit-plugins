@@ -9,6 +9,8 @@ import { useTreeDataModule } from '@/composables/useDataModule'
 import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 import type { User } from '@/core/types/execute'
 import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { storeToRefs } from 'pinia'
+import { useAppSettingsStore } from '@/stores/app-settings'
 
 const props = defineProps<{
   user: User
@@ -26,6 +28,7 @@ type ParentNode = P & {
 
 const visible = defineModel<boolean>('visible', { required: true })
 const defaultNodes = defineModel<TreeNodeDataRange[]>('nodes', { required: true })
+const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const { loading, loadingData } = useLoadingData()
 const { treeDataModule, treeTopMeta } = useTreeDataModule<P, C>(() => props.dataType)
@@ -47,6 +50,7 @@ const init = loadingData(async () => {
     list = await treeDataModule.value.fetchAll({
       user: props.user,
       clientId: await biliClientStore.get(props.user),
+      appSettings: appSettings.value,
     })
   } else {
     if (!props.backedUpData) {

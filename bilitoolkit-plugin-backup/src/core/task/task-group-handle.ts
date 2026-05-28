@@ -1,12 +1,11 @@
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { TaskGroupItem, CreateTaskGroupOptions, TaskGroupId } from '@/core/types/task-group'
 import { taskService } from '@/core/service/task'
-import { toolkitApi } from 'bilitoolkit-ui'
 import { inArray } from '@/core/utils/array'
 import type { Task } from '@/core/types/task'
 import { executeTask } from '@/core/task/task-handle'
 import { registeredModulesMap } from '@/core/modules/register'
-import type { ExecuteContext, GroupExecuteContext, User } from '@/core/types/execute'
+import type { ExecuteContext, GroupExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import { taskGroupService } from '@/core/service/task-group'
 import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError, CommonError } from '@ybgnb/utils'
@@ -38,18 +37,6 @@ export const createTaskGroup = async <O extends OperationType = OperationType>(o
 }
 
 /**
- * 创建 bili-api 客户端
- */
-const createBiliClient = async (user: User) => {
-  const clientConfig = await toolkitApi.bili.createBiliClient({
-    context: {
-      userCookie: user.userCookie,
-    },
-  })
-  return clientConfig.id
-}
-
-/**
  * 执行任务组
  */
 export const executeTaskGroup = async <O extends OperationType = OperationType>(
@@ -64,7 +51,8 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     throw new Error('任务组已结束，不可再执行')
   }
 
-  const { onProgress, signal, onStatusChange, onItemsStatusChange, onItemsProgress } = groupContext
+  const { user, clientId, onProgress, signal, onStatusChange, onItemsStatusChange, onItemsProgress, appSettings } =
+    groupContext
 
   return new Promise<void>(async (resolve, reject) => {
     // 设置进度
@@ -92,12 +80,11 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       abortHandler = abortTask
       signal?.addEventListener('abort', abortHandler)
 
-      const clientId = await createBiliClient(taskGroup.user)
-
       const context: ExecuteContext = {
-        user: taskGroup.user,
+        user: user,
         clientId: clientId,
-        signal: groupContext.signal,
+        signal: signal,
+        appSettings: appSettings,
       }
 
       // 需要执行的任务

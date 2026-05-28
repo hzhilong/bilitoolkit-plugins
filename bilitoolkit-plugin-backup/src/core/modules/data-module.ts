@@ -20,7 +20,6 @@ import type { Task, TaskResult } from '@/core/types/task'
 import type { BatchProgress } from '@/core/types/batch'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { RestoreNormalOptions, RestoreBatchOptions, BaseRestoreResult } from '@/core/types/restore'
-import { useAppSettingsStore } from '@/stores/app-settings'
 import { checkAbortSignal } from '@/core/utils/abort'
 
 /**
@@ -269,8 +268,8 @@ export abstract class DataModule<D extends Data = Data> {
     const successItems: D[] = []
     const failedItems: D[] = []
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
-    const restoreMaxFailures = useAppSettingsStore().appSettings.restoreMaxFailures
     let failureCount = 0
+    const restoreMaxFailures = context.appSettings.restoreMaxFailures
     for (let i = 0; i < list.length; i++) {
       checkAbortSignal(context.signal)
       const item = list[i]

@@ -164,7 +164,10 @@ export abstract class TreeDataModule<
     const dataCount = parentList.reduce((acc, cur) => {
       return acc + cur.children.length
     }, 0)
+
     let processedCount = 0
+    let failureCount = 0
+    const restoreMaxFailures = context.appSettings.restoreMaxFailures
 
     for (const parent of parentList) {
       checkAbortSignal(context.signal)
@@ -187,6 +190,10 @@ export abstract class TreeDataModule<
             `[${i + 1}/${list.length}] 还原数据失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
           )
           failedChildItems.push(child)
+          failureCount++
+          if (restoreMaxFailures !== 0 && failureCount > restoreMaxFailures) {
+            throw new Error('失败次数已超过限制，任务终止')
+          }
         }
         await apiSleep(context.signal)
         processedCount++

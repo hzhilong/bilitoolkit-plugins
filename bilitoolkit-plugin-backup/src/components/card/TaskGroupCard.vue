@@ -10,6 +10,9 @@ import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import { useTaskGroupDisplay } from '@/composables/useTaskGroupDisplay'
 import { taskGroupService } from '@/core/service/task-group'
 import { eventBus } from '@/utils/event-bus'
+import { useAppSettingsStore } from '@/stores/app-settings'
+import { storeToRefs } from 'pinia'
+import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +37,7 @@ const taskGroup = defineModel<TaskGroup<O>>({ required: true })
 const items = reactive<Task[]>([])
 const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinue, canCancel } =
   useTaskGroupDisplay(taskGroup, () => items)
+const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const init = async () => {
   const list = []
@@ -79,7 +83,7 @@ onUnmounted(() => {
   canceled = true
 })
 // 构建执行上下文
-const buildExecContext = () => {
+const buildExecContext = async () => {
   const onStatusChange = (status: TaskGroupStatus) => {
     if (!canceled) {
       taskGroup.value.status = status
@@ -100,7 +104,7 @@ const buildExecContext = () => {
     }
     return onProgress
   })
-  const onItemsStatusChange = items.map((item) => {
+  const onItemsStatusChange: OnStatusChange<TaskStatus>[] = items.map((item) => {
     const id = item.id
     const onStatusChange: OnStatusChange<TaskStatus> = (status: TaskStatus) => {
       if (!canceled) {
@@ -114,11 +118,14 @@ const buildExecContext = () => {
     onItemsProgress,
     onItemsStatusChange,
     onProgress,
-  } as GroupExecuteContext
+    appSettings: appSettings.value,
+    user: taskGroup.value.user,
+    clientId: await biliClientStore.get(taskGroup.value.user),
+  } satisfies GroupExecuteContext as GroupExecuteContext
 }
 // 执行任务组
 const exec = async () => {
-  await execTaskGroup(buildExecContext(), taskGroup.value.id)
+  await execTaskGroup(await buildExecContext(), taskGroup.value.id)
 }
 const cancel = async () => {
   if (await cancelTaskGroup(taskGroup.value.id)) {
