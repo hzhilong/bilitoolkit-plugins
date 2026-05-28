@@ -1,4 +1,4 @@
-import type { TreeData, Data } from '@/core/types/data-module'
+import type { Parent } from '@/core/types/data-module'
 
 export const DataRangeTypeMap = {
   all: '所有数据',
@@ -39,7 +39,7 @@ export interface PageDataRange {
 /**
  * 树节点的数据范围信息
  */
-export type TreeNodeDataRange = Pick<TreeData<Data>, '_id' | '_name'> & {
+export type TreeNodeDataRange = Pick<Parent, '_id' | '_name'> & {
   childrenDataRange: AllDataRange | PageDataRange
 }
 

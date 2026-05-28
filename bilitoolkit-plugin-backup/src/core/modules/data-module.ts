@@ -51,9 +51,8 @@ export abstract class DataModule<D extends Data = Data> {
   abstract fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<D>>
   /** 获取所有数据（单个数据要包装为数组） */
   abstract fetchAll(context: ExecuteContext): Promise<D[]>
-
-  /** 还原数据 */
-  abstract restoreData(context: ExecuteContext, data: D): Promise<void>
+  /** 还原数据，返回新数据的id（目前仅在 TreeDataModule 中使用到） */
+  abstract restoreData(context: ExecuteContext, data: D): Promise<string | void>
 
   /** 获取所有数据 */
   protected async baseFetchAll(context: ExecuteContext): Promise<D[]> {
@@ -213,7 +212,7 @@ export abstract class DataModule<D extends Data = Data> {
   }
 
   protected async handleRestore(context: ExecuteContext, task: Task<'restore', D>): Promise<TaskResult<'restore', D>> {
-    const backedUpTask = await taskService.getById<'backup'>(task.executeOptions.backupTaskId)
+    const backedUpTask = await taskService.getById<'backup', D>(task.executeOptions.backupTaskId)
     context.onProgress?.(1, '获取数据中...')
     if (task.executeOptions.mode === 'batch') {
       // 分批模式

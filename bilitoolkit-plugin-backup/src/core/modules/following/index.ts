@@ -5,11 +5,12 @@ import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
 import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
-import { type FollowTag, type Following, toFollowTags } from '@/core/modules/following/types'
+import { type FollowTag, type Following, toFollowTags, toFollowing } from '@/core/modules/following/types'
 import type { TreeRangeMetas } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
+import { apiSleep } from '@/core/utils/sleep'
 
-export class FollowingModule extends TreeDataModule<FollowTag, Following> {
+export class FollowingModule extends TreeDataModule<Following, FollowTag> {
   dataType: DataType = 'following'
   dataTypeName: string = DataTypeMap[this.dataType].name
   operations: OperationType[] = ['backup', 'restore', 'clear']
@@ -33,11 +34,11 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
   }
 
   getDataTitle(data: FollowTag): string {
-    return `关注分组: ${data.name}`
+    return `关注分组-${data.name}`
   }
 
   getChildrenDataTitle(child: Following): string {
-    return `关注用户: ${child.name}`
+    return `关注用户-${child.uname}`
   }
 
   private async getFollowTags({ clientId, signal }: ExecuteContext) {
@@ -58,7 +59,13 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
     params: FetchPageParams,
     tag: FollowTag,
   ): Promise<PageDataWithNextParams<Following>> {
-    return invokeBiliApi(clientId, biliApi.relation.fetchRelationPageWithNextParams, tag.tagid, params, { signal })
+    const result = await invokeBiliApi(clientId, biliApi.relation.fetchRelationPageWithNextParams, tag.tagid, params, {
+      signal,
+    })
+    return {
+      ...result,
+      items: result.items ? toFollowing(result.items) : [],
+    }
   }
 
   fetchAll(context: ExecuteContext): Promise<FollowTag[]> {
@@ -66,22 +73,28 @@ export class FollowingModule extends TreeDataModule<FollowTag, Following> {
     return this.getFollowTags(context)
   }
 
-  async fetchAllByIds(context: ExecuteContext, ids: string[]) {
-    context.onProgress?.(undefined, `正在获取关注分组`)
-    const list = await this.getFollowTags(context)
-    return list.filter((item) => ids.includes(String(item.tagid)))
+  async restoreData({ clientId, signal }: ExecuteContext, tag: FollowTag): Promise<string> {
+    const id = await invokeBiliApi(clientId, biliApi.relation.createFollowTag, tag.name, { signal })
+    return String(id.tagid)
   }
 
-  fetchChildrenAll(context: ExecuteContext, tag: FollowTag): Promise<Following[]> {
-    return this.baseFetchChildrenAll(context, tag)
-  }
-
-  restoreData(_context: ExecuteContext, _data: FollowTag): Promise<void> {
-    // TODO 还原关注前，查看空间、信息等操作的防风控->可配置
-    throw new Error('Method not implemented.')
-  }
-
-  restoreChildrenData(_context: ExecuteContext, _children: Following): Promise<void> {
-    throw new Error('Method not implemented.')
+  async restoreChildrenData(
+    { clientId, appSettings, onProgress, signal }: ExecuteContext,
+    following: Following,
+    parentIds: string[],
+  ): Promise<void> {
+    if (appSettings.avoidRiskControl) {
+      await onProgress?.(undefined, '避免风控中...')
+      await invokeBiliApi(clientId, biliApi.relation.avoidRiskControl, following.mid, { signal })
+      await apiSleep(signal)
+    }
+    await onProgress?.(undefined, `正在关注用户 [${following.uname}]`)
+    await invokeBiliApi(clientId, biliApi.relation.followUser, following.mid, { signal })
+    await apiSleep(signal)
+    if (parentIds.length !== 1 || parentIds[0] !== '0') {
+      // 非默认分组
+      await onProgress?.(undefined, `正在给用户分组 [${following.uname}]`)
+      await invokeBiliApi(clientId, biliApi.relation.copyUsersToTag, [following.mid], parentIds.map(Number))
+    }
   }
 }

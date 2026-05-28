@@ -1,5 +1,5 @@
 import type { ExecuteContext } from '@/core/types/execute'
-import { type Data, type TreeData, isTreeData, isTreeDataModule } from '@/core/types/data-module'
+import { type Data, type Parent, isTreeData, isTreeDataModule, type Child } from '@/core/types/data-module'
 import type { DataRange, DataRangeType, TreeDataRange, PageDataRange } from '@/core/types/data-range'
 import type { BackupDataRangeType, BackupAsset } from '@/core/types/backup'
 import { apiSleep } from '@/core/utils/sleep'
@@ -42,7 +42,7 @@ async function getDataByPageRange<D>(
 /**
  * 通过分页范围获取备份数据
  */
-async function getBackupDataByPageRange<D>(
+async function getBackupDataByPageRange<D extends Data = Data>(
   context: ExecuteContext,
   dataModule: DataModule<D>,
   dataRange: PageDataRange,
@@ -57,9 +57,9 @@ async function getBackupDataByPageRange<D>(
 /**
  * 通过分页范围获取备份数据
  */
-async function getBackupDataByTreePageRange<P extends TreeData<C>, C extends Data>(
+async function getBackupDataByTreePageRange<C extends Child, P extends Parent<C>>(
   context: ExecuteContext,
-  dataModule: TreeDataModule<P, C>,
+  dataModule: TreeDataModule<C, P>,
   dataRange: PageDataRange,
   parent: P,
 ) {
@@ -101,7 +101,7 @@ export const getBackupDataByRange = async <D extends Data = Data, T extends Data
     const treeDataModule = dataModule as unknown as TreeDataModule
 
     if (dataRange.type === 'all') {
-      const parentList: TreeData<Data>[] = await treeDataModule.fetchAll(context)
+      const parentList: Parent[] = await treeDataModule.fetchAll(context)
       for (let i = 0; i < parentList.length; i++) {
         const parent = parentList[i]
         parent.children = await treeDataModule.fetchChildrenAll(context, parent)
@@ -127,10 +127,8 @@ export const getBackupDataByRange = async <D extends Data = Data, T extends Data
       }
 
       // 获取第一层
-      const selectParentList = await treeDataModule.fetchAllByIds(
-        context,
-        nodes.map((n) => n._id),
-      )
+      const nodeIds = nodes.map((n) => n._id)
+      const selectParentList = (await treeDataModule.fetchAll(context)).filter((p) => nodeIds.includes(p._id))
       if (selectParentList.length !== nodes.length) {
         throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围数据错误(node1)`)
       }
@@ -188,7 +186,7 @@ export const getDataByBackupTask = async <D extends Data = Data>(
   // 排除子节点数据
   if (isTree && excludeChildNodes) {
     list.forEach((node) => {
-      const treeNode = node as TreeData<Data>
+      const treeNode = node as Parent
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (treeNode as any)['children']
       treeNode.children = []
@@ -225,11 +223,11 @@ export const getRestoreDataByRange = async <D extends Data = Data, T extends Dat
         throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围选择参数无效`)
       }
 
-      const allTreeData = allData as TreeData<Data>[]
+      const allTreeData = allData as Parent[]
       const { nodes } = dataRange
       const parentIds = new Map(nodes.map((node) => [node._id, node.childrenDataRange]))
 
-      const result: TreeData<Data>[] = []
+      const result: Parent[] = []
       for (const parent of allTreeData) {
         if (parentIds.has(parent._id)) {
           const childrenRange = parentIds.get(parent._id)!

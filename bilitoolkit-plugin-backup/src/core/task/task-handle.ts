@@ -41,7 +41,7 @@ const assertCanExecute = async (task: Task) => {
 export const executeTask = async <O extends OperationType = OperationType, D extends Data = Data>(
   context: ExecuteContext,
   dataModule: DataModule<D>,
-  task: Task<O>,
+  task: Task<O, D>,
 ): Promise<TaskResult<O, D>> => {
   await assertCanExecute(task)
   const { user, onProgress, onStatusChange, signal, clientId, appSettings } = context

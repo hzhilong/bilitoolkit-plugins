@@ -1,5 +1,5 @@
 import { DataModule } from '@/core/modules/data-module'
-import type { Data, TreeData, FetchPageParams } from '@/core/types/data-module'
+import type { Parent, FetchPageParams, Child } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import type { TreeRangeMetas, DataRangeType } from '@/core/types/data-range'
@@ -19,10 +19,7 @@ import { checkAbortSignal } from '@/core/utils/abort'
  *    不支持全局 page / list 模式。
  * 2. 多层数据暂不支持 batch 模式。
  */
-export abstract class TreeDataModule<
-  P extends TreeData<C> = TreeData<Data>,
-  C extends Data = Data,
-> extends DataModule<P> {
+export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C> = Parent<C>> extends DataModule<P> {
   /** 树形范围的元数据（仅支持两层） */
   abstract treeRangeMetas: TreeRangeMetas
 
@@ -40,10 +37,9 @@ export abstract class TreeDataModule<
   ): Promise<PageDataWithNextParams<C>>
 
   /** 获取所有子节点 */
-  abstract fetchChildrenAll(context: ExecuteContext, parent: P): Promise<C[]>
-
-  /** 通过id获取父节点数据 */
-  abstract fetchAllByIds(context: ExecuteContext, ids: string[]): Promise<P[]>
+  fetchChildrenAll(context: ExecuteContext, tag: P): Promise<C[]> {
+    return this.baseFetchChildrenAll(context, tag)
+  }
 
   /** 树形数据不支持全局 page，这里直接获取第一层所有数据 */
   async fetchPage(context: ExecuteContext, _params: FetchPageParams): Promise<PageDataWithNextParams<P>> {
@@ -58,10 +54,10 @@ export abstract class TreeDataModule<
   /** 获取子节点标题 */
   abstract getChildrenDataTitle(child: C): string
 
-  /** 还原父节点数据 */
-  abstract restoreData(context: ExecuteContext, data: P): Promise<void>
+  /** 还原数据，返回新数据的id（目前仅在 TreeDataModule 中使用到） */
+  abstract restoreData(context: ExecuteContext, data: P): Promise<string>
   /** 还原子节点数据 */
-  abstract restoreChildrenData(context: ExecuteContext, children: C): Promise<void>
+  abstract restoreChildrenData(context: ExecuteContext, children: C, parentIds: string[]): Promise<void>
 
   /** 获取所有子节点数据 */
   protected baseFetchChildrenAll = async (context: ExecuteContext, parent: P): Promise<C[]> => {
@@ -125,22 +121,11 @@ export abstract class TreeDataModule<
     const successItems: P[] = []
     const failedItems: P[] = []
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
-    // 先整体还原父节点
-    for (let i = 0; i < list.length; i++) {
-      checkAbortSignal(context.signal)
-      const item = list[i]
-      const progress = Math.floor(((i + 1) * 100) / list.length)
-      try {
-        await this.restoreData(context, item)
-        successItems.push(item)
-        context.onProgress?.(progress, `还原分组成功 [${this.getDataTitle(item)}]`)
-      } catch (e) {
-        context.onProgress?.(progress, `还原分组失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`)
-        failedItems.push(item)
-      }
-      await apiSleep(context.signal)
-    }
-    // 再一个一个还原子节点数据
+    // 整体还原父节点
+    await this.baseRestoreAllParent(list, context, successItems, failedItems)
+    // 为子节点填充 parentIds 字段
+    this.assignParentIds(successItems)
+    // 还原子节点数据
     const cResult = await this.baseRestoreAllChildren(context, successItems)
     failedItems.push(...cResult.failedItems)
 
@@ -148,6 +133,54 @@ export abstract class TreeDataModule<
       successDataDesc: this.getDataTotalDesc(cResult.successItems),
       failedDataDesc: failedItems.length > 0 ? this.getDataTotalDesc(failedItems) : '',
       failedItems,
+    }
+  }
+
+  protected async baseRestoreAllParent(list: P[], context: ExecuteContext, successItems: P[], failedItems: P[]) {
+    const oldParent = new Map((await this.fetchAll(context)).map((p) => [p._name, p]))
+    for (let i = 0; i < list.length; i++) {
+      checkAbortSignal(context.signal)
+      const item = list[i]
+      const progress = Math.floor(((i + 1) * 100) / list.length)
+      try {
+        if (oldParent.has(item._name)) {
+          item._id = oldParent.get(item._name)!._id
+          context.onProgress?.(progress, `[${i + 1}/${list.length}]  [${this.getDataTitle(item)}] 已存在`)
+        } else {
+          item._id = await this.restoreData(context, item)
+          context.onProgress?.(progress, `[${i + 1}/${list.length}] [${this.getDataTitle(item)}] 还原成功`)
+        }
+        successItems.push(item)
+      } catch (e) {
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${list.length}] [${this.getDataTitle(item)}] 还原失败 err：${getErrorMessage(e)}`,
+        )
+        failedItems.push(item)
+      }
+      await apiSleep(context.signal)
+    }
+  }
+
+  /**
+   * 为子节点填充 parentIds 字段
+   */
+  protected assignParentIds(list: P[]) {
+    const childMap = new Map<string, string[]>()
+
+    for (const parent of list) {
+      for (const child of parent.children) {
+        let parentIds = childMap.get(child._id)
+
+        if (parentIds == null) {
+          parentIds = [parent._id]
+          childMap.set(child._id, parentIds)
+        } else if (!parentIds.includes(parent._id)) {
+          parentIds.push(parent._id)
+        }
+
+        child.parentIds = parentIds
+      }
     }
   }
 
@@ -160,6 +193,7 @@ export abstract class TreeDataModule<
   }> {
     const successItems: P[] = []
     const failedItems: P[] = []
+    const handledChildIds = new Set<string>()
 
     const dataCount = parentList.reduce((acc, cur) => {
       return acc + cur.children.length
@@ -177,12 +211,17 @@ export abstract class TreeDataModule<
       const failedChildItems: C[] = []
 
       const list = children.reverse()
-      for (let i = 0; i < list.length; i++) {
+      for (let i = 0; i < list.length; i++, processedCount++) {
         const child = list[i]
         const progress = Math.floor((processedCount * 100) / dataCount)
+        if (handledChildIds.has(child._id)) {
+          context.onProgress?.(progress, `[${i + 1}/${list.length}] 已还原 [${this.getChildrenDataTitle(child)}]`)
+          continue
+        }
         try {
-          await this.restoreChildrenData(context, child)
+          await this.restoreChildrenData(context, child, child.parentIds)
           successChildItems.push(child)
+          handledChildIds.add(child._id)
           context.onProgress?.(progress, `[${i + 1}/${list.length}] 还原数据成功 [${this.getChildrenDataTitle(child)}]`)
         } catch (e) {
           context.onProgress?.(
@@ -196,7 +235,6 @@ export abstract class TreeDataModule<
           }
         }
         await apiSleep(context.signal)
-        processedCount++
       }
 
       successItems.push({

@@ -1,4 +1,4 @@
-import { type TreeData, type Data, isTreeDataModule } from '@/core/types/data-module'
+import { type Parent, isTreeDataModule, type Child } from '@/core/types/data-module'
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import { type MaybeRefOrGetter, computed, toValue } from 'vue'
 import { registeredModulesMap } from '@/core/modules/register'
@@ -57,12 +57,12 @@ export const useDataModule = (dataType: MaybeRefOrGetter<DataType>) => {
   }
 }
 
-export const useTreeDataModule = <P extends TreeData<C>, C extends Data>(dataType: MaybeRefOrGetter<DataType>) => {
-  const treeDataModule = computed<TreeDataModule<P, C>>(() => {
+export const useTreeDataModule = <C extends Child, P extends Parent<C>>(dataType: MaybeRefOrGetter<DataType>) => {
+  const treeDataModule = computed<TreeDataModule<C, P>>(() => {
     const currentType = toValue(dataType)
     const module = registeredModulesMap[currentType]
     if (!isTreeDataModule(module)) throw new Error(`内部错误，[${currentType}] 非树形数据模块`)
-    return module as unknown as TreeDataModule<P, C>
+    return module as unknown as TreeDataModule<C, P>
   })
 
   const { dataModule: _, ...bastRest } = useDataModule(dataType)

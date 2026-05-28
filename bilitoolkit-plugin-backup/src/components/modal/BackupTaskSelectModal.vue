@@ -1,5 +1,4 @@
-<script setup lang="ts" generic="P extends TreeData<C>, C extends Data">
-import type { TreeData, Data } from '@/core/types/data-module'
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useLoadingData, useSelectData, showError } from 'bilitoolkit-ui'
 import type { TaskGroup } from '@/core/types/task-group'

@@ -1,5 +1,5 @@
-<script setup lang="ts" generic="P extends TreeData<C>, C extends Data">
-import type { TreeData, Data } from '@/core/types/data-module'
+<script setup lang="ts" generic="C extends Child, P extends Parent<C>">
+import type { Parent, Child } from '@/core/types/data-module'
 import { type TreeNodeDataRange, DataRangeTypeMap, type DataRangeType } from '@/core/types/data-range'
 import { ref, watch, computed, useTemplateRef, toRaw } from 'vue'
 import { useLoadingData, showWarning, showError } from 'bilitoolkit-ui'
@@ -31,7 +31,7 @@ const defaultNodes = defineModel<TreeNodeDataRange[]>('nodes', { required: true 
 const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const { loading, loadingData } = useLoadingData()
-const { treeDataModule, treeTopMeta } = useTreeDataModule<P, C>(() => props.dataType)
+const { treeDataModule, treeTopMeta } = useTreeDataModule<C, P>(() => props.dataType)
 const pageSize = computed(() => {
   return props.operationType === 'backup' ? treeDataModule.value.getPageSize() : RESTORE_PAGE_SIZE
 })

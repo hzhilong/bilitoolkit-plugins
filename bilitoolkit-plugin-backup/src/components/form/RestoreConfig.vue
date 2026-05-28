@@ -12,7 +12,7 @@ import TreeSelectModal from '@/components/modal/TreeSelectModal.vue'
 import { useTreeSelect } from '@/composables/useTreeSelect'
 import type { Task } from '@/core/types/task'
 import { getDataByBackupTask } from '@/core/utils/data-range'
-import type { Data } from '@/core/types/data-module'
+import type { Data, Parent } from '@/core/types/data-module'
 
 export interface RestoreConfigProps {
   user: User
@@ -145,7 +145,7 @@ defineExpose({
       v-if="isTreeModule && !viewMode"
       :operation-type="'restore'"
       :data-type="dataType"
-      :backedUpData="backedUpData"
+      :backedUpData="backedUpData as Parent[]"
       :user="user"
       v-model:visible="treeModalVisible"
       v-model:nodes="treeModalNodes"
