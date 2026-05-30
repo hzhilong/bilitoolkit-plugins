@@ -68,7 +68,7 @@ export class FollowingModule extends TreeDataModule<Following, FollowTag> {
     }
   }
 
-  fetchAll(context: ExecuteContext): Promise<FollowTag[]> {
+  fetchParentAll(context: ExecuteContext): Promise<FollowTag[]> {
     context.onProgress?.(undefined, `正在获取关注分组`)
     return this.getFollowTags(context)
   }
@@ -96,5 +96,13 @@ export class FollowingModule extends TreeDataModule<Following, FollowTag> {
       await onProgress?.(undefined, `正在给用户分组 [${following.uname}]`)
       await invokeBiliApi(clientId, biliApi.relation.copyUsersToTag, [following.mid], parentIds.map(Number))
     }
+  }
+
+  async delParentData({ clientId, signal }: ExecuteContext, tag: FollowTag): Promise<void> {
+    await invokeBiliApi(clientId, biliApi.relation.deleteFollowTag, tag.tagid, { signal })
+  }
+
+  async delChildData({ clientId, signal }: ExecuteContext, user: Following): Promise<void> {
+    await invokeBiliApi(clientId, biliApi.relation.unFollowUser, user.mid, { signal })
   }
 }

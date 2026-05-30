@@ -101,13 +101,7 @@ export const getBackupDataByRange = async <D extends Data = Data, T extends Data
     const treeDataModule = dataModule as unknown as TreeDataModule
 
     if (dataRange.type === 'all') {
-      const parentList: Parent[] = await treeDataModule.fetchAll(context)
-      for (let i = 0; i < parentList.length; i++) {
-        const parent = parentList[i]
-        parent.children = await treeDataModule.fetchChildrenAll(context, parent)
-        parent.childrenSize = parent.children.length
-      }
-      return parentList as D[]
+      return await dataModule.fetchAll(context)
     }
 
     if (dataRange.type === 'page') {
@@ -128,7 +122,7 @@ export const getBackupDataByRange = async <D extends Data = Data, T extends Data
 
       // 获取第一层
       const nodeIds = nodes.map((n) => n._id)
-      const selectParentList = (await treeDataModule.fetchAll(context)).filter((p) => nodeIds.includes(p._id))
+      const selectParentList = (await treeDataModule.fetchParentAll(context)).filter((p) => nodeIds.includes(p._id))
       if (selectParentList.length !== nodes.length) {
         throw new Error(`内部错误，[${dataModule.dataTypeName}]树形范围数据错误(node1)`)
       }

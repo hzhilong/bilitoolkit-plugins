@@ -117,5 +117,12 @@ onUnmounted(() => {
     flex-direction: column;
     align-items: center;
   }
+  ::v-deep(.page-table__actions) {
+    .title {
+      margin-right: auto;
+      font-size: 14px;
+      align-self: center;
+    }
+  }
 }
 </style>

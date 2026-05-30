@@ -24,8 +24,16 @@ export interface BackupConfigProps {
 const props = withDefaults(defineProps<BackupConfigProps>(), {})
 
 const options = defineModel<ExecuteOptions<'backup'>>({ required: true })
-const { dataModule, dataModuleName, dataModuleColor, exportTargets, isTreeModule, isBatchModule, batchSizes } =
-  useDataModule(() => props.dataType)
+const {
+  dataModule,
+  dataModuleName,
+  dataModuleColor,
+  exportTargets,
+  isTreeModule,
+  isBatchModule,
+  batchSizes,
+  backupDesc,
+} = useDataModule(() => props.dataType)
 const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const { dataRangeTypes, pageSize, onChangeDataRangeType } = useExecuteOptions<'backup'>(
@@ -45,16 +53,18 @@ const init = loadingData(async () => {
     showError('用户未登录')
     return
   }
-  if (dataModule.value.fetchTotal) {
+  if (!props.viewMode && dataModule.value.fetchTotal) {
     dataTotal.value = await dataModule.value.fetchTotal({
       user: props.user,
       clientId: await biliClientStore.get(props.user),
       appSettings: appSettings.value,
     })
+  } else {
+    dataTotal.value = undefined
   }
 })
 
-watch(() => props.dataType, init)
+watch(() => props.dataType, init, { immediate: true })
 
 const formRef = useTemplateRef<InstanceType<typeof ElForm>>('formRef')
 
@@ -78,6 +88,7 @@ defineExpose({
     <div class="header" v-if="!viewMode">
       <span class="data-module-name">{{ dataModuleName }}</span>
       <span class="data-module-stat" v-if="!viewMode && dataTotal">{{ dataTotal }}</span>
+      <span class="data-module-desc" v-if="!viewMode && backupDesc">{{ backupDesc }}</span>
     </div>
     <el-form class="form" ref="formRef" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
       <el-form-item v-if="!viewMode" label="任务模式" prop="mode">

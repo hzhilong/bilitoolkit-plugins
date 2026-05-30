@@ -80,7 +80,7 @@ export type TaskResultPayload<O extends OperationType = OperationType, D extends
   ? BackupResult
   : O extends 'restore'
     ? RestoreResult<D>
-    : ClearResult<D>
+    : ClearResult
 
 /**
  * 任务结果

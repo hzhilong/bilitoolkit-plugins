@@ -71,14 +71,14 @@ const handleShowAsset = (asset: BackupAsset) => {
 </script>
 
 <template>
-  <div class="dialog">
+  <div class="task-modal">
     <el-dialog
       title="任务详情"
       v-model="visible"
       width="96%"
       style="min-width: 700px; max-height: 98vh; overflow: auto"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
+      :close-on-click-modal="true"
+      :close-on-press-escape="true"
       :show-close="true"
       align-center
     >
@@ -166,38 +166,41 @@ const handleShowAsset = (asset: BackupAsset) => {
 </template>
 
 <style scoped lang="scss">
-.dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-::v-deep(.el-form-item) {
-  margin-bottom: 0;
-}
-::v-deep(.el-radio:not(.is-checked)) {
-  display: none;
-}
-::v-deep(.el-descriptions__header) {
-  margin-bottom: 4px;
-  padding-left: 10px;
-  position: relative;
+.task-modal {
+  display: contents;
+  ::v-deep(.el-descriptions__header) {
+    margin-bottom: 4px;
+    padding-left: 10px;
+    position: relative;
 
-  &::before {
-    content: '';
-    width: 3px;
-    height: 1.2em;
-    background: var(--el-color-primary);
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    &::before {
+      content: '';
+      width: 3px;
+      height: 1.2em;
+      background: var(--el-color-primary);
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
   }
-}
-::v-deep(.el-descriptions__label) {
-  text-wrap: nowrap;
-}
-::v-deep(.el-descriptions) {
-  .task-progress-msg {
+  ::v-deep(.el-descriptions__label) {
+    text-wrap: nowrap;
+  }
+  ::v-deep(.el-descriptions) {
+    .task-progress-msg {
+    }
+  }
+  ::v-deep(.el-form-item) {
+    margin-bottom: 0;
+  }
+  ::v-deep(.el-radio:not(.is-checked)) {
+    display: none;
+  }
+  .dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 }
 </style>

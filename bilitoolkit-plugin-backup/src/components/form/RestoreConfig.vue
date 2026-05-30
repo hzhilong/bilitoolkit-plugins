@@ -35,9 +35,8 @@ watch(
   { immediate: true },
 )
 
-const { dataModule, dataModuleName, dataModuleColor, isTreeModule, isBatchModule, batchSizes } = useDataModule(
-  () => props.dataType,
-)
+const { dataModule, dataModuleName, dataModuleColor, isTreeModule, isBatchModule, batchSizes, restoreDesc } =
+  useDataModule(() => props.dataType)
 
 const dataTotalDesc = computed(() => dataModule.value.getDataTotalDesc(backedUpData.value))
 
@@ -65,6 +64,7 @@ defineExpose({
   <div class="execute-config" :class="viewMode ? 'readonly' : ''" :style="{ '--data-type-color': dataModuleColor }">
     <div class="header" v-if="!viewMode">
       <span class="data-module-name">{{ dataModuleName }}</span>
+      <span class="data-module-desc" v-if="!viewMode && restoreDesc">{{ restoreDesc }}</span>
     </div>
     <el-form class="form" ref="formRef" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
       <el-form-item v-if="!viewMode" label="任务模式" prop="mode">

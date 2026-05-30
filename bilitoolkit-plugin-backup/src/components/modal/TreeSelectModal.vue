@@ -238,54 +238,58 @@ const handleChildrenChange = (index: number) => {
 </template>
 
 <style scoped lang="scss">
-.node-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box;
-  padding: 10px;
+.dialog {
+  display: contents;
 
-  .node-item {
+  .node-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     box-sizing: border-box;
-    padding: 4px 20px;
-    border-radius: 10px;
-    border: 1px solid var(--el-border-color);
+    padding: 10px;
 
-    &.selected {
-      border-color: var(--el-color-primary);
-    }
+    .node-item {
+      box-sizing: border-box;
+      padding: 4px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--el-border-color);
 
-    .item-checkbox {
-      width: 100%;
+      &.selected {
+        border-color: var(--el-color-primary);
+      }
 
-      ::v-deep(.el-checkbox__label) {
+      .item-checkbox {
         width: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 16px;
 
-        .item-title {
-          color: var(--el-text-color-regular);
-        }
-        .item-count {
-          color: var(--el-text-color-secondary);
+        ::v-deep(.el-checkbox__label) {
+          width: 100%;
+          display: flex;
+          flex-wrap: nowrap;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 16px;
+
+          .item-title {
+            color: var(--el-text-color-regular);
+          }
+          .item-count {
+            color: var(--el-text-color-secondary);
+          }
         }
       }
-    }
 
-    .children-config {
-      .children-config-page {
-        ::v-deep(.el-form-item__content) {
-          display: flex;
-          align-items: center;
-          flex-wrap: nowrap;
-          gap: 10px;
-        }
+      .children-config {
+        .children-config-page {
+          ::v-deep(.el-form-item__content) {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 10px;
+          }
 
-        ::v-deep(.el-input) {
-          width: 60px;
+          ::v-deep(.el-input) {
+            width: 60px;
+          }
         }
       }
     }

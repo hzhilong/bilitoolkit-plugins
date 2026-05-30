@@ -5,7 +5,7 @@ import type { TaskGroup } from '@/core/types/task-group'
 import type { Task } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
 import { inArray } from '@/core/utils/array'
-import { registeredModulesMap } from '@/core/modules/register'
+import { registeredModulesMap, allRestorableModules } from '@/core/modules/register'
 import { getDataByBackupTask } from '@/core/utils/data-range'
 
 const props = defineProps<{
@@ -17,6 +17,7 @@ interface ExtendTask extends Task<'backup'> {
   dataTypeName: string
   dataTotalDesc: string
 }
+const restorableDataTypes = allRestorableModules.map((m) => m.dataType)
 const tasks = ref<ExtendTask[]>([])
 const { loading, loadingData } = useLoadingData()
 const { getSelectedData, checkboxValue } = useSelectData(tasks, (task: ExtendTask) => task.id)
@@ -27,7 +28,7 @@ const init = loadingData(async () => {
   for (const item of props.taskGroup.items) {
     const task = await taskService.getById<'backup'>(item.id)
     const dataModule = registeredModulesMap[task.dataType]
-    if (inArray(task.status, ['completed', 'batchCompleted'])) {
+    if (inArray(task.status, ['completed', 'batchCompleted']) && restorableDataTypes.includes(task.dataType)) {
       list.push({
         ...task,
         dataTypeName: dataModule.dataTypeName,
@@ -102,32 +103,36 @@ const handleSubmit = async () => {
 </template>
 
 <style scoped lang="scss">
-.tasks {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box;
-  padding: 10px;
+.dialog {
+  display: contents;
 
-  .task {
-    width: 100%;
+  .tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     box-sizing: border-box;
-    padding: 4px 20px;
-    border-bottom: 1px solid var(--el-border-color);
+    padding: 10px;
 
-    ::v-deep(.el-checkbox__label) {
+    .task {
       width: 100%;
-      display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 16px;
+      box-sizing: border-box;
+      padding: 4px 20px;
+      border-bottom: 1px solid var(--el-border-color);
 
-      .data-name {
-        color: var(--el-text-color-regular);
-      }
-      .total-desc {
-        color: var(--el-text-color-secondary);
+      ::v-deep(.el-checkbox__label) {
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 16px;
+
+        .data-name {
+          color: var(--el-text-color-regular);
+        }
+        .total-desc {
+          color: var(--el-text-color-secondary);
+        }
       }
     }
   }

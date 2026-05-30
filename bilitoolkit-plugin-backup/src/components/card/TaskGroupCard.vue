@@ -42,6 +42,7 @@ const { appSettings } = storeToRefs(useAppSettingsStore())
 const init = async () => {
   const list = []
   const lastId = taskGroup.value.id
+  items.splice(0, items.length)
   for (const item of taskGroup.value.items) {
     list.push(await taskService.getById(item.id))
   }
@@ -53,9 +54,9 @@ const init = async () => {
   }
 }
 watch(
-  () => taskGroup.value,
+  () => taskGroup.value.id,
   (newValue, oldValue) => {
-    if (newValue.id !== oldValue?.id) {
+    if (newValue !== oldValue) {
       init()
     }
   },
@@ -189,7 +190,9 @@ const cancel = async () => {
       </div>
       <div class="task-group-items">
         <div class="items-label">任务列表：</div>
-        <TaskCard v-for="item in items" :task="item" :key="item.id" :show-box-shadow="false" />
+        <div class="task-items-wrapper">
+          <TaskCard v-for="item in items" :task="item" :key="item.id" :show-box-shadow="false" />
+        </div>
       </div>
     </div>
   </div>
@@ -197,6 +200,11 @@ const cancel = async () => {
 
 <style scoped lang="scss">
 .task-group-card {
+  box-shadow: none;
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
   border: 1px solid var(--el-border-color);
   font-size: 14px;
@@ -272,6 +280,8 @@ const cancel = async () => {
 
   .card-body {
     padding: 16px 26px 20px 20px;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -339,11 +349,23 @@ const cancel = async () => {
   }
 
   .task-group-items {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
     border-top: 1px solid var(--el-border-color-extra-light);
     padding-top: 10px;
+    gap: 6px;
+
+    .task-items-wrapper {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 8px;
+    }
   }
 }
 </style>

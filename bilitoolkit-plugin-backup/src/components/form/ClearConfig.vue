@@ -27,7 +27,7 @@ useExecuteOptions<'clear'>(() => ({ operationType: 'clear', dataType: props.data
     </div>
     <el-form class="form" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
       <el-form-item label="数据范围">
-        <el-radio value="all" label="全部数据" />
+        <el-radio value="all" label="全部数据" v-model="options.dataRange.type" />
       </el-form-item>
     </el-form>
   </div>

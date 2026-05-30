@@ -34,13 +34,12 @@ watch(
 </script>
 
 <template>
-  <div class="dialog">
+  <div class="task-group-dialog">
     <el-dialog
       title="任务组"
       v-model="visible"
       @update:model-value="visible = $event"
       width="66%"
-      style="max-width: 600px; min-width: 400px; max-height: 90vh; overflow: hidden"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="true"
@@ -63,4 +62,31 @@ watch(
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.task-group-dialog {
+  display: contents;
+
+  ::v-deep(> .el-modal-dialog > .el-overlay-dialog > .el-dialog) {
+    max-width: 600px;
+    min-width: 400px;
+    max-height: 94vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    > .el-dialog__body {
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .dialog-content {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+</style>

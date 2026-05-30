@@ -20,11 +20,10 @@ import { toIPC } from 'bilitoolkit-runtime'
 
 const { user } = useUser()
 const fetchPage = async (pageParams: PageParams, _filters: TaskGroupFilters) => {
-  const list = await taskGroupService.fetchPage(pageParams, {
+  return await taskGroupService.fetchPage(pageParams, {
     statusArr: ['batchCompleted', 'completed'],
+    operationType: 'backup',
   })
-  console.log(`fetchPage`, pageParams, list)
-  return list
 }
 const tableRef = useTemplateRef<ComponentExposed<typeof PageTable<TaskGroup<'restore'>, TaskGroupFilters>>>('tableRef')
 const onRefresh = () => {
@@ -73,14 +72,14 @@ const groupModalId = ref<number>()
 <template>
   <plugin-page-content>
     <PageTable
-      class="page-table"
+      class="backup-task-page-table"
       ref="tableRef"
       :fetch-page="fetchPage"
       :page-sizes="[20]"
       searchActionLabel="刷新"
       :actions="['search']"
     >
-      <template v-slot:actions>
+      <template v-slot:query>
         <div class="title">请选择已完成的任务组：</div>
       </template>
       <ElTableColumn align="center" prop="id" label="id" min-width="30px"></ElTableColumn>
@@ -139,15 +138,13 @@ const groupModalId = ref<number>()
 </template>
 
 <style scoped lang="scss">
-.page-table {
+.backup-task-page-table {
   flex: 1;
   min-height: 0;
-  ::v-deep(.page-table__actions) {
-    .title {
-      margin-right: auto;
-      font-size: 14px;
-      align-self: center;
-    }
+
+  .title {
+    font-size: 14px;
+    align-self: center;
   }
 }
 </style>

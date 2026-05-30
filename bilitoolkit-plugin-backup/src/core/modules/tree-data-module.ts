@@ -36,6 +36,22 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
     parent: P,
   ): Promise<PageDataWithNextParams<C>>
 
+  /** 获取所有数据（单个数据要包装为数组） */
+  async fetchAll(context: ExecuteContext): Promise<P[]> {
+    await context.onProgress?.(0, `正在获取 ${this.treeRangeMetas[0].name}`)
+    const parentList = await this.fetchParentAll(context)
+    for (let i = 0; i < parentList.length; i++) {
+      const parent = parentList[i]
+      await context.onProgress?.((i * 100) / parentList.length, `正在获取 ${this.getDataTitle(parent)}`)
+      parent.children = await this.fetchChildrenAll(context, parent)
+      parent.childrenSize = parent.children.length
+    }
+    return parentList
+  }
+
+  /** 获取所有父节点 */
+  abstract fetchParentAll(context: ExecuteContext): Promise<P[]>
+
   /** 获取所有子节点 */
   fetchChildrenAll(context: ExecuteContext, tag: P): Promise<C[]> {
     return this.baseFetchChildrenAll(context, tag)
@@ -43,7 +59,7 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
 
   /** 树形数据不支持全局 page，这里直接获取第一层所有数据 */
   async fetchPage(context: ExecuteContext, _params: FetchPageParams): Promise<PageDataWithNextParams<P>> {
-    const tags = await this.fetchAll(context)
+    const tags = await this.fetchParentAll(context)
     return {
       items: tags,
       nextParams: {},
@@ -58,6 +74,10 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
   abstract restoreData(context: ExecuteContext, data: P): Promise<string>
   /** 还原子节点数据 */
   abstract restoreChildrenData(context: ExecuteContext, children: C, parentIds: string[]): Promise<void>
+  /** 删除父节点的数据 */
+  abstract delParentData(context: ExecuteContext, parent: P): Promise<void>
+  /** 删除子节点的数据 */
+  abstract delChildData(context: ExecuteContext, child: C): Promise<void>
 
   /** 获取所有子节点数据 */
   protected baseFetchChildrenAll = async (context: ExecuteContext, parent: P): Promise<C[]> => {
@@ -137,7 +157,7 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
   }
 
   protected async baseRestoreAllParent(list: P[], context: ExecuteContext, successItems: P[], failedItems: P[]) {
-    const oldParent = new Map((await this.fetchAll(context)).map((p) => [p._name, p]))
+    const oldParent = new Map((await this.fetchParentAll(context)).map((p) => [p._name, p]))
     for (let i = 0; i < list.length; i++) {
       checkAbortSignal(context.signal)
       const item = list[i]
@@ -253,5 +273,80 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
       successItems,
       failedItems,
     }
+  }
+
+  async clearData(context: ExecuteContext, list: P[]): Promise<string | void> {
+    if (this.supportsOneClickClear) throw new Error(`内部错误，[${this.dataTypeName}] 支持一键清空但未定义清空方法`)
+
+    context.onProgress?.(0, `正在处理数据`)
+    const allChildren = new Map<string, C>()
+    const allParent: P[] = []
+    for (const parent of list) {
+      for (const child of parent.children) {
+        if (!allChildren.has(child._id)) {
+          allChildren.set(child._id, child)
+        }
+      }
+      allParent.push({
+        ...parent,
+        children: [],
+        childrenSize: 0,
+      })
+    }
+    const childrenList = Array.from(allChildren.values())
+    let failureCount = 0
+    const successChildItems: C[] = []
+    const maxFailures = context.appSettings.clearMaxFailures
+    for (let i = 0; i < childrenList.length; i++) {
+      checkAbortSignal(context.signal)
+      const child = childrenList[i]
+      const progress = Math.floor(((i + 1) * 100) / childrenList.length)
+      try {
+        await this.delChildData(context, child)
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${childrenList.length}] 数据删除成功 [${this.getChildrenDataTitle(child)}]`,
+        )
+        successChildItems.push(child)
+      } catch (e) {
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${childrenList.length}] 数据删除失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
+        )
+        failureCount++
+        if (maxFailures !== 0 && failureCount > maxFailures) {
+          throw new Error('失败次数已超过限制，任务终止')
+        }
+      }
+    }
+
+    failureCount = 0
+    const successParents: P[] = []
+    for (let i = 0; i < allParent.length; i++) {
+      checkAbortSignal(context.signal)
+      const parent = allParent[i]
+      const progress = Math.floor(((i + 1) * 100) / allParent.length)
+      try {
+        await this.delParentData(context, parent)
+        context.onProgress?.(progress, `[${i + 1}/${allParent.length}] 数据删除成功 [${this.getDataTitle(parent)}]`)
+        successParents.push(parent)
+      } catch (e) {
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${allParent.length}] 数据删除失败 [${this.getDataTitle(parent)}] err：${getErrorMessage(e)}`,
+        )
+        failureCount++
+        if (maxFailures !== 0 && failureCount > maxFailures) {
+          throw new Error('失败次数已超过限制，任务终止')
+        }
+      }
+    }
+
+    const tempParents = successParents
+    if (tempParents.length > 0) {
+      tempParents[0].children = successChildItems
+      tempParents[0].childrenSize = successChildItems.length
+    }
+    return this.getDataTotalDesc(tempParents)
   }
 }

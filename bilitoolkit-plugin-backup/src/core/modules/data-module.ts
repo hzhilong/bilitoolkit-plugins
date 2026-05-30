@@ -21,6 +21,7 @@ import type { BatchProgress } from '@/core/types/batch'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { RestoreNormalOptions, RestoreBatchOptions, BaseRestoreResult } from '@/core/types/restore'
 import { checkAbortSignal } from '@/core/utils/abort'
+import type { ClearOptions } from '@/core/types/clear'
 
 /**
  * 模块基类
@@ -50,9 +51,15 @@ export abstract class DataModule<D extends Data = Data> {
   /** 获取分页数据（单个数据要包装为数组） */
   abstract fetchPage(context: ExecuteContext, params: FetchPageParams): Promise<PageDataWithNextParams<D>>
   /** 获取所有数据（单个数据要包装为数组） */
-  abstract fetchAll(context: ExecuteContext): Promise<D[]>
+  fetchAll(context: ExecuteContext): Promise<D[]> {
+    return this.baseFetchAll(context)
+  }
   /** 还原数据，返回新数据的id（目前仅在 TreeDataModule 中使用到） */
   abstract restoreData(context: ExecuteContext, data: D): Promise<string | void>
+  /** 是否支持一键清空。 true - clearData方法不会传递 list */
+  supportsOneClickClear?: boolean
+  /** 清空数据。可能返回清空结果 */
+  abstract clearData(context: ExecuteContext, list: D[]): Promise<string | void>
 
   /** 获取所有数据 */
   protected async baseFetchAll(context: ExecuteContext): Promise<D[]> {
@@ -121,6 +128,8 @@ export abstract class DataModule<D extends Data = Data> {
       return (await this.handleBackup(context, task as Task<'backup', D>)) as TaskResult<O, D>
     } else if (task.executeOptions.operationType === 'restore') {
       return (await this.handleRestore(context, task as Task<'restore', D>)) as unknown as TaskResult<O, D>
+    } else if (task.executeOptions.operationType === 'clear') {
+      return (await this.handleClear(context, task as Task<'clear', D>)) as unknown as TaskResult<O, D>
     } else {
       throw new Error('暂未支持')
     }
@@ -295,5 +304,49 @@ export abstract class DataModule<D extends Data = Data> {
       failedDataDesc: failedItems.length > 0 ? this.getDataTotalDesc(failedItems) : '',
       failedItems,
     }
+  }
+
+  protected async handleClear(context: ExecuteContext, task: Task<'clear', D>): Promise<TaskResult<'clear', D>> {
+    const _options = task.executeOptions as ClearOptions
+    const list = this.supportsOneClickClear ? [] : await this.fetchAll(context)
+    // 获取选取的备份数据
+    const resultMsg = await this.clearData(context, list)
+    // 开始还原
+    return {
+      success: true,
+      msg: resultMsg ?? `已清空`,
+    } as TaskResult<'restore', D>
+  }
+
+  async baseClearData(context: ExecuteContext, list: D[], clearFn: (data: D) => Promise<void>): Promise<string | void> {
+    if (list.length === 0) {
+      context.onProgress?.(1, '数据为空，无需操作')
+      return '数据为空，无需操作'
+    }
+    const successItems: D[] = []
+    context.onProgress?.(1, `即将清空：${this.getDataTotalDesc(list)}`)
+    let failureCount = 0
+    const maxFailures = context.appSettings.clearMaxFailures
+    for (let i = 0; i < list.length; i++) {
+      checkAbortSignal(context.signal)
+      const item = list[i]
+      const progress = Math.floor(((i + 1) * 100) / list.length)
+      try {
+        await clearFn(item)
+        successItems.push(item)
+        context.onProgress?.(progress, `[${i + 1}/${list.length}] 数据删除成功 [${this.getDataTitle(item)}]`)
+      } catch (e) {
+        context.onProgress?.(
+          progress,
+          `[${i + 1}/${list.length}] 数据删除失败 [${this.getDataTitle(item)}] err：${getErrorMessage(e)}`,
+        )
+        failureCount++
+        if (maxFailures !== 0 && failureCount > maxFailures) {
+          throw new Error('失败次数已超过限制，任务终止')
+        }
+      }
+      await apiSleep(context.signal)
+    }
+    return `已删除 ${this.getDataTotalDesc(successItems)}`
   }
 }

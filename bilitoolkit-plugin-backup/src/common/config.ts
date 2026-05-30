@@ -2,7 +2,8 @@ import type { DataType } from '@/core/types/data-type'
 import type { AppSettings } from '@/types/settings'
 
 export const DATA_TYPE_COLORS: Record<DataType, string> = {
-  bangumi: '#a569bd',
+  bangumi_anime: '#a569bd',
+  bangumi_tv: '#c07ab8',
   black: '#a0522d',
   fav_collected: '#3498db',
   fav_opuses: '#f39c12',
@@ -19,12 +20,12 @@ export const DB_NAMES = {
 
 export const defaultAppSettings: AppSettings = {
   restoreMaxFailures: 0,
+  clearMaxFailures: 0,
   avoidRiskControl: true,
 }
 
-//
+// 备选
 const _1 = {
-  1: '#b19cd9',
   2: '#ff7f50',
   3: '#98fb98',
   4: '#ffb347',

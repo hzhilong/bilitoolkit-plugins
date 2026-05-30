@@ -1,13 +1,17 @@
-.execute-config-modal ::v-deep(.el-dialog) {
-  max-width: 600px;
-  min-width: 400px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  .el-dialog__body {
-    flex: 1;
-    overflow-y: auto;
+.execute-config-modal{
+  display: contents;
+
+  ::v-deep(> .el-modal-dialog > .el-overlay-dialog > .el-dialog) {
+    max-width: 600px;
+    min-width: 400px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    .el-dialog__body {
+      flex: 1;
+      overflow-y: auto;
+    }
   }
 }
 .content {

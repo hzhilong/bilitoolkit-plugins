@@ -72,14 +72,6 @@ export class TaskGroupService {
     return this.getById(groupId)
   }
 
-  async suspendRunningTask() {
-    // TODO 遍历任务项
-    await db.task
-      .where('status')
-      .equals('running')
-      .modify({ status: 'failed', progressMsg: '任务已失效（应用重启后无法继续）' })
-  }
-
   /**
    * 获取分页数据
    */
@@ -136,7 +128,7 @@ export class TaskGroupService {
       query = db.taskGroup.where('createdAt').between(createdAt0, createdAt1)
     }
 
-    const list = await query.reverse().offset(offset).limit(pageSize).toArray()
+    const list = await query.clone().reverse().offset(offset).limit(pageSize).toArray()
 
     const count = await query.count()
 

@@ -58,7 +58,7 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   if (!itemRefs.value) return
   assertUserLoggedIn(props.user)
-  visible.value = false
+  //  visible.value = false
   emit('submit', {
     operationType: 'clear',
     user: props.user,

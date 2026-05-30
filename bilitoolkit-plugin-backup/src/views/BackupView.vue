@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { PluginPageContent, showToast } from 'bilitoolkit-ui'
+import { PluginPageContent, showToast, showWarning } from 'bilitoolkit-ui'
 import { ref } from 'vue'
-import { registeredModuleTypes } from '@/core/modules/register'
-import { type DataType, AllDataTypes } from '@/core/types/data-type'
-import { appEnv } from '@ybgnb/vite-env/common'
+import { allBackupableModules } from '@/core/modules/register'
+import { type DataType } from '@/core/types/data-type'
 import type { CreateTaskGroupOptions } from '@/core/types/task-group'
 import { useUser } from '@/composables/useUser'
 import { createTaskGroup } from '@/core/task/task-group-handle'
@@ -11,7 +10,7 @@ import { toIPC } from 'bilitoolkit-runtime'
 import { useAppSessionStore } from '@/stores/app-session'
 import { storeToRefs } from 'pinia'
 
-const allDataTypes = appEnv.DEV ? AllDataTypes.map((t) => t.type) : registeredModuleTypes
+const allDataTypes = allBackupableModules.map((m) => m.dataType)
 const selectedDataTypes = ref<DataType[]>([])
 const isSelectAll = ref<boolean>(false)
 const selectAll = () => {
@@ -34,7 +33,11 @@ const taskGroupId = ref<number>()
 const taskGroupModalVisible = ref(false)
 
 const handleBackup = async () => {
-  visibleExecuteConfigModal.value = true
+  if (selectedDataTypes.value.length < 1) {
+    showWarning('请选择需要备份的数据')
+  } else {
+    visibleExecuteConfigModal.value = true
+  }
 }
 </script>
 

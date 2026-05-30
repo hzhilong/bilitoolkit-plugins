@@ -13,6 +13,7 @@ export class ToViewModule extends DataModule<ToViewItem> {
   operations: OperationType[] = ['backup', 'restore', 'clear']
   backupDataRangeTypes: BackupDataRangeType[] = ['all']
   exportTargets: ExportTarget[] = ['json']
+  supportsOneClickClear = true
 
   getDataTotalDesc(list: ToViewItem[]): string {
     return `${list.length} 条稍后再看`
@@ -37,11 +38,11 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return await invokeBiliApi(clientId, biliApi.toview.fetchPageWithNextParams, params, { signal })
   }
 
-  fetchAll(context: ExecuteContext): Promise<ToViewItem[]> {
-    return this.baseFetchAll(context)
-  }
-
   async restoreData({ clientId, signal }: ExecuteContext, { aid }: ToViewItem) {
     await invokeBiliApi(clientId, biliApi.toview.addToView, aid, { signal })
+  }
+
+  async clearData({ clientId, signal }: ExecuteContext, _list: ToViewItem[]): Promise<string | void> {
+    await invokeBiliApi(clientId, biliApi.toview.clearToView, 0, { signal })
   }
 }
