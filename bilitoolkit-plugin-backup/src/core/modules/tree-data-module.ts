@@ -99,13 +99,13 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
     }
 
     let progress = 1
+    let nextParams
 
     while (true) {
       checkAbortSignal(context.signal)
-      const pageParams = { pageNum }
+      const pageParams = { pageNum, pageParams: nextParams }
       const pageData = await this.fetchChildrenPage(context, pageParams, parent)
-
-      if (pageData === null) break
+      nextParams = pageData.nextParams
 
       if (pageData.items) {
         list.push(...pageData.items)

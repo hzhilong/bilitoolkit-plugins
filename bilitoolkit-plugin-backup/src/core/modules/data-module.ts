@@ -83,15 +83,20 @@ export abstract class DataModule<D extends Data = Data> {
 
     let progress = 1
 
+    let pageParams = {}
+
     while (true) {
       if (context.signal?.aborted) {
         break
       }
       checkAbortSignal(context.signal)
-      const pageParams = { pageNum }
-      const pageData = await this.fetchPage(context, pageParams)
 
-      if (pageData === null) break
+      const pageData = await this.fetchPage(context, {
+        pageNum: pageNum,
+        pageParams: pageParams,
+      })
+
+      pageParams = pageData.nextParams
 
       if (pageData.items) {
         list.push(...pageData.items)

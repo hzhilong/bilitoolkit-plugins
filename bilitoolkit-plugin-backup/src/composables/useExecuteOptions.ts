@@ -83,7 +83,6 @@ export const useExecuteOptions = <O extends OperationType = OperationType>(
   watch(
     () => options.value.mode,
     (newValue, oldValue) => {
-      console.log(`watch`, newValue)
       if (oldValue !== newValue) {
         resetExecuteOptions()
       }

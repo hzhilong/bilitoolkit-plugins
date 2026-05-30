@@ -3,7 +3,7 @@ import { type Data, type Parent, isTreeData, isTreeDataModule, type Child } from
 import type { DataRange, DataRangeType, TreeDataRange, PageDataRange } from '@/core/types/data-range'
 import type { BackupDataRangeType, BackupAsset } from '@/core/types/backup'
 import { apiSleep } from '@/core/utils/sleep'
-import { type PageDataWithNextParams } from '@ybgnb/bili-api'
+import { type PageDataWithNextParams, type RequestParams } from '@ybgnb/bili-api'
 import type { Task } from '@/core/types/task'
 import { readJsonFile } from '@/core/utils/file'
 import type { DataModule } from '@/core/modules/data-module'
@@ -16,7 +16,7 @@ import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 async function getDataByPageRange<D>(
   context: ExecuteContext,
   dataRange: PageDataRange,
-  fetchPage: (pageNum: number) => Promise<PageDataWithNextParams<D>>,
+  fetchPage: (pageNum: number, nextParams?: RequestParams) => Promise<PageDataWithNextParams<D>>,
   logPrefix?: string,
 ) {
   const result: D[] = []
@@ -24,8 +24,10 @@ async function getDataByPageRange<D>(
   const pageTotal = endPageNum - startPageNum + 1
   logPrefix = logPrefix ? `${logPrefix.trim()} ` : ''
 
+  let pageParams
   for (let i = startPageNum; i <= endPageNum; i++) {
-    const { items, hasNext } = await fetchPage(i)
+    const { items, hasNext, nextParams } = await fetchPage(i, pageParams)
+    pageParams = nextParams
     if (items) {
       result.push(...items)
       await context.onProgress?.(
@@ -47,9 +49,10 @@ async function getBackupDataByPageRange<D extends Data = Data>(
   dataModule: DataModule<D>,
   dataRange: PageDataRange,
 ) {
-  return getDataByPageRange(context, dataRange, (pageNum) =>
+  return getDataByPageRange(context, dataRange, (pageNum, pageParams) =>
     dataModule.fetchPage(context, {
       pageNum,
+      pageParams,
     }),
   )
 }
@@ -66,11 +69,12 @@ async function getBackupDataByTreePageRange<C extends Child, P extends Parent<C>
   return getDataByPageRange(
     context,
     dataRange,
-    async (pageNum) => {
+    async (pageNum, pageParams) => {
       return await dataModule.fetchChildrenPage(
         context,
         {
           pageNum,
+          pageParams,
         },
         parent,
       )

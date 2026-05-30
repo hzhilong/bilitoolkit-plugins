@@ -23,7 +23,7 @@ const visible = defineModel({ required: true, type: Boolean })
 watch(
   () => visible.value,
   (newVal, oldVal) => {
-    if (newVal && newVal !== oldVal) {
+    if (newVal && !oldVal) {
       init()
     }
   },

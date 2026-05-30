@@ -6,6 +6,7 @@ import { FollowedAnimeModule } from '@/core/modules/bangumi/anime'
 import { FollowedTvModule } from '@/core/modules/bangumi/tv'
 import { FansModule } from '@/core/modules/fans'
 import { BlackModule } from '@/core/modules/black'
+import { HistoryModule } from '@/core/modules/history'
 
 /**
  * 注册的模块
@@ -17,6 +18,7 @@ export const registeredModules: DataModule[] = [
   new ToViewModule(),
   new FollowedAnimeModule(),
   new FollowedTvModule(),
+  new HistoryModule(),
 ]
 
 /**

@@ -20,7 +20,7 @@ interface ExtendTask extends Task<'backup'> {
 const restorableDataTypes = allRestorableModules.map((m) => m.dataType)
 const tasks = ref<ExtendTask[]>([])
 const { loading, loadingData } = useLoadingData()
-const { getSelectedData, checkboxValue } = useSelectData(tasks, (task: ExtendTask) => task.id)
+const { getSelectedData, selectedIds } = useSelectData(tasks, (task: ExtendTask) => task.id)
 
 const init = loadingData(async () => {
   const lastId = props.taskGroup.id
@@ -84,7 +84,7 @@ const handleSubmit = async () => {
       align-center
     >
       <div class="dialog-content" v-loading="loading">
-        <el-checkbox-group class="tasks" v-model="checkboxValue">
+        <el-checkbox-group class="tasks" v-model="selectedIds">
           <el-checkbox class="task" v-for="task in tasks" :key="task.id" :value="task.id">
             <span class="data-name">{{ task.dataTypeName }}</span>
             <span class="total-desc">{{ task.dataTotalDesc }}</span>

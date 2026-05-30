@@ -1,24 +1,15 @@
 <script setup lang="ts" generic="O extends OperationType = OperationType">
 import { type OperationType } from '@/core/types/operation'
-import { type TaskGroup, type TaskGroupStatus } from '@/core/types/task-group'
-import { computed, reactive, watch, onUnmounted } from 'vue'
-import type { Task, TaskStatus, TaskId } from '@/core/types/task'
-import { taskService } from '@/core/service/task'
+import { type TaskGroup } from '@/core/types/task-group'
+import { computed, onUnmounted, watch } from 'vue'
 import { AppTooltip, IconButton, showToast } from 'bilitoolkit-ui'
-import type { GroupExecuteContext, OnProgress, OnStatusChange } from '@/core/types/execute'
-import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 import { useTaskGroupDisplay } from '@/composables/useTaskGroupDisplay'
 import { taskGroupService } from '@/core/service/task-group'
 import { eventBus } from '@/utils/event-bus'
-import { useAppSettingsStore } from '@/stores/app-settings'
-import { storeToRefs } from 'pinia'
-import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { useInitTaskGroupView } from '@/composables/useInitTaskGroupView'
 
 const props = withDefaults(
   defineProps<{
-    /**
-     * @default true
-     */
     showBoxShadow?: boolean
     autoExec?: boolean
   }>(),
@@ -27,107 +18,31 @@ const props = withDefaults(
     showBoxShadow: true,
   },
 )
+const taskGroup = defineModel<TaskGroup<O>>({ required: true })
+
+const { initTaskGroupView, taskItems, cancelInit, execTaskGroup, cancelTaskGroup } = useInitTaskGroupView<O>(
+  taskGroup,
+  () => props.autoExec,
+)
+
+const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinue, canCancel } =
+  useTaskGroupDisplay(taskGroup, () => taskItems)
+
+watch(
+  () => taskGroup.value.id,
+  async (newId, oldId, onCleanup) => {
+    await initTaskGroupView(onCleanup)
+  },
+  { immediate: true },
+)
+
+onUnmounted(cancelInit)
+
 const cardStyles = computed(() => {
   return {
     boxShadow: props.showBoxShadow ? 'var(--el-box-shadow)' : 'none',
   }
 })
-const taskGroup = defineModel<TaskGroup<O>>({ required: true })
-
-const items = reactive<Task[]>([])
-const { taskGroupState, operationType, createdAt, itemsProgressData, hasBatchTask, canContinue, canCancel } =
-  useTaskGroupDisplay(taskGroup, () => items)
-const { appSettings } = storeToRefs(useAppSettingsStore())
-
-const init = async () => {
-  const list = []
-  const lastId = taskGroup.value.id
-  items.splice(0, items.length)
-  for (const item of taskGroup.value.items) {
-    list.push(await taskService.getById(item.id))
-  }
-  if (lastId === taskGroup.value.id) {
-    items.splice(0, list.length, ...list)
-    if (props.autoExec) {
-      await exec()
-    }
-  }
-}
-watch(
-  () => taskGroup.value.id,
-  (newValue, oldValue) => {
-    if (newValue !== oldValue) {
-      init()
-    }
-  },
-  { immediate: true },
-)
-
-const handleItemsProgressChange = (id: TaskId, progress: number | undefined, msg: string | undefined) => {
-  items.forEach((task) => {
-    if (task.id === id) {
-      task.progress = progress ?? task.progress
-      task.progressMsg = msg ?? task.progressMsg
-    }
-  })
-}
-const handleItemsStatusChange = (id: TaskId, status: TaskStatus) => {
-  items.forEach((task) => {
-    if (task.id === id) {
-      task.status = status
-    }
-  })
-}
-const { execTaskGroup, cancelTaskGroup } = useExecTaskGroup()
-let canceled = false
-onUnmounted(() => {
-  canceled = true
-})
-// 构建执行上下文
-const buildExecContext = async () => {
-  const onStatusChange = (status: TaskGroupStatus) => {
-    if (!canceled) {
-      taskGroup.value.status = status
-    }
-  }
-  const onProgress = async (progress: number | undefined, msg: string | undefined) => {
-    if (!canceled) {
-      taskGroup.value.progress = progress ?? taskGroup.value.progress
-      taskGroup.value.progressMsg = msg ?? taskGroup.value.progressMsg
-    }
-  }
-  const onItemsProgress = items.map((item) => {
-    const id = item.id
-    const onProgress: OnProgress = async (progress: number | undefined, msg: string | undefined) => {
-      if (!canceled) {
-        handleItemsProgressChange(id, progress, msg)
-      }
-    }
-    return onProgress
-  })
-  const onItemsStatusChange: OnStatusChange<TaskStatus>[] = items.map((item) => {
-    const id = item.id
-    const onStatusChange: OnStatusChange<TaskStatus> = (status: TaskStatus) => {
-      if (!canceled) {
-        handleItemsStatusChange(id, status)
-      }
-    }
-    return onStatusChange
-  })
-  return {
-    onStatusChange,
-    onItemsProgress,
-    onItemsStatusChange,
-    onProgress,
-    appSettings: appSettings.value,
-    user: taskGroup.value.user,
-    clientId: await biliClientStore.get(taskGroup.value.user),
-  } satisfies GroupExecuteContext as GroupExecuteContext
-}
-// 执行任务组
-const exec = async () => {
-  await execTaskGroup(await buildExecContext(), taskGroup.value.id)
-}
 const cancel = async () => {
   if (await cancelTaskGroup(taskGroup.value.id)) {
     showToast('任务组已取消')
@@ -152,7 +67,7 @@ const cancel = async () => {
           icon="play"
           tip="继续执行分批处理的任务"
           confirm="是否继续执行分批处理的任务？"
-          @click="exec"
+          @click="execTaskGroup"
         />
         <IconButton v-if="canCancel" icon="close-circle" tip="取消执行" confirm="是否取消执行？" @click="cancel" />
       </div>
@@ -191,7 +106,7 @@ const cancel = async () => {
       <div class="task-group-items">
         <div class="items-label">任务列表：</div>
         <div class="task-items-wrapper">
-          <TaskCard v-for="item in items" :task="item" :key="item.id" :show-box-shadow="false" />
+          <TaskCard v-for="item in taskItems" :task="item" :key="item.id" :show-box-shadow="false" />
         </div>
       </div>
     </div>

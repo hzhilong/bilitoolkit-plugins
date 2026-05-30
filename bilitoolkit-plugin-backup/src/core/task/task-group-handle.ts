@@ -1,4 +1,4 @@
-import { type OperationType, OperationTypeMap } from '@/core/types/operation'
+import { type OperationType } from '@/core/types/operation'
 import type { TaskGroupItem, CreateTaskGroupOptions, TaskGroupId } from '@/core/types/task-group'
 import { taskService } from '@/core/service/task'
 import { inArray } from '@/core/utils/array'
@@ -101,15 +101,13 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
       const finishedCount = taskGroup.items.length - pendingTasks.length
       // 是否有未结束的批处理任务
       let hasPendingBatchTasks = false
+      await taskGroupService.markRunning(taskGroup.id)
       onStatusChange?.('running')
       // 遍历需要执行的任务
       for (let i = 0; i < pendingTasks.length; i++) {
         const task = pendingTasks[i]
         const dataModule = registeredModulesMap[task.dataType]
-        await setProgress(
-          (100 * (i + 1 + finishedCount)) / taskGroup.items.length,
-          `正在执行${OperationTypeMap[task.operationType]}任务 [${dataModule.dataTypeName}]`,
-        )
+        await setProgress((100 * (i + 1 + finishedCount)) / taskGroup.items.length, `正在执行`)
         await executeTask<O>(
           {
             ...context,

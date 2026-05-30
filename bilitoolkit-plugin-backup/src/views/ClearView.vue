@@ -11,8 +11,11 @@ import { createTaskGroup } from '@/core/task/task-group-handle'
 import { toIPC } from 'bilitoolkit-runtime'
 
 const allDataTypes = allClearableModules.map((m) => m.dataType)
-const selectedDataTypes = ref<DataType[]>([])
-const { toggleAll, isAllSelected } = useSelectData(selectedDataTypes, (type: DataType) => type)
+const {
+  selectedIds: selectedDataTypes,
+  toggleAll,
+  isAllSelected,
+} = useSelectData(allDataTypes, (type: DataType) => type)
 const { hasActiveTaskGroup } = storeToRefs(useAppSessionStore())
 const { user } = useUser()
 const configModalVisible = ref<boolean>(false)
