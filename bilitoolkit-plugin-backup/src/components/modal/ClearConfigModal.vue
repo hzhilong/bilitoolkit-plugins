@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, useTemplateRef, toRaw, ref } from 'vue'
-import { showError } from 'bilitoolkit-ui'
-import type { DataType } from '@/core/types/data-type'
+import { showError, showConfirmSequence } from 'bilitoolkit-ui'
+import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import type { TaskGroupItem, CreateTaskGroupOptions } from '@/core/types/task-group'
 import { getDefaultExecuteOptions } from '@/utils/default-config'
 import type { ComponentExposed } from 'vue-component-type-helpers'
@@ -58,7 +58,13 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   if (!itemRefs.value) return
   assertUserLoggedIn(props.user)
-  //  visible.value = false
+  const dataNames = props.dataTypes.map((d) => DataTypeMap[d].name).join(', ')
+  await showConfirmSequence([
+    [`是否清空所选的数据？<br/>[${dataNames}]`],
+    [`请检查数据是否已备份完成再继续<br/>[${dataNames}]`],
+    [`最后一次提示，是否清空所选的数据？<br/>[${dataNames}]`],
+  ])
+  visible.value = false
   emit('submit', {
     operationType: 'clear',
     user: props.user,

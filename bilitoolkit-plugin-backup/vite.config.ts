@@ -53,7 +53,21 @@ export default defineConfig((configEnv: ConfigEnv) => {
       // sourcemap: mode !== 'production',
     },
     optimizeDeps: {
+      // 依赖预构建，防止启动后页面频繁重新加载
       include: ['element-plus', 'element-plus/es', 'consola', '@ybgnb/bili-api'],
+      /**
+       * 将本地 Monorepo 组件库排除在预构建之外
+       *
+       * 【为什么要加？】
+       * 1. 解决双重实例化（Double Instantiation）问题：
+       *    如果不排除，Vite 会把组件库当作第三方依赖单独预构建，导致组件库内部引用的 element-plus
+       *    与项目自身引用的 element-plus 成为两个不同的实例。这会导致全局 ZIndexManager 无法共享，
+       *    引发弹窗层级（z-index）错乱、被遮挡等严重 Bug。
+       *
+       * 2. 启用本地开发热更新（HMR）：
+       *    排除后，Vite 会将组件库视为本地源码处理。修改组件库代码时，宿主项目能实时触发 HMR 刷新。
+       */
+      exclude: ['bilitoolkit-ui'],
     },
   })
 })

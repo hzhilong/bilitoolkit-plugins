@@ -4,12 +4,16 @@ import type { DataType } from '@/core/types/data-type'
 import { FollowingModule } from '@/core/modules/following'
 import { FollowedAnimeModule } from '@/core/modules/bangumi/anime'
 import { FollowedTvModule } from '@/core/modules/bangumi/tv'
+import { FansModule } from '@/core/modules/fans'
+import { BlackModule } from '@/core/modules/black'
 
 /**
  * 注册的模块
  */
 export const registeredModules: DataModule[] = [
   new FollowingModule(),
+  new FansModule(),
+  new BlackModule(),
   new ToViewModule(),
   new FollowedAnimeModule(),
   new FollowedTvModule(),

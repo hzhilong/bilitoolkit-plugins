@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { PluginPageContent, useSelectData, showToast, showWarning, showConfirmSequence } from 'bilitoolkit-ui'
+import { PluginPageContent, useSelectData, showToast, showWarning } from 'bilitoolkit-ui'
 import { ref } from 'vue'
-import { type DataType, DataTypeMap } from '@/core/types/data-type'
+import { type DataType } from '@/core/types/data-type'
 import { allClearableModules } from '@/core/modules/register'
 import { storeToRefs } from 'pinia'
 import { useAppSessionStore } from '@/stores/app-session'
@@ -24,13 +24,6 @@ const handleClear = async () => {
   }
 }
 const handleExecTaskGroup = async (taskGroup: CreateTaskGroupOptions<'clear'>) => {
-  const dataNames = selectedDataTypes.value.map((d) => DataTypeMap[d].name).join(', ')
-  await showConfirmSequence([
-    [`是否清空所选的数据？<br/>[${dataNames}]`],
-    [`请检查数据是否已备份完成再继续<br/>[${dataNames}]`],
-    [`最后一次提示，是否清空所选的数据？<br/>[${dataNames}]`],
-  ])
-  configModalVisible.value = false
   taskGroupId.value = (await createTaskGroup(toIPC(taskGroup))).id
   showToast('创建任务成功')
   taskGroupModalVisible.value = true
