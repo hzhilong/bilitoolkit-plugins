@@ -1,5 +1,5 @@
 import { DataModule } from '@/core/modules/data-module'
-import type { Parent, FetchPageParams, Child } from '@/core/types/data-module'
+import type { Parent, FetchPageParams, Child, FetchAllMode } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import type { TreeRangeMetas, DataRangeType } from '@/core/types/data-range'
@@ -50,7 +50,7 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
   }
 
   /** 获取所有父节点 */
-  abstract fetchParentAll(context: ExecuteContext): Promise<P[]>
+  abstract fetchParentAll(context: ExecuteContext, mode?: FetchAllMode): Promise<P[]>
 
   /** 获取所有子节点 */
   fetchChildrenAll(context: ExecuteContext, tag: P): Promise<C[]> {

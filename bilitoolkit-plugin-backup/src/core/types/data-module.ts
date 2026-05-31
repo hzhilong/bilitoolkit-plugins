@@ -49,3 +49,8 @@ export const isTreeDataModule = (module: DataModule): module is TreeDataModule =
  * 获取分页数据的参数
  */
 export type FetchPageParams = Omit<PageOptions, 'total' | 'pageSize'>
+
+/**
+ * FetchAll 使用模式
+ */
+export type FetchAllMode = 'normal' | 'tree-select'

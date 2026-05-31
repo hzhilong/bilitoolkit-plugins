@@ -145,7 +145,10 @@ export class TaskGroupService {
    * 暂停运行中的任务组
    */
   async suspendRunningTaskGroup() {
-    await db.task.where('status').equals('running').modify({ status: 'failed', progressMsg: '执行中断（应用已退出）' })
+    await db.taskGroup
+      .where('status')
+      .equals('running')
+      .modify({ status: 'failed', progressMsg: '执行中断（应用退出）' })
   }
 }
 

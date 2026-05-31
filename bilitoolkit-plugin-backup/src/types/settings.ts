@@ -5,4 +5,5 @@ export interface AppSettings {
   clearMaxFailures: number
   /** 启用防风控策略 */
   avoidRiskControl: boolean
+  // TODO 数据还原时判断现有数据？模块功能可配置
 }

@@ -47,11 +47,14 @@ const formRef = useTemplateRef<InstanceType<typeof ElForm>>('formRef')
 const init = loadingData(async () => {
   let list: P[] = []
   if (props.operationType === 'backup') {
-    list = await treeDataModule.value.fetchAll({
-      user: props.user,
-      clientId: await biliClientStore.get(props.user),
-      appSettings: appSettings.value,
-    })
+    list = await treeDataModule.value.fetchParentAll(
+      {
+        user: props.user,
+        clientId: await biliClientStore.get(props.user),
+        appSettings: appSettings.value,
+      },
+      'tree-select',
+    )
   } else {
     if (!props.backedUpData) {
       visible.value = false
@@ -168,7 +171,7 @@ const handleChildrenChange = (index: number) => {
 </script>
 
 <template>
-  <div class="dialog">
+  <div class="tree-select-dialog">
     <el-dialog
       :title="title"
       v-model="visible"
@@ -238,8 +241,12 @@ const handleChildrenChange = (index: number) => {
 </template>
 
 <style scoped lang="scss">
-.dialog {
+.tree-select-dialog {
   display: contents;
+
+  .dialog-content {
+    min-height: 200px;
+  }
 
   .node-list {
     display: flex;

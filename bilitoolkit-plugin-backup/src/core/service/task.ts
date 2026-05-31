@@ -115,7 +115,7 @@ export class TaskService {
     await db.task
       .where('status')
       .equals('running')
-      .modify({ status: 'failed', progressMsg: '任务执行中断（应用已退出）' })
+      .modify({ status: 'failed', progressMsg: '任务执行中断（应用退出）' })
   }
 }
 
