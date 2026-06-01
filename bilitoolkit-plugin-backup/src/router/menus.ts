@@ -21,6 +21,10 @@ export const appMenus: PluginMenuData[] = [
     path: '/tasks',
   },
   {
+    title: '其他工具',
+    path: '/tools',
+  },
+  {
     title: '插件设置',
     path: '/settings',
   },

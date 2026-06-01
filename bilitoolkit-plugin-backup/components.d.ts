@@ -58,6 +58,7 @@ declare module 'vue' {
     TaskGroupTable: typeof import('./src/components/table/TaskGroupTable.vue')['default']
     TaskLogsModal: typeof import('./src/components/modal/TaskLogsModal.vue')['default']
     TaskModal: typeof import('./src/components/modal/TaskModal.vue')['default']
+    ToolCard: typeof import('./src/components/card/ToolCard.vue')['default']
     TreeSelectModal: typeof import('./src/components/modal/TreeSelectModal.vue')['default']
     UserCookieModal: typeof import('./src/components/modal/UserCookieModal.vue')['default']
   }
@@ -114,6 +115,7 @@ declare global {
   const TaskGroupTable: typeof import('./src/components/table/TaskGroupTable.vue')['default']
   const TaskLogsModal: typeof import('./src/components/modal/TaskLogsModal.vue')['default']
   const TaskModal: typeof import('./src/components/modal/TaskModal.vue')['default']
+  const ToolCard: typeof import('./src/components/card/ToolCard.vue')['default']
   const TreeSelectModal: typeof import('./src/components/modal/TreeSelectModal.vue')['default']
   const UserCookieModal: typeof import('./src/components/modal/UserCookieModal.vue')['default']
 }
