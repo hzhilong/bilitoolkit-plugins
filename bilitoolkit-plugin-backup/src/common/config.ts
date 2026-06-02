@@ -13,6 +13,10 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   history: '#7f8c8d',
   to_view: '#e67e22',
   comment: '#70a5c0',
+  msg_reply: '#69b3a2',
+  msg_like: '#69b3a2',
+  msg_at: '#69b3a2',
+  msg_sys: '#69b3a2',
 }
 
 export const DB_NAMES = {
@@ -41,10 +45,8 @@ const _2 = {
   1: '#e06c6c', // 柔和红褐
   2: '#5f9e8e', // 深海绿
   3: '#ce6f8c', // 玫瑰紫
-  4: '#70a5c0', // 灰湖蓝
   5: '#d99b5c', // 柿子橙
   6: '#a88b6f', // 卡其棕
-  7: '#69b3a2', // 薄荷绿
   8: '#c07ab8', // 淡紫罗兰
   9: '#e2a26a', // 杏黄色
   10: '#6f9e9e', // 灰蓝绿

@@ -39,9 +39,9 @@ export class CommentModule extends DataModule {
 
   async clearData(context: ExecuteContext): Promise<string | void> {
     const { clientId, signal, onProgress } = context
-    onProgress?.(0, '正在获取被回复的互动通知')
+    onProgress?.(0, '正在获取被回复的通知消息')
     const replyList = await invokeBiliApi(clientId, biliApi.message.fetchReplyAll, undefined, undefined, { signal })
-    onProgress?.(0, `以获取 ${replyList.length} 条被回复的互动通知`)
+    onProgress?.(0, `已获取 ${replyList.length} 条被回复的通知消息`)
 
     const deletedCache = new Set<string>()
 
@@ -67,9 +67,9 @@ export class CommentModule extends DataModule {
       }
     }
 
-    onProgress?.(0, '正在获取被点赞的互动通知')
+    onProgress?.(0, '正在获取被点赞的通知消息')
     const likeList = await invokeBiliApi(clientId, biliApi.message.fetchLikeAll, undefined, undefined, { signal })
-    onProgress?.(0, `以获取 ${likeList.length} 条被点赞的互动通知`)
+    onProgress?.(0, `已获取 ${likeList.length} 条被点赞的通知消息`)
     for (let i = 0; i < likeList.length; i++) {
       const msg = likeList[i]
       const { item_id, title, native_uri } = msg.item

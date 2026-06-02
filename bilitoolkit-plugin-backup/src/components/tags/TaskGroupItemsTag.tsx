@@ -15,6 +15,6 @@ const TaskGroupItemsTag = (props: Pick<TaskGroup, 'items'>) => {
       </ElTag>,
     )
   }
-  return <div style="width:200px; display:grid;gap:6px;grid-template-columns: repeat(3, 60px);">{ul}</div>
+  return <div style="width:200px; display:grid;gap:6px;grid-template-columns: repeat(2, 95px);">{ul}</div>
 }
 export { TaskGroupItemsTag }

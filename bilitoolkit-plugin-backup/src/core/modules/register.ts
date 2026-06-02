@@ -9,6 +9,10 @@ import { BlackModule } from '@/core/modules/black'
 import { HistoryModule } from '@/core/modules/history'
 import { FavModule } from '@/core/modules/fav'
 import { CommentModule } from '@/core/modules/comment'
+import { LikeMsgModule } from '@/core/modules/msg/like'
+import { ReplyMsgModule } from '@/core/modules/msg/reply'
+import { AtMsgModule } from '@/core/modules/msg/at'
+import { SysMsgModule } from '@/core/modules/msg/sys'
 
 /**
  * 注册的模块
@@ -23,6 +27,10 @@ export const registeredModules: DataModule[] = [
   new HistoryModule(),
   new FavModule(),
   new CommentModule(),
+  new LikeMsgModule(),
+  new ReplyMsgModule(),
+  new AtMsgModule(),
+  new SysMsgModule(),
 ]
 
 /**

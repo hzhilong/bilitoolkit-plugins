@@ -35,6 +35,24 @@ export const AllDataTypes = [
     name: '评论',
     clearDesc: '遍历被回复/被点赞的互动通知，删除其中能定位到的互动评论，并同时删除这些通知。',
   },
+  {
+    type: 'msg_reply',
+    name: '通知(回复我的)',
+    clearDesc: '请注意：清空后，无法再通过此类通知消息快速定位自己发布的评论。',
+  },
+  {
+    type: 'msg_like',
+    name: '通知(收到的赞)',
+    clearDesc: '请注意：清空后，无法再通过此类通知消息快速定位自己发布的评论。',
+  },
+  {
+    type: 'msg_at',
+    name: '通知(@我的)',
+  },
+  {
+    type: 'msg_sys',
+    name: '系统通知',
+  },
 ] as const satisfies DataTypeMeta[]
 
 /**
