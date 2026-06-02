@@ -19,7 +19,7 @@ export class CopyFavTool extends Tool {
 
     const clientId = await biliClientStore.get(userInfo)
 
-    const { value: sourceUid } = await ElMessageBox.prompt('请输入已公开收藏夹的用户 uid', '快速拷贝收藏夹', {
+    const { value: sourceUid } = await ElMessageBox.prompt('请输入已公开收藏夹的用户 uid', '提示', {
       confirmButtonText: '下一步',
       cancelButtonText: '取消',
       inputPattern: /^[0-9]+$/,
@@ -113,7 +113,7 @@ export class CopyFavTool extends Tool {
     if (!pageRange) return
 
     log(`正在获取收藏夹列表 [${sourceFolder.title}] [${pageRange}]`)
-    const list = await getDataByPageRange(
+    let list = await getDataByPageRange(
       {
         onProgress: async (_, msg) => {
           if (msg) log(msg)
@@ -144,6 +144,8 @@ export class CopyFavTool extends Tool {
       log(`数据为空`)
       return
     }
+
+    list = list.reverse()
 
     log(`正在拷贝收藏夹数据 > [id=${targetFolderId}]`)
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ToolContext } from '@/types/tools'
 import { computed, useTemplateRef, ref, watch, onUnmounted } from 'vue'
-import { LogPrint, showError } from 'bilitoolkit-ui'
+import { LogPrint, showError, showConfirm } from 'bilitoolkit-ui'
 import { getErrorMessage } from '@ybgnb/utils'
 import type { User } from '@/core/types/execute'
 import type { Tool } from '@/tools'
@@ -49,7 +49,14 @@ const execTool = async () => {
     abortController.value = undefined
   }
 }
-const cancelTool = async () => {
+const cancelTool = async (needConfirm?: boolean) => {
+  if (needConfirm) {
+    try {
+      await showConfirm('确认取消执行吗?')
+    } catch {
+      return
+    }
+  }
   abortController.value?.abort()
 }
 </script>
@@ -70,7 +77,7 @@ const cancelTool = async () => {
         <div class="tool-desc">{{ tool.desc }}</div>
         <div class="actions">
           <el-button :disabled="!!abortController" type="primary" @click="execTool">开始</el-button>
-          <el-button :disabled="!abortController" @click="cancelTool">取消</el-button>
+          <el-button :disabled="!abortController" @click="cancelTool(true)">取消</el-button>
         </div>
       </div>
       <log-print ref="loggerRef" class="log-print-box"></log-print>
@@ -88,6 +95,7 @@ const cancelTool = async () => {
 
     .el-dialog__body {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
     }

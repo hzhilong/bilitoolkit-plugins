@@ -5,9 +5,10 @@ import { assertUserLoggedIn } from '@/utils/assert'
 import ToolExecutionModal from '@/components/modal/ToolExecutionModal.vue'
 import type { Tool } from '@/tools'
 import { CopyFavTool } from '@/tools/copy-fav'
+import { FavAllVideosTool } from '@/tools/fav-all-videos'
 
 const { user } = useUser()
-const tools: Tool[] = [new CopyFavTool()]
+const tools: Tool[] = [new CopyFavTool(), new FavAllVideosTool()]
 const visible = ref(false)
 const currTool = ref<Tool>()
 const openTool = async (tool: Tool) => {
@@ -21,6 +22,7 @@ const openTool = async (tool: Tool) => {
   <div class="tools-view">
     <div class="tools-card-container">
       <tool-card
+        class="tool-card"
         v-for="tool in tools"
         :key="tool.title"
         :title="tool.title"
@@ -39,7 +41,8 @@ const openTool = async (tool: Tool) => {
   .tools-card-container {
     display: grid;
     padding: 20px 10px;
-    grid-template-columns: repeat(auto-fill, 260px);
+    grid-template-columns: repeat(auto-fill, 220px);
+    gap: 14px;
   }
 
   .log-print-box {

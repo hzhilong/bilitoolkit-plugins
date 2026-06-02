@@ -17,7 +17,7 @@ defineProps<{
 <style scoped lang="scss">
 .tool-card {
   height: fit-content;
-  padding: 20px;
+  padding: 16px;
   border-radius: 10px;
   border: 1px solid var(--el-border-color);
   cursor: pointer;
@@ -36,6 +36,8 @@ defineProps<{
   &__desc {
     color: var(--el-text-color-regular);
     font-size: 14px;
+    line-height: 1.2em;
+    height: calc(1.2em * 2);
   }
 }
 </style>
