@@ -155,8 +155,8 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
         { signal },
       )
       onProgress?.((i * 100) / count, `[${i + 1}/${chunkList.length}] 成功批量删除 ${cList.length} 个收藏视频`)
+      await apiSleep(signal)
     }
-    await apiSleep(signal)
     await invokeBiliApi(clientId, biliApi.fav.cleanFavItems, defaultFolder.id, { signal })
     onProgress?.(0, `成功清空默认收藏夹的所有失效内容`)
   }

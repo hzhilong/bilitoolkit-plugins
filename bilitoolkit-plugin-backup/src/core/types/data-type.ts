@@ -23,7 +23,7 @@ export const AllDataTypes = [
     name: '稍后再看',
   },
   { type: 'black', name: '黑名单' },
-  { type: 'favorites', name: '收藏夹' },
+  { type: 'favorites', name: '收藏夹', restoreDesc: '内容较多时，推荐使用【其他工具】中的【快速拷贝收藏夹】功能' },
   { type: 'fav_opuses', name: '收藏的专栏' },
   { type: 'bangumi_anime', name: '我的追番' },
   { type: 'bangumi_tv', name: '我的追剧' },

@@ -13,8 +13,8 @@ import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 /**
  * 通过分页范围获取数据
  */
-async function getDataByPageRange<D>(
-  context: ExecuteContext,
+export async function getDataByPageRange<D>(
+  context: Pick<ExecuteContext, 'signal' | 'onProgress'>,
   dataRange: PageDataRange,
   fetchPage: (pageNum: number, nextParams?: RequestParams) => Promise<PageDataWithNextParams<D>>,
   logPrefix?: string,
