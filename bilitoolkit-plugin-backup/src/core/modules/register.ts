@@ -8,6 +8,7 @@ import { FansModule } from '@/core/modules/fans'
 import { BlackModule } from '@/core/modules/black'
 import { HistoryModule } from '@/core/modules/history'
 import { FavModule } from '@/core/modules/fav'
+import { CommentModule } from '@/core/modules/comment'
 
 /**
  * 注册的模块
@@ -21,6 +22,7 @@ export const registeredModules: DataModule[] = [
   new FollowedTvModule(),
   new HistoryModule(),
   new FavModule(),
+  new CommentModule(),
 ]
 
 /**

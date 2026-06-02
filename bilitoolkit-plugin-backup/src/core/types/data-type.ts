@@ -6,6 +6,7 @@ export interface DataTypeMeta {
   name: string
   backupDesc?: string
   restoreDesc?: string
+  clearDesc?: string
 }
 
 /**
@@ -29,6 +30,11 @@ export const AllDataTypes = [
   { type: 'bangumi_tv', name: '我的追剧' },
   { type: 'fav_collected', name: '收藏的视频合集' },
   { type: 'history', name: '历史记录' },
+  {
+    type: 'comment',
+    name: '评论',
+    clearDesc: '遍历被回复/被点赞的互动通知，删除其中能定位到的互动评论，并同时删除这些通知。',
+  },
 ] as const satisfies DataTypeMeta[]
 
 /**

@@ -12,6 +12,7 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   following: '#1abc9c',
   history: '#7f8c8d',
   to_view: '#e67e22',
+  comment: '#70a5c0',
 }
 
 export const DB_NAMES = {

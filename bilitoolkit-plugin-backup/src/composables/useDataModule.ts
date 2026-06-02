@@ -29,6 +29,10 @@ export const useDataModule = (dataType: MaybeRefOrGetter<DataType>) => {
     return DataTypeMap[dataModule.value.dataType].restoreDesc
   })
 
+  const clearDesc = computed(() => {
+    return DataTypeMap[dataModule.value.dataType].clearDesc
+  })
+
   const isTreeModule = computed(() => {
     return isTreeDataModule(dataModule.value)
   })
@@ -55,6 +59,7 @@ export const useDataModule = (dataType: MaybeRefOrGetter<DataType>) => {
     dataModuleColor,
     backupDesc,
     restoreDesc,
+    clearDesc,
     exportTargets,
     isTreeModule,
     isBatchModule,

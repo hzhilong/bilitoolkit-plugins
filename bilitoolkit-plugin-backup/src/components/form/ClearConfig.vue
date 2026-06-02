@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<ClearConfigProps>(), {})
 
 const options = defineModel<ExecuteOptions<'clear'>>({ required: true })
 
-const { dataModuleName, dataModuleColor } = useDataModule(() => props.dataType)
+const { dataModuleName, dataModuleColor, clearDesc } = useDataModule(() => props.dataType)
 
 useExecuteOptions<'clear'>(() => ({ operationType: 'clear', dataType: props.dataType, user: props.user }), options)
 </script>
@@ -24,6 +24,7 @@ useExecuteOptions<'clear'>(() => ({ operationType: 'clear', dataType: props.data
   <div class="execute-config" :class="viewMode ? 'readonly' : ''" :style="{ '--data-type-color': dataModuleColor }">
     <div class="header" v-if="!viewMode">
       <span class="data-module-name">{{ dataModuleName }}</span>
+      <span class="data-module-desc" v-if="!viewMode && clearDesc">{{ clearDesc }}</span>
     </div>
     <el-form class="form" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
       <el-form-item label="数据范围">
