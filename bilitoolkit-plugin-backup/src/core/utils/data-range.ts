@@ -245,3 +245,13 @@ export const getRestoreDataByRange = async <D extends Data = Data, T extends Dat
 
   throw new Error(`内部错误，[${dataModule.dataTypeName}]暂不支持该还原范围类型[${dataRange.type}]`)
 }
+
+export const toSinglePageData = <T>(data: T) => {
+  const pageData: PageDataWithNextParams<T> = {
+    items: [data],
+    nextParams: {},
+    hasNext: false,
+    pageSize: 1,
+  }
+  return pageData
+}

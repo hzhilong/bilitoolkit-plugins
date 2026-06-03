@@ -18,6 +18,7 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   msg_at: '#69b3a2',
   msg_sys: '#69b3a2',
   session: '#006d26',
+  space_privacy: '#750061',
 }
 
 export const DB_NAMES = {
@@ -39,7 +40,6 @@ const _1 = {
   7: '#40e0d0',
   8: '#ffb78c',
   9: '#c3b1e1',
-  10: '#c85a17',
 }
 const _2 = {
   1: '#e06c6c', // 柔和红褐

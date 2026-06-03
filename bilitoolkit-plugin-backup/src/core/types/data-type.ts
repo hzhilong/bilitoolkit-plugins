@@ -57,6 +57,10 @@ export const AllDataTypes = [
     type: 'session',
     name: '私信',
   },
+  {
+    type: 'space_privacy',
+    name: '空间隐私设置',
+  },
 ] as const satisfies DataTypeMeta[]
 
 /**

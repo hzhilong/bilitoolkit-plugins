@@ -14,6 +14,7 @@ import { ReplyMsgModule } from '@/core/modules/msg/reply'
 import { AtMsgModule } from '@/core/modules/msg/at'
 import { SysMsgModule } from '@/core/modules/msg/sys'
 import { SessionModule } from '@/core/modules/session'
+import { SpacePrivacyModule } from '@/core/modules/space/privacy'
 
 /**
  * 注册的模块
@@ -33,6 +34,7 @@ export const registeredModules: DataModule[] = [
   new AtMsgModule(),
   new SysMsgModule(),
   new SessionModule(),
+  new SpacePrivacyModule(),
 ]
 
 /**
