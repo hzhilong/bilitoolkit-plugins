@@ -64,7 +64,7 @@ const init = loadingData(async () => {
   }
 })
 
-watch(() => props.dataType, init, { immediate: true })
+watch(() => [props.dataType, props.user], init, { immediate: true })
 
 const formRef = useTemplateRef<InstanceType<typeof ElForm>>('formRef')
 
@@ -87,7 +87,7 @@ defineExpose({
   >
     <div class="header" v-if="!viewMode">
       <span class="data-module-name">{{ dataModuleName }}</span>
-      <span class="data-module-stat" v-if="!viewMode && dataTotal">{{ dataTotal }}</span>
+      <span class="data-module-stat" v-if="!viewMode && dataTotal != null">{{ dataTotal }}</span>
       <span class="data-module-desc" v-if="!viewMode && backupDesc">{{ backupDesc }}</span>
     </div>
     <el-form class="form" ref="formRef" :model="options" label-width="auto" label-position="left" :disabled="viewMode">
