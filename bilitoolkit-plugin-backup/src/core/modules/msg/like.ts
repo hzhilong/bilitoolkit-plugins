@@ -1,40 +1,13 @@
-import { DataModule } from '@/core/modules/data-module'
-import { type PageDataWithNextParams } from '@ybgnb/bili-api'
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
-import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
-import type { OperationType } from '@/core/types/operation'
 import type { ExecuteContext } from '@/core/types/execute'
 import { biliApi, invokeBiliApi } from 'bilitoolkit-runtime/biliapi'
 import { sleepRandom } from '@ybgnb/utils'
 import { apiSleep } from '@/core/utils/sleep'
+import { OnlyClearableModule } from '@/core/modules/only-clearable-module'
 
-export class LikeMsgModule extends DataModule {
+export class LikeMsgModule extends OnlyClearableModule {
   dataType: DataType = 'msg_like'
   dataTypeName: string = DataTypeMap[this.dataType].name
-  operations: OperationType[] = ['clear']
-  backupDataRangeTypes: BackupDataRangeType[] = []
-  exportTargets: ExportTarget[] = []
-  supportsOneClickClear = true
-
-  getDataTotalDesc(): string {
-    return ''
-  }
-
-  getDataTitle(): string {
-    return ''
-  }
-
-  getPageSize() {
-    return 0
-  }
-
-  async fetchPage(): Promise<PageDataWithNextParams> {
-    throw new Error('内部错误')
-  }
-
-  async restoreData() {
-    throw new Error('内部错误')
-  }
 
   async clearData(context: ExecuteContext): Promise<string | void> {
     const { clientId, signal, onProgress } = context

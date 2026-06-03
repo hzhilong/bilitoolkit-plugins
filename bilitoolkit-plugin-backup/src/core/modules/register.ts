@@ -13,6 +13,7 @@ import { LikeMsgModule } from '@/core/modules/msg/like'
 import { ReplyMsgModule } from '@/core/modules/msg/reply'
 import { AtMsgModule } from '@/core/modules/msg/at'
 import { SysMsgModule } from '@/core/modules/msg/sys'
+import { SessionModule } from '@/core/modules/session'
 
 /**
  * 注册的模块
@@ -31,6 +32,7 @@ export const registeredModules: DataModule[] = [
   new ReplyMsgModule(),
   new AtMsgModule(),
   new SysMsgModule(),
+  new SessionModule(),
 ]
 
 /**

@@ -145,7 +145,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
         await taskGroupService.markFailed(groupId, errorMessage)
         await setProgress(undefined, errorMessage)
         onStatusChange?.('failed')
-        reject(convertToCommonError(error, '任务执行失败'))
+        reject(error)
       }
     } finally {
       // 清理取消监听器

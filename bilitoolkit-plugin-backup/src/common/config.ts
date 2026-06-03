@@ -17,6 +17,7 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   msg_like: '#69b3a2',
   msg_at: '#69b3a2',
   msg_sys: '#69b3a2',
+  session: '#006d26',
 }
 
 export const DB_NAMES = {
@@ -32,7 +33,6 @@ export const defaultAppSettings: AppSettings = {
 // 备选
 const _1 = {
   2: '#ff7f50',
-  3: '#98fb98',
   4: '#ffb347',
   5: '#5d6d7e',
   6: '#fc6c85',

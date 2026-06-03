@@ -53,6 +53,10 @@ export const AllDataTypes = [
     type: 'msg_sys',
     name: '系统通知',
   },
+  {
+    type: 'session',
+    name: '私信',
+  },
 ] as const satisfies DataTypeMeta[]
 
 /**
