@@ -10,7 +10,7 @@ defineProps<{
 <template>
   <div class="tool-card">
     <div class="tool-card__title">{{ title }}</div>
-    <app-tooltip class="tool-card__desc" :lines="2" :content="desc"></app-tooltip>
+    <app-tooltip class="tool-card__desc" :lines="3" :content="desc"></app-tooltip>
   </div>
 </template>
 
@@ -37,7 +37,7 @@ defineProps<{
     color: var(--el-text-color-regular);
     font-size: 14px;
     line-height: 1.2em;
-    height: calc(1.2em * 2);
+    height: calc(1.2em * 3);
   }
 }
 </style>

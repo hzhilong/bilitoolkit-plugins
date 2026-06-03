@@ -6,9 +6,10 @@ import ToolExecutionModal from '@/components/modal/ToolExecutionModal.vue'
 import type { Tool } from '@/tools'
 import { CopyFavTool } from '@/tools/copy-fav'
 import { FavAllVideosTool } from '@/tools/fav-all-videos'
+import { RemoveBotFansTool } from '@/tools/remove-bot-fans'
 
 const { user } = useUser()
-const tools: Tool[] = [new CopyFavTool(), new FavAllVideosTool()]
+const tools: Tool[] = [new CopyFavTool(), new FavAllVideosTool(), new RemoveBotFansTool()]
 const visible = ref(false)
 const currTool = ref<Tool>()
 const openTool = async (tool: Tool) => {
