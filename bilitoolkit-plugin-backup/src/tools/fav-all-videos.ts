@@ -1,7 +1,7 @@
 import { toValue } from 'vue'
 import { assertUserLoggedIn } from '@/utils/assert'
 import { ElMessageBox } from 'element-plus'
-import { biliClientStore, invokeBiliApi, biliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient, createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { showSelectDialog, showPageRangeDialog } from 'bilitoolkit-ui'
 import { type FavFolderItem } from '@ybgnb/bili-api'
 import type { ToolContext } from '@/types/tools'
@@ -16,7 +16,7 @@ export class FavAllVideosTool extends Tool {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)
 
-    const clientId = await biliClientStore.get(userInfo)
+    const client = await createBiliClient(userInfo)
 
     const { value: sourceUidStr } = await ElMessageBox.prompt('请输入用户 uid', '提示', {
       confirmButtonText: '下一步',
@@ -27,7 +27,7 @@ export class FavAllVideosTool extends Tool {
     const sourceUid = Number(sourceUidStr)
 
     log(`正在获取用户 [${sourceUid}] 的投稿数`)
-    const { video: videoCount } = await invokeBiliApi(clientId, biliApi.spaceStatus.getNavNum, sourceUid, { signal })
+    const { video: videoCount } = await client.spaceStatus.getNavNum(sourceUid, { signal })
     log(`投稿数:${videoCount}`)
     if (!videoCount) return
 
@@ -41,7 +41,7 @@ export class FavAllVideosTool extends Tool {
     if (!pageRange) return
 
     log(`正在获取自己的收藏夹`)
-    const { list: myFolders } = await invokeBiliApi(clientId, biliApi.fav.getFavFolders, undefined, undefined, {
+    const { list: myFolders } = await client.fav.getFavFolders(undefined, undefined, {
       signal,
     })
 
@@ -69,9 +69,7 @@ export class FavAllVideosTool extends Tool {
         ranges: pageRange,
       },
       async (pageNum, pageParams) => {
-        return await invokeBiliApi(
-          clientId,
-          biliApi.spaceVideo.fetchPageWithNextParams,
+        return await client.spaceVideo.fetchPageWithNextParams(
           {
             mid: sourceUid,
           },
@@ -97,7 +95,7 @@ export class FavAllVideosTool extends Tool {
 
     for (let i = 0; i < list.length; i++) {
       const { aid, title } = list[i]
-      await invokeBiliApi(clientId, biliApi.fav.favVideo, aid, [targetFolder.id], [], { signal })
+      await client.fav.favVideo(aid, [targetFolder.id], [], { signal })
       log(`[${i + 1}/${list.length}] 成功收藏视频 [${title}]`)
       await apiSleep(signal)
     }

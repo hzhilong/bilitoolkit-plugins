@@ -1,6 +1,5 @@
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import type { ExecuteContext } from '@/core/types/execute'
-import { biliApi, invokeBiliApi } from 'bilitoolkit-runtime/biliapi'
 import { apiSleep } from '@/core/utils/sleep'
 import { OnlyClearableModule } from '@/core/modules/only-clearable-module'
 
@@ -9,9 +8,9 @@ export class SysMsgModule extends OnlyClearableModule {
   dataTypeName: string = DataTypeMap[this.dataType].name
 
   async clearData(context: ExecuteContext): Promise<string | void> {
-    const { clientId, signal, onProgress } = context
+    const { client, signal, onProgress } = context
     onProgress?.(0, '正在获取系统通知消息')
-    const sysList = await invokeBiliApi(clientId, biliApi.message.fetchSystemAll, undefined, undefined, { signal })
+    const sysList = await client.message.fetchSystemAll(undefined, undefined, { signal })
     onProgress?.(0, `已获取 ${sysList.length} 条系统通知消息`)
 
     let delMsgCount = 0
@@ -20,9 +19,7 @@ export class SysMsgModule extends OnlyClearableModule {
       const progress = ((i + 1) * 100) / sysList.length
       const msg = sysList[i]
 
-      await invokeBiliApi(
-        clientId,
-        biliApi.message.delSysMessages,
+      await client.message.delSysMessages(
         [
           {
             id: msg.id,

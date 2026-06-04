@@ -11,7 +11,7 @@ import { useExecuteOptions } from '@/composables/useExecuteOptions'
 import { AppIcon, useLoadingData, showError } from 'bilitoolkit-ui'
 import TreeSelectModal from '@/components/modal/TreeSelectModal.vue'
 import { useTreeSelect } from '@/composables/useTreeSelect'
-import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { storeToRefs } from 'pinia'
 import { useAppSettingsStore } from '@/stores/app-settings'
 
@@ -56,7 +56,7 @@ const init = loadingData(async () => {
   if (!props.viewMode && dataModule.value.fetchTotal) {
     dataTotal.value = await dataModule.value.fetchTotal({
       user: props.user,
-      clientId: await biliClientStore.get(props.user),
+      client: await createBiliClient(props.user),
       appSettings: appSettings.value,
     })
   } else {

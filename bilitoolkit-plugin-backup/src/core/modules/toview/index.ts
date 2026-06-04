@@ -5,7 +5,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 
 export class ToViewModule extends DataModule<ToViewItem> {
   dataType: DataType = 'to_view'
@@ -23,8 +23,8 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return data.title
   }
 
-  async fetchTotal({ clientId, signal }: ExecuteContext): Promise<number> {
-    return (await invokeBiliApi(clientId, biliApi.toview.getTotal, { signal })) ?? 0
+  async fetchTotal({ client, signal }: ExecuteContext): Promise<number> {
+    return (await client.toview.getTotal({ signal })) ?? 0
   }
 
   getPageSize() {
@@ -32,17 +32,17 @@ export class ToViewModule extends DataModule<ToViewItem> {
   }
 
   async fetchPage(
-    { clientId, signal }: ExecuteContext,
+    { client, signal }: ExecuteContext,
     params: FetchPageParams,
   ): Promise<PageDataWithNextParams<ToViewItem>> {
-    return await invokeBiliApi(clientId, biliApi.toview.fetchPageWithNextParams, params, { signal })
+    return await client.toview.fetchPageWithNextParams(params, { signal })
   }
 
-  async restoreData({ clientId, signal }: ExecuteContext, { aid }: ToViewItem) {
-    await invokeBiliApi(clientId, biliApi.toview.addToView, aid, { signal })
+  async restoreData({ client, signal }: ExecuteContext, { aid }: ToViewItem) {
+    await client.toview.addToView(aid, { signal })
   }
 
-  async clearData({ clientId, signal }: ExecuteContext, _list: ToViewItem[]): Promise<string | void> {
-    await invokeBiliApi(clientId, biliApi.toview.clearToView, 0, { signal })
+  async clearData({ client, signal }: ExecuteContext, _list: ToViewItem[]): Promise<string | void> {
+    await client.toview.clearToView(0, { signal })
   }
 }

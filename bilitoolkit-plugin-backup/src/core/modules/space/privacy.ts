@@ -4,7 +4,6 @@ import { type PrivacySettings, type PageDataWithNextParams, type ExactlyOne, Pri
 import type { BackupDataRangeType, ExportTarget } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
 import { toSinglePageData } from '@/core/utils/data-range'
-import { invokeBiliApi, biliApi } from 'bilitoolkit-runtime/biliapi'
 import { apiSleep } from '@/core/utils/sleep'
 
 export class SpacePrivacyModule extends BackupRestoreModule<PrivacySettings> {
@@ -25,16 +24,13 @@ export class SpacePrivacyModule extends BackupRestoreModule<PrivacySettings> {
     return 1
   }
 
-  async fetchPage({ clientId, signal }: ExecuteContext): Promise<PageDataWithNextParams<PrivacySettings>> {
-    return toSinglePageData((await invokeBiliApi(clientId, biliApi.spaceSettings.getSpaceSettings, { signal })).privacy)
+  async fetchPage({ client, signal }: ExecuteContext): Promise<PageDataWithNextParams<PrivacySettings>> {
+    return toSinglePageData((await client.spaceSettings.getSpaceSettings({ signal })).privacy)
   }
 
-  async restoreData(
-    { clientId, signal, onProgress }: ExecuteContext,
-    settings: PrivacySettings,
-  ): Promise<string | void> {
+  async restoreData({ client, signal, onProgress }: ExecuteContext, settings: PrivacySettings): Promise<string | void> {
     onProgress?.(0, `正在获取最新的隐私设置`)
-    const currSettings = (await invokeBiliApi(clientId, biliApi.spaceSettings.getSpaceSettings, { signal })).privacy
+    const currSettings = (await client.spaceSettings.getSpaceSettings({ signal })).privacy
     await apiSleep(signal)
     const fields = Object.keys(settings) as (keyof PrivacySettings)[]
     for (let i = 0; i < fields.length; i++) {
@@ -48,9 +44,7 @@ export class SpacePrivacyModule extends BackupRestoreModule<PrivacySettings> {
 
       onProgress?.((i * 100) / fields.length, `正在设置隐私项 [${PrivacySettingsMap[field]}]`)
       try {
-        await invokeBiliApi(
-          clientId,
-          biliApi.spaceSettings.updatePrivacy,
+        await client.spaceSettings.updatePrivacy(
           {
             [field]: value,
           } as unknown as ExactlyOne<PrivacySettings>,

@@ -7,7 +7,7 @@ import { sleep } from '@ybgnb/utils'
 import { taskGroupService } from '@/core/service/task-group'
 import type { OnProgress, OnStatusChange, GroupExecuteContext } from '@/core/types/execute'
 import { useAppSettingsStore } from '@/stores/app-settings'
-import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { useExecTaskGroup } from '@/composables/useExecTaskGroup'
 
 export interface InitContext {
@@ -118,7 +118,7 @@ export const useInitTaskGroupView = <O extends OperationType = OperationType>(
       onProgress,
       appSettings: useAppSettingsStore().appSettings,
       user: taskGroup.value.user,
-      clientId: await biliClientStore.get(taskGroup.value.user),
+      client: await createBiliClient(taskGroup.value.user),
     }
   }
 

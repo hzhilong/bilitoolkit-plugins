@@ -1,9 +1,9 @@
 import { Tool } from '@/tools/index'
 import type { ToolContext } from '@/types/tools'
-import { invokeBiliApi, biliClientStore, biliApi } from 'bilitoolkit-runtime/biliapi'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { toValue } from 'vue'
 import { assertUserLoggedIn } from '@/utils/assert'
-import { RelationAttributeMap, type UserCardData } from '@ybgnb/bili-api'
+import { RelationAttributeMap, type UserCardData, type BiliClient } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
 import { sleepRandom } from '@ybgnb/utils'
 
@@ -14,10 +14,10 @@ export class RemoveBotFansTool extends Tool {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)
 
-    const clientId = await biliClientStore.get(userInfo)
+    const client = await createBiliClient(userInfo)
 
     log('正在获取粉丝列表')
-    const fans = await invokeBiliApi(clientId, biliApi.relation.fetchFansAll, undefined, undefined, undefined, {
+    const fans = await client.relation.fetchFansAll(undefined, undefined, undefined, {
       signal,
     })
     log(`已获取 ${fans.length} 个粉丝`)
@@ -35,9 +35,7 @@ export class RemoveBotFansTool extends Tool {
 
       log(`正在获取用户的名片信息`)
       await apiSleep(signal)
-      const userCardData = await invokeBiliApi(
-        clientId,
-        biliApi.user.getUserCard,
+      const userCardData = await client.user.getUserCard(
         { mid: fan.mid },
         {
           signal,
@@ -48,13 +46,13 @@ export class RemoveBotFansTool extends Tool {
         log('跳过  等级 > 2')
         continue
       }
-      const score = await this.calcScamScore(userCardData, clientId, log, signal)
+      const score = await this.calcScamScore(userCardData, client, log, signal)
       if (score <= 10) {
         log(`可疑度：${score}，不是机器人`)
       } else {
         log(`可疑度：${score}，是机器人，正在移除`)
         await apiSleep(signal)
-        await invokeBiliApi(clientId, biliApi.relation.removeFan, fan.mid, { signal })
+        await client.relation.removeFan(fan.mid, { signal })
         log(`成功移除该粉丝`)
         removeCount++
       }
@@ -74,7 +72,7 @@ export class RemoveBotFansTool extends Tool {
     return Math.floor(b * (Math.exp((attention - 100) / c) - 1))
   }
 
-  async calcScamScore(cardData: UserCardData, clientId: string, log: (msg: string) => void, signal?: AbortSignal) {
+  async calcScamScore(cardData: UserCardData, client: BiliClient, log: (msg: string) => void, signal?: AbortSignal) {
     const { card } = cardData
     const { current_level: level } = card.level_info
 
@@ -116,7 +114,7 @@ export class RemoveBotFansTool extends Tool {
 
     log('正在获取用户空间状态数')
     await sleepRandom(200, 400)
-    const navNum = await invokeBiliApi(clientId, biliApi.spaceStatus.getNavNum, Number(card.mid), { signal })
+    const navNum = await client.spaceStatus.getNavNum(Number(card.mid), { signal })
     const posNum = navNum.video + navNum.article + navNum.album + navNum.audio + navNum.pugv
     msg += `  ${posNum}投稿  ${navNum.bangumi + navNum.cinema}追番追剧  ${navNum.channel.guest}视频列表  ${navNum.favourite.guest}收藏夹  ${navNum.opus}动态`
 

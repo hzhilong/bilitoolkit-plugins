@@ -4,7 +4,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams, FetchAllMode } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { TreeRangeMetas } from '@/core/types/data-range'
 import { type PageDataWithNextParams, type FavFolderMeta, getFavFolderType } from '@ybgnb/bili-api'
 import { type FavFolder, type FavItem, toVideoFavFolders, toVideoFavItems } from '@/core/modules/fav/types'
@@ -44,8 +44,8 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
     return `视频-${child.title}`
   }
 
-  private async getFavFolders({ clientId, signal, onProgress }: ExecuteContext, mode?: FetchAllMode) {
-    const { list } = await invokeBiliApi(clientId, biliApi.fav.getFavFolders, undefined, undefined, { signal })
+  private async getFavFolders({ client, signal, onProgress }: ExecuteContext, mode?: FetchAllMode) {
+    const { list } = await client.fav.getFavFolders(undefined, undefined, { signal })
     if (!mode || mode === 'tree-select') {
       return toVideoFavFolders(list as FavFolder[])
     }
@@ -55,15 +55,15 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
     for (let i = 0; i < total; i++) {
       const folder = list[i]
       await onProgress?.((i * 100) / total, `[${i + 1}/${total}] 正在获取收藏夹 [${folder.title}] 详情`)
-      const result = await invokeBiliApi(clientId, biliApi.fav.getFavFolderMeta, folder.id, { signal })
+      const result = await client.fav.getFavFolderMeta(folder.id, { signal })
       metas.push(result)
       await sleepRandom(300, 500)
     }
     return toVideoFavFolders(metas)
   }
 
-  async fetchTotal({ clientId, signal }: ExecuteContext): Promise<number> {
-    return (await invokeBiliApi(clientId, biliApi.fav.getFavFolders, undefined, undefined, { signal })).count ?? 0
+  async fetchTotal({ client, signal }: ExecuteContext): Promise<number> {
+    return (await client.fav.getFavFolders(undefined, undefined, { signal })).count ?? 0
   }
 
   async fetchChildrenTotal(context: ExecuteContext, folder: FavFolder): Promise<number> {
@@ -71,13 +71,11 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
   }
 
   async fetchChildrenPage(
-    { clientId, signal }: ExecuteContext,
+    { client, signal }: ExecuteContext,
     params: FetchPageParams,
     folder: FavFolder,
   ): Promise<PageDataWithNextParams<FavItem>> {
-    const result = await invokeBiliApi(
-      clientId,
-      biliApi.fav.fetchPageWithNextParams,
+    const result = await client.fav.fetchPageWithNextParams(
       {
         media_id: folder.id,
       },
@@ -97,10 +95,8 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
     return await this.getFavFolders(context, mode)
   }
 
-  async restoreData({ clientId, signal }: ExecuteContext, folder: FavFolder): Promise<string> {
-    const newFolder = await invokeBiliApi(
-      clientId,
-      biliApi.fav.addFavFolder,
+  async restoreData({ client, signal }: ExecuteContext, folder: FavFolder): Promise<string> {
+    const newFolder = await client.fav.addFavFolder(
       {
         title: folder.title,
         cover: folder.cover,
@@ -112,12 +108,8 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
     return String(newFolder.id)
   }
 
-  async restoreChildrenData(
-    { clientId, signal }: ExecuteContext,
-    children: FavItem,
-    parentIds: string[],
-  ): Promise<void> {
-    await invokeBiliApi(clientId, biliApi.fav.favVideo, children.id, parentIds.map(Number), [], { signal })
+  async restoreChildrenData({ client, signal }: ExecuteContext, children: FavItem, parentIds: string[]): Promise<void> {
+    await client.fav.favVideo(children.id, parentIds.map(Number), [], { signal })
   }
 
   async delParentData(): Promise<void> {}
@@ -125,15 +117,13 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
   async delChildData(): Promise<void> {}
 
   async clearData(context: ExecuteContext): Promise<string | void> {
-    const { clientId, signal, onProgress } = context
+    const { client, signal, onProgress } = context
     onProgress?.(0, `正在处理收藏夹`)
-    const { list, count } = await invokeBiliApi(clientId, biliApi.fav.getFavFolders, undefined, undefined, { signal })
+    const { list, count } = await client.fav.getFavFolders(undefined, undefined, { signal })
     await apiSleep(signal)
     const nonDefaultFolders = list.filter((f) => !inArray(getFavFolderType(f), ['default_private', 'default_public']))
     if (nonDefaultFolders.length > 0) {
-      await invokeBiliApi(
-        clientId,
-        biliApi.fav.delFavFolder,
+      await client.fav.delFavFolder(
         nonDefaultFolders.map((f) => f.id),
         { signal },
       )
@@ -147,17 +137,11 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
     const chunkList = chunk(favItems, 40)
     for (let i = 0; i < chunkList.length; i++) {
       const cList = chunkList[i]
-      await invokeBiliApi(
-        clientId,
-        biliApi.fav.batchDelFavItems,
-        defaultFolder.id,
-        cList.map((c) => `${c.id}:${c.type}`).join(','),
-        { signal },
-      )
+      await client.fav.batchDelFavItems(defaultFolder.id, cList.map((c) => `${c.id}:${c.type}`).join(','), { signal })
       onProgress?.((i * 100) / count, `[${i + 1}/${chunkList.length}] 成功批量删除 ${cList.length} 个收藏视频`)
       await apiSleep(signal)
     }
-    await invokeBiliApi(clientId, biliApi.fav.cleanFavItems, defaultFolder.id, { signal })
+    await client.fav.cleanFavItems(defaultFolder.id, { signal })
     onProgress?.(0, `成功清空默认收藏夹的所有失效内容`)
   }
 }

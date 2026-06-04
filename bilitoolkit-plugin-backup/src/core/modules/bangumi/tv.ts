@@ -5,7 +5,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 
 export class FollowedTvModule extends DataModule<FollowBangumi> {
   dataType: DataType = 'bangumi_tv'
@@ -27,12 +27,10 @@ export class FollowedTvModule extends DataModule<FollowBangumi> {
   }
 
   async fetchPage(
-    { clientId, signal, user }: ExecuteContext,
+    { client, signal, user }: ExecuteContext,
     params: FetchPageParams,
   ): Promise<PageDataWithNextParams<FollowBangumi>> {
-    return await invokeBiliApi(
-      clientId,
-      biliApi.followBangumi.fetchPageWithNextParams,
+    return await client.followBangumi.fetchPageWithNextParams(
       user.mid,
       FollowBangumiTypeMap.tv.type,
       undefined,
@@ -41,14 +39,14 @@ export class FollowedTvModule extends DataModule<FollowBangumi> {
     )
   }
 
-  async restoreData({ clientId, signal }: ExecuteContext, { season_id }: FollowBangumi) {
-    await invokeBiliApi(clientId, biliApi.followBangumi.add, season_id, { signal })
+  async restoreData({ client, signal }: ExecuteContext, { season_id }: FollowBangumi) {
+    await client.followBangumi.add(season_id, { signal })
   }
 
   clearData(context: ExecuteContext, list: FollowBangumi[]): Promise<string | void> {
-    const { clientId, signal } = context
+    const { client, signal } = context
     return this.baseClearData(context, list, async (data) => {
-      return await invokeBiliApi(clientId, biliApi.followBangumi.del, data.season_id, { signal })
+      return await client.followBangumi.del(data.season_id, { signal })
     })
   }
 }

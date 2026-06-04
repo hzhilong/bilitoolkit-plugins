@@ -3,7 +3,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { FetchPageParams } from '@/core/types/data-module'
 import type { ExecuteContext } from '@/core/types/execute'
-import { biliApi, invokeBiliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import { type PageDataWithNextParams, type Relation } from '@ybgnb/bili-api'
 import { DataModule } from '@/core/modules/data-module'
 
@@ -26,15 +26,15 @@ export class FansModule extends DataModule<Relation> {
     return `粉丝-${data.uname}`
   }
 
-  async fetchTotal({ clientId, signal, user }: ExecuteContext): Promise<number> {
-    return (await invokeBiliApi(clientId, biliApi.relation.getStat, user.mid, { signal })).follower
+  async fetchTotal({ client, signal, user }: ExecuteContext): Promise<number> {
+    return (await client.relation.getStat(user.mid, { signal })).follower
   }
 
   async fetchPage(
-    { clientId, signal, user }: ExecuteContext,
+    { client, signal, user }: ExecuteContext,
     params: FetchPageParams,
   ): Promise<PageDataWithNextParams<Relation>> {
-    return await invokeBiliApi(clientId, biliApi.relation.fetchFansPageWithNextParams, user.mid, params, { signal })
+    return await client.relation.fetchFansPageWithNextParams(user.mid, params, { signal })
   }
 
   async restoreData(): Promise<string> {
@@ -42,9 +42,9 @@ export class FansModule extends DataModule<Relation> {
   }
 
   clearData(context: ExecuteContext, list: Relation[]): Promise<string | void> {
-    const { clientId, signal } = context
+    const { client, signal } = context
     return this.baseClearData(context, list, async (data) => {
-      return await invokeBiliApi(clientId, biliApi.relation.removeFan, data.mid, { signal })
+      return await client.relation.removeFan(data.mid, { signal })
     })
   }
 }

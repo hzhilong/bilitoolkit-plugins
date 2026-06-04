@@ -1,7 +1,7 @@
 import { toValue } from 'vue'
 import { assertUserLoggedIn } from '@/utils/assert'
 import { ElMessageBox } from 'element-plus'
-import { biliClientStore, invokeBiliApi, biliApi, publicClient } from 'bilitoolkit-runtime/biliapi'
+import { publicClient, createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { showSelectDialog, showError, showPageRangeDialog, showConfirm } from 'bilitoolkit-ui'
 import { type FavFolderItem, BiliApiBusinessError } from '@ybgnb/bili-api'
 import type { ToolContext } from '@/types/tools'
@@ -17,7 +17,7 @@ export class CopyFavTool extends Tool {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)
 
-    const clientId = await biliClientStore.get(userInfo)
+    const client = await createBiliClient(userInfo)
 
     const { value: sourceUid } = await ElMessageBox.prompt('请输入已公开收藏夹的用户 uid', '提示', {
       confirmButtonText: '下一步',
@@ -27,15 +27,9 @@ export class CopyFavTool extends Tool {
     })
 
     log(`正在获取用户 [${sourceUid}] 的收藏夹`)
-    const { list: folderList, count } = await invokeBiliApi(
-      clientId,
-      biliApi.fav.getFavFolders,
-      Number(sourceUid),
-      undefined,
-      {
-        signal: signal,
-      },
-    )
+    const { list: folderList, count } = await client.fav.getFavFolders(Number(sourceUid), undefined, {
+      signal: signal,
+    })
 
     if (!count) {
       showError('该用户未公开收藏夹')
@@ -58,7 +52,7 @@ export class CopyFavTool extends Tool {
     }
 
     log(`正在获取自己的收藏夹`)
-    const { list: myFolders } = await invokeBiliApi(clientId, biliApi.fav.getFavFolders, undefined, undefined, {
+    const { list: myFolders } = await client.fav.getFavFolders(undefined, undefined, {
       signal,
     })
 
@@ -70,9 +64,7 @@ export class CopyFavTool extends Tool {
     } else {
       log(`正在创建收藏夹 [${sourceFolder.title}]`)
       try {
-        const newFolder = await invokeBiliApi(
-          clientId,
-          biliApi.fav.addFavFolder,
+        const newFolder = await client.fav.addFavFolder(
           {
             title: sourceFolder.title,
             privacy: 1,
@@ -125,9 +117,7 @@ export class CopyFavTool extends Tool {
         ranges: pageRange,
       },
       async (pageNum, pageParams) => {
-        return await invokeBiliApi(
-          clientId,
-          biliApi.fav.fetchPageWithNextParams,
+        return await client.fav.fetchPageWithNextParams(
           {
             media_id: sourceFolder.id,
           },
@@ -152,9 +142,7 @@ export class CopyFavTool extends Tool {
     const chunkList = chunk(list, 40)
     for (let i = 0; i < chunkList.length; i++) {
       const cList = chunkList[i]
-      await invokeBiliApi(
-        clientId,
-        biliApi.fav.copyFavItems,
+      await client.fav.copyFavItems(
         sourceFolder.id,
         targetFolderId,
         Number(sourceUid),

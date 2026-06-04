@@ -8,7 +8,7 @@ import { registeredModulesMap } from '@/core/modules/register'
 import type { ExecuteContext, GroupExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import { taskGroupService } from '@/core/service/task-group'
-import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError, CommonError } from '@ybgnb/utils'
+import { createAbortError, isCanceledError, getErrorMessage, CommonError } from '@ybgnb/utils'
 import { checkAbortSignal } from '@/core/utils/abort'
 
 /**
@@ -51,7 +51,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
     throw new Error('任务组已结束，不可再执行')
   }
 
-  const { user, clientId, onProgress, signal, onStatusChange, onItemsStatusChange, onItemsProgress, appSettings } =
+  const { user, client, onProgress, signal, onStatusChange, onItemsStatusChange, onItemsProgress, appSettings } =
     groupContext
 
   return new Promise<void>(async (resolve, reject) => {
@@ -82,7 +82,7 @@ export const executeTaskGroup = async <O extends OperationType = OperationType>(
 
       const context: ExecuteContext = {
         user: user,
-        clientId: clientId,
+        client: client,
         signal: signal,
         appSettings: appSettings,
       }

@@ -1,5 +1,4 @@
 import type { ExecuteContext } from '@/core/types/execute'
-import { invokeBiliApi, biliApi } from 'bilitoolkit-runtime/biliapi'
 
 const dynamicCommentPattern = /^bilibili:\/\/comment\/detail\/(\d+)\/(\d+)\//
 const videoCommentPattern = /^bilibili:\/\/video\/(\d+)/
@@ -12,12 +11,12 @@ export interface CommentDelParams {
 export type CacheKey = string
 const toCacheKey = ({ oid, type, rpid }: CommentDelParams): CacheKey => `${type}:${oid}:${rpid}`
 
-export const delComtemtByMsg = async (
+export const delCommentByMsg = async (
   context: ExecuteContext,
   msgItem: { rpid: string; native_uri: string },
   deletedCache: Set<CacheKey>,
 ) => {
-  const { signal, clientId } = context
+  const { signal, client } = context
   const { rpid, native_uri } = msgItem
 
   if (rpid === '0') {
@@ -55,7 +54,7 @@ export const delComtemtByMsg = async (
     return false
   }
 
-  await invokeBiliApi(clientId, biliApi.api.save, 'https://api.bilibili.com/x/v2/reply/del', {
+  await client.api.save('https://api.bilibili.com/x/v2/reply/del', {
     data: { oid, type, rpid },
     signal,
   })

@@ -3,9 +3,10 @@ import type { FavCollection, PageDataWithNextParams } from '@ybgnb/bili-api'
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import type { OperationType } from '@/core/types/operation'
 import type { BackupDataRangeType, ExportTarget } from '@/core/types/backup'
-import { publicClient, invokeBiliApi, biliApi } from 'bilitoolkit-runtime/biliapi'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { ExecuteContext } from '@/core/types/execute'
 import type { FetchPageParams } from '@/core/types/data-module'
+import { logger } from '@/common/logger'
 
 export class FavCollectionModule extends DataModule<FavCollection> {
   dataType: DataType = 'fav_collected'
@@ -26,29 +27,26 @@ export class FavCollectionModule extends DataModule<FavCollection> {
     return `收藏的视频合集-${collection.title}`
   }
 
-  async fetchTotal({ clientId, signal }: ExecuteContext): Promise<number> {
-    return (
-      (await invokeBiliApi(clientId, biliApi.favCollection.fetchPageWithNextParams, undefined, undefined, { signal }))
-        .total ?? 0
-    )
+  async fetchTotal({ client, signal }: ExecuteContext): Promise<number> {
+    return (await client.favCollection.fetchPageWithNextParams(undefined, undefined, { signal })).total ?? 0
   }
 
   async fetchPage(
-    { clientId, signal }: ExecuteContext,
+    { client, signal }: ExecuteContext,
     params: FetchPageParams,
   ): Promise<PageDataWithNextParams<FavCollection>> {
-    return await invokeBiliApi(clientId, biliApi.favCollection.fetchPageWithNextParams, undefined, params, { signal })
+    return await client.favCollection.fetchPageWithNextParams(undefined, params, { signal })
   }
 
-  async restoreData({ clientId, signal }: ExecuteContext, collection: FavCollection): Promise<string> {
-    await invokeBiliApi(clientId, biliApi.favCollection.add, collection.id, { signal })
+  async restoreData({ client, signal }: ExecuteContext, collection: FavCollection): Promise<string> {
+    await client.favCollection.add(collection.id, { signal })
     return String(collection.id)
   }
 
   clearData(context: ExecuteContext, list: FavCollection[]): Promise<string | void> {
-    const { clientId, signal } = context
+    const { client, signal } = context
     return this.baseClearData(context, list, async (collection) => {
-      return await invokeBiliApi(clientId, biliApi.favCollection.del, collection.id, { signal })
+      return await client.favCollection.del(collection.id, { signal })
     })
   }
 }

@@ -5,7 +5,7 @@ import type { RestoreOptions } from '@/core/types/restore'
 import type { ClearOptions } from '@/core/types/clear'
 import type { TaskType, TaskId, TaskStatus } from '@/core/types/task'
 import type { TaskGroupStatus } from '@/core/types/task-group'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
+import type { UserInfoWithCookie, BiliClient } from '@ybgnb/bili-api'
 import type { AppSettings } from '@/types/settings'
 
 /**
@@ -26,8 +26,8 @@ export type User = UserInfoWithCookie
 export interface ExecuteContext {
   /** 目标用户 */
   user: User
-  /** bili client id */
-  clientId: string
+  /** bili client */
+  client: BiliClient
   /** 进度回调 */
   onProgress?: OnProgress
   /** 状态监听 */

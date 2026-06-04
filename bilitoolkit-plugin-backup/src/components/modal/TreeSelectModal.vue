@@ -8,7 +8,7 @@ import type { DataType } from '@/core/types/data-type'
 import { useTreeDataModule } from '@/composables/useDataModule'
 import { RESTORE_PAGE_SIZE } from '@/core/commom/constant'
 import type { User } from '@/core/types/execute'
-import { biliClientStore } from 'bilitoolkit-runtime/biliapi'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { storeToRefs } from 'pinia'
 import { useAppSettingsStore } from '@/stores/app-settings'
 
@@ -50,7 +50,7 @@ const init = loadingData(async () => {
     list = await treeDataModule.value.fetchParentAll(
       {
         user: props.user,
-        clientId: await biliClientStore.get(props.user),
+        client: await createBiliClient(props.user),
         appSettings: appSettings.value,
       },
       'tree-select',

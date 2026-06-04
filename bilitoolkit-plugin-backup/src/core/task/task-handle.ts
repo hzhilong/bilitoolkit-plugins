@@ -44,7 +44,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
   task: Task<O, D>,
 ): Promise<TaskResult<O, D>> => {
   await assertCanExecute(task)
-  const { user, onProgress, onStatusChange, signal, clientId, appSettings } = context
+  const { user, onProgress, onStatusChange, signal, client, appSettings } = context
   const { operationType, id: taskId } = task
   const operationName = OperationTypeMap[operationType]
 
@@ -86,7 +86,7 @@ export const executeTask = async <O extends OperationType = OperationType, D ext
       const result = await dataModule.executeTask<O>(
         {
           user,
-          clientId,
+          client,
           signal: signal,
           onProgress: setProgress,
           appSettings: appSettings,
