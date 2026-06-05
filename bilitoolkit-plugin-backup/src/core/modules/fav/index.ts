@@ -8,8 +8,7 @@ import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { TreeRangeMetas } from '@/core/types/data-range'
 import { type PageDataWithNextParams, type FavFolderMeta, getFavFolderType } from '@ybgnb/bili-api'
 import { type FavFolder, type FavItem, toVideoFavFolders, toVideoFavItems } from '@/core/modules/fav/types'
-import { sleepRandom, chunk } from '@ybgnb/utils'
-import { inArray } from '@/core/utils/array'
+import { sleepRandom, chunk, inArray } from '@ybgnb/utils'
 import { apiSleep } from '@/core/utils/sleep'
 
 export class FavModule extends TreeDataModule<FavItem, FavFolder> {

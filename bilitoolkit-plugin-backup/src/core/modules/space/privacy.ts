@@ -1,10 +1,11 @@
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import { BackupRestoreModule } from '@/core/modules/backup-restore-module'
-import { type PrivacySettings, type PageDataWithNextParams, type ExactlyOne, PrivacySettingsMap } from '@ybgnb/bili-api'
+import { type PrivacySettings, type PageDataWithNextParams, PrivacySettingsMap } from '@ybgnb/bili-api'
 import type { BackupDataRangeType, ExportTarget } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
 import { toSinglePageData } from '@/core/utils/data-range'
 import { apiSleep } from '@/core/utils/sleep'
+import type { ExactlyOne } from '@ybgnb/utils'
 
 export class SpacePrivacyModule extends BackupRestoreModule<PrivacySettings> {
   dataType: DataType = 'space_privacy'

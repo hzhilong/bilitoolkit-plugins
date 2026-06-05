@@ -6,7 +6,6 @@ import type { BackupDataRangeType, ExportTarget } from '@/core/types/backup'
 import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { ExecuteContext } from '@/core/types/execute'
 import type { FetchPageParams } from '@/core/types/data-module'
-import { logger } from '@/common/logger'
 
 export class FavCollectionModule extends DataModule<FavCollection> {
   dataType: DataType = 'fav_collected'

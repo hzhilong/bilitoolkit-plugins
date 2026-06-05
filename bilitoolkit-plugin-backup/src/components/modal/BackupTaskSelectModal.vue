@@ -4,9 +4,9 @@ import { useLoadingData, useSelectData, showError } from 'bilitoolkit-ui'
 import type { TaskGroup } from '@/core/types/task-group'
 import type { Task } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
-import { inArray } from '@/core/utils/array'
 import { registeredModulesMap, allRestorableModules } from '@/core/modules/register'
 import { getDataByBackupTask } from '@/core/utils/data-range'
+import { inArray } from '@ybgnb/utils'
 
 const props = defineProps<{
   taskGroup: TaskGroup<'backup'>

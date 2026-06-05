@@ -1,9 +1,9 @@
 import { db } from '@/core/db/db'
-import { omitUndefined } from '@/core/utils/db'
 import type { OperationType } from '@/core/types/operation'
 import type { CreateTaskGroup, TaskGroupId, TaskGroup, TaskGroupFilters } from '@/core/types/task-group'
 import Dexie from 'dexie'
 import type { PageResult, PageParams } from 'bilitoolkit-ui'
+import { omitUndefined } from '@ybgnb/utils'
 
 export class TaskGroupService {
   async getById<O extends OperationType = OperationType>(

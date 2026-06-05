@@ -2,10 +2,15 @@ import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import type { ExecuteContext, BaseExecuteOptions } from '@/core/types/execute'
 import type { Task, TaskResult } from '@/core/types/task'
 import { taskService } from '@/core/service/task'
-import { createAbortError, isCanceledError, getErrorMessage, convertToCommonError } from '@ybgnb/utils'
+import {
+  createAbortError,
+  isCanceledError,
+  getErrorMessage,
+  convertToCommonError,
+  inArray,
+  checkAbortSignal,
+} from '@ybgnb/utils'
 import type { Data } from '@/core/types/data-module'
-import { checkAbortSignal } from '@/core/utils/abort'
-import { inArray } from '@/core/utils/array'
 import type { DataModule } from '@/core/modules/data-module'
 import { taskLogService } from '@/core/service/task-log'
 

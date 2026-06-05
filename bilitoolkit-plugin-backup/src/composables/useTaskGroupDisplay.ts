@@ -2,7 +2,7 @@ import { type MaybeRefOrGetter, computed, toValue } from 'vue'
 import { type Task, type TaskStatus } from '@/core/types/task'
 import { type OperationType, OperationTypeMap } from '@/core/types/operation'
 import { TaskGroupStatusMap, type TaskGroup } from '@/core/types/task-group'
-import { inArray } from '@/core/utils/array'
+import { inArray } from '@ybgnb/utils'
 
 export const useTaskGroupDisplay = <O extends OperationType = OperationType>(
   taskGroup: MaybeRefOrGetter<TaskGroup<O>>,

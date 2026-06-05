@@ -5,9 +5,8 @@ import type { GroupExecuteContext } from '@/core/types/execute'
 import type { TaskGroupStatus, TaskGroup, TaskGroupId } from '@/core/types/task-group'
 import { createTaskGroup } from '@/core/task/task-group-handle'
 import { taskSchedule } from '@/core/task/task-schedule'
-import { checkAbortSignal } from '@/core/utils/abort'
 import { ref } from 'vue'
-import { CommonError } from '@ybgnb/utils'
+import { CommonError, checkAbortSignal } from '@ybgnb/utils'
 import { taskGroupService } from '@/core/service/task-group'
 import { assertUserLoggedIn } from '@/utils/assert'
 
@@ -70,7 +69,6 @@ export const useExecTaskGroup = () => {
 
       sessionStore.setActiveTaskGroupFlag(true)
       sessionStore.setActiveTaskGroup(taskGroup)
-      logger.info(`执行任务组`, taskGroup)
       const promise = (async () => {
         try {
           await taskSchedule.executeTaskGroup(context, taskGroup.id)
@@ -96,9 +94,6 @@ export const useExecTaskGroup = () => {
   const cancelTaskGroup = async (groupId: TaskGroupId) => {
     return await taskSchedule.abortTaskGroup(groupId)
   }
-
-
-
 
   return {
     assertNoActiveTask,

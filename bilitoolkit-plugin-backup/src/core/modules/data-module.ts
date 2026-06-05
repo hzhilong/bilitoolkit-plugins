@@ -10,7 +10,7 @@ import type {
   BackupNormalOptions,
 } from '@/core/types/backup'
 import type { ExecuteContext } from '@/core/types/execute'
-import { createAbortError, getErrorMessage } from '@ybgnb/utils'
+import { createAbortError, getErrorMessage, checkAbortSignal } from '@ybgnb/utils'
 import { taskService } from '@/core/service/task'
 import { getBatchBackupData, getBatchRestoreData } from '@/core/utils/batch'
 import { exportTxtFile } from '@/core/utils/export'
@@ -20,7 +20,6 @@ import type { Task, TaskResult } from '@/core/types/task'
 import type { BatchProgress } from '@/core/types/batch'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import type { RestoreNormalOptions, RestoreBatchOptions, BaseRestoreResult } from '@/core/types/restore'
-import { checkAbortSignal } from '@/core/utils/abort'
 import type { ClearOptions } from '@/core/types/clear'
 
 /**

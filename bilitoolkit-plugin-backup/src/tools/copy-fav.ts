@@ -3,7 +3,7 @@ import { assertUserLoggedIn } from '@/utils/assert'
 import { ElMessageBox } from 'element-plus'
 import { publicClient, createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { showSelectDialog, showError, showPageRangeDialog, showConfirm } from 'bilitoolkit-ui'
-import { type FavFolderItem, BiliApiBusinessError } from '@ybgnb/bili-api'
+import { type FavFolderItem } from '@ybgnb/bili-api'
 import type { ToolContext } from '@/types/tools'
 import { getDataByPageRange } from '@/core/utils/data-range'
 import { getErrorMessage, chunk } from '@ybgnb/utils'
@@ -74,8 +74,9 @@ export class CopyFavTool extends Tool {
         targetFolderId = newFolder.id
       } catch (err) {
         if (
-          err instanceof BiliApiBusinessError &&
-          (err.responseCode === 11002 || err.message.includes('已达到数量上限'))
+          err instanceof Error &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((err as any).responseCode === 11002 || err.message.includes('已达到数量上限'))
         ) {
           await showConfirm('创建收藏夹失败，已达到数量上限。是否选择已有收藏夹？')
           const selectedMyFolders = await showSelectDialog<FavFolderItem>({

@@ -1,15 +1,20 @@
 import { type OperationType } from '@/core/types/operation'
 import type { TaskGroupItem, CreateTaskGroupOptions, TaskGroupId } from '@/core/types/task-group'
 import { taskService } from '@/core/service/task'
-import { inArray } from '@/core/utils/array'
 import type { Task } from '@/core/types/task'
 import { executeTask } from '@/core/task/task-handle'
 import { registeredModulesMap } from '@/core/modules/register'
 import type { ExecuteContext, GroupExecuteContext } from '@/core/types/execute'
 import { apiSleep } from '@/core/utils/sleep'
 import { taskGroupService } from '@/core/service/task-group'
-import { createAbortError, isCanceledError, getErrorMessage, CommonError } from '@ybgnb/utils'
-import { checkAbortSignal } from '@/core/utils/abort'
+import {
+  createAbortError,
+  isCanceledError,
+  getErrorMessage,
+  CommonError,
+  checkAbortSignal,
+  inArray,
+} from '@ybgnb/utils'
 
 /**
  * 创建任务组

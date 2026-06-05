@@ -1,8 +1,8 @@
 import type { TaskCreateOptions, TaskId, Task, TaskResultPayload, TaskResult } from '@/core/types/task'
 import { db } from '@/core/db/db'
-import { omitUndefined } from '@/core/utils/db'
 import type { OperationType } from '@/core/types/operation'
 import type { Data } from '@/core/types/data-module'
+import { omitUndefined } from '@ybgnb/utils'
 
 export class TaskService {
   async getById<O extends OperationType = OperationType, D extends Data = Data>(

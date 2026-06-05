@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@ybgnb/bili-api": "workspace:*",
-    "@ybgnb/utils": "^0.2.3",
+    "@ybgnb/utils": "^0.2.8",
     "@ybgnb/vite-env": "^0.0.7",
     "axios": "^1.12.1",
     "bilitoolkit-runtime": "workspace:*",
