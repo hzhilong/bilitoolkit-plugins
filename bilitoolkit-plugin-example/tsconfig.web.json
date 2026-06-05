@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
+    // 启用项目引用
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "rootDir": "src",
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": [
-      "ES2020", "dom"
-    ],
+    "lib": ["ES2020", "dom"],
     "strict": true,
     // 类型导入必须使用 type
     "verbatimModuleSyntax": true,
@@ -22,16 +23,12 @@
     "experimentalDecorators": false,
     // 生成 source map
     "sourceMap": true,
-    // 禁用增量编译
-    "incremental": false,
     // CommonJS 和 ES 模块互操作
     "esModuleInterop": true,
     // 启用导入 .json 文件
     "resolveJsonModule": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     // vue jsx
     "jsx": "preserve",
@@ -49,10 +46,5 @@
     "./src/**/*.d.ts",
     "./src/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".yalc",
-    "yalc.lock"
-  ]
+  "exclude": ["node_modules", "dist", ".yalc", "yalc.lock"]
 }

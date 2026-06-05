@@ -9,18 +9,20 @@ import { coinTask } from '../tasks/impl/coin.js'
 import type { UpgradeTask } from '../tasks/base.js'
 import { dailyTaskStatusStore } from '../stores/daily-status.js'
 import { sleepRandom } from '@ybgnb/utils'
+import { appLogger } from 'bilitoolkit-runtime'
 
 export async function runByUser(
   user: UserInfoWithCookie,
-  { config, signal, logger }: TaskContext<Omit<InferConfig<MyTaskConfigFields>, 'users'>>,
+  { config, signal, logger, api }: TaskContext<Omit<InferConfig<MyTaskConfigFields>, 'users'>>,
 ): Promise<UserTaskResult> {
   if (!config) throw new Error('缺少配置')
   const biliClient = new BiliClient({
     context: {
       userCookie: user.userCookie,
     },
+    logLevel: await api.system.getLogLevel(),
     // bili api 库的日志只在控制台打印
-    logger: console,
+    logger: appLogger,
   })
 
   const dailyTaskStatus = await dailyTaskStatusStore.get(biliClient, signal)

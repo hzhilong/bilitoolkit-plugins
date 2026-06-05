@@ -1,7 +1,8 @@
 import { type UserInfo, BiliClient } from '@ybgnb/bili-api'
-import type { InferConfig, TaskLogger } from 'bilitoolkit-types'
+import type { InferConfig } from 'bilitoolkit-types'
 import type { MyTaskConfigFields } from '../config/config.js'
 import type { UpgradeTask } from '../tasks/base.js'
+import type { Logger } from '@ybgnb/utils'
 
 /**
  * 升级任务运行结果
@@ -31,7 +32,7 @@ export interface UserTaskResult {
  */
 export interface UpgradeTaskContext {
   config: Omit<InferConfig<MyTaskConfigFields>, 'users'>
-  logger: TaskLogger
+  logger: Logger
   logPrefix: (task: UpgradeTask) => string
   biliClient: BiliClient
   signal: AbortSignal | undefined

@@ -40,14 +40,14 @@
   },
   "dependencies": {
     "@ybgnb/bili-api": "workspace:*",
-    "@ybgnb/utils": "^0.2.0",
-    "bilitoolkit-types": "workspace:*"
+    "@ybgnb/utils": "^0.2.8",
+    "bilitoolkit-types": "workspace:*",
+    "bilitoolkit-runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.16.5",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.6.0",
-    "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.31.0",
     "prettier": "3.6.2",
     "tsup": "^8.5.1",

@@ -12,7 +12,8 @@
     "BiliToolkit",
     "哔哩工具姬",
     "bilitoolkit-plugin",
-    "bilitoolkit-plugin:哔哩备份姬"
+    "bilitoolkit-plugin:name:哔哩备份姬",
+    "bilitoolkit-plugin:type:ui"
   ],
   "files": [
     "dist",
@@ -31,7 +32,7 @@
     "删除缓存": "rimraf node_modules/.vite",
     "check": "vue-tsc --build --noEmit && eslint .",
     "lint": "eslint . --fix",
-    "format": "prettier --write .",
+    "format": "prettier --write src/",
     "dev": "rimraf node_modules/.vite && chcp 65001 && vite",
     "dev(cache)": "chcp 65001 && vite",
     "build": "vite build",

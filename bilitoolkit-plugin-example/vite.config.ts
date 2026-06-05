@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
-import { defaultClientConfig } from '@ybgnb/bili-api'
 import httpProxy from 'http-proxy'
 import AutoImport from 'unplugin-auto-import/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
+import { getDefaultClientConfig } from '@ybgnb/bili-api'
 
 const proxyInstance = httpProxy.createProxyServer({
   changeOrigin: true,
@@ -30,6 +30,8 @@ export default defineConfig({
     {
       name: 'manual-omni-proxy',
       configureServer(server) {
+        const defaultBiliClientConfig = getDefaultClientConfig()
+
         // 使用 server.middlewares 直接拦截
         server.middlewares.use((req, res, next) => {
           // 只拦截 /proxy 开头的请求
@@ -53,9 +55,9 @@ export default defineConfig({
 
             // 身份伪装
             req.headers['host'] = t.host
-            req.headers['user-agent'] = defaultClientConfig.userAgent
-            req.headers['referer'] = defaultClientConfig.referer
-            req.headers['origin'] = defaultClientConfig.referer
+            req.headers['user-agent'] = defaultBiliClientConfig.userAgent
+            req.headers['referer'] = defaultBiliClientConfig.referer
+            req.headers['origin'] = defaultBiliClientConfig.referer
 
             // 手动触发代理转发
             proxyInstance.web(

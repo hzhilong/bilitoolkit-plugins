@@ -4,6 +4,14 @@ import type { Linter } from 'eslint'
 import { globalIgnores } from 'eslint/config'
 
 const config: Linter.Config[] = [
+  {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+        //        projectService: true,
+      },
+    },
+  },
   ...tsESLint.configs.recommended,
   globalIgnores(['**/dist/**', '**/node_modules/**', '**/.yalc/**', 'yalc.lock', '**/dist-ssr/**', '**/coverage/**']),
   prettier,
