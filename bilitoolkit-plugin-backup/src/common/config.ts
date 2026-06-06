@@ -6,7 +6,7 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   bangumi_tv: '#c07ab8',
   black: '#a0522d',
   fav_collected: '#3498db',
-  fav_opuses: '#f39c12',
+  fav_opus: '#f39c12',
   favorites: '#2ecc71',
   follower: '#e84393',
   following: '#1abc9c',

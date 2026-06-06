@@ -16,6 +16,7 @@ import { SysMsgModule } from '@/core/modules/msg/sys'
 import { SessionModule } from '@/core/modules/session'
 import { SpacePrivacyModule } from '@/core/modules/space/privacy'
 import { FavCollectionModule } from '@/core/modules/fav/collection'
+import { FavOpusModule } from '@/core/modules/fav/opus'
 
 /**
  * 注册的模块
@@ -30,6 +31,7 @@ export const registeredModules: DataModule[] = [
   new HistoryModule(),
   new FavModule(),
   new FavCollectionModule(),
+  new FavOpusModule(),
   new CommentModule(),
   new LikeMsgModule(),
   new ReplyMsgModule(),
