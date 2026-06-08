@@ -1,18 +1,26 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 import { initBilitoolkitUi, handleError } from 'bilitoolkit-ui'
 import 'bilitoolkit-ui/style.css'
-import HomeView from '@/views/HomeView.vue'
+import 'remixicon/fonts/remixicon.css'
+import App from '@/App.vue'
+import router from '@/router'
+import 'element-plus/dist/index.css'
 
 async function bootstrapApp() {
-  const app = createApp(HomeView)
+  const app = createApp(App)
 
   if (import.meta.env.DEV) {
     import('./utils/dev-proxy-hook.js').then((m) => m.setupDevProxyHook())
   }
 
+  app.config.globalProperties.$toolkitApi = window.toolkitApi
+
   const pinia = createPinia()
+  pinia.use(piniaPluginPersistedState)
   app.use(pinia)
+  app.use(router)
 
   const ui = await initBilitoolkitUi(pinia)
 

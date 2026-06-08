@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BiliUserCard, toolkitApi } from 'bilitoolkit-ui'
+import { BiliUserCard, toolkitApi, PluginPageContent } from 'bilitoolkit-ui'
 import type { UserInfoWithCookie } from '@ybgnb/bili-api'
 import { ref, onMounted } from 'vue'
 import type { AppThemeState } from 'bilitoolkit-types'
@@ -22,24 +22,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-config-provider :size="'small'" :z-index="3000">
-    <div class="demo">
-      <div class="btn-list">
-        <el-button @click="switchUser">切换用户</el-button>
-      </div>
-      <div class="user-wrapper">
-        <span>{{ user ? '授权的用户：' : '未选择用户' }}</span>
-        <bili-user-card v-if="user" :user="user"></bili-user-card>
-      </div>
-      <div class="test-effect">
-        当前软件主题：
-        <div>
-          主题色：<span :style="{ color: theme?.primaryColor }">{{ theme?.primaryColor }}</span>
+  <plugin-page-content>
+    <el-config-provider :size="'small'" :z-index="3000">
+      <div class="demo">
+        <div class="btn-list">
+          <el-button @click="switchUser">切换用户</el-button>
         </div>
-        <div>主题模式：{{ theme?.themeMode }}</div>
+        <div class="user-wrapper">
+          <span>{{ user ? '授权的用户：' : '未选择用户' }}</span>
+          <bili-user-card v-if="user" :user="user"></bili-user-card>
+        </div>
+        <div class="test-effect">
+          当前软件主题：
+          <div>
+            主题色：<span :style="{ color: theme?.primaryColor }">{{ theme?.primaryColor }}</span>
+          </div>
+          <div>主题模式：{{ theme?.themeMode }}</div>
+        </div>
       </div>
-    </div>
-  </el-config-provider>
+    </el-config-provider>
+  </plugin-page-content>
 </template>
 
 <style scoped lang="scss">
