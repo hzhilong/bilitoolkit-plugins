@@ -15,7 +15,7 @@ export default defineConfig({
   outDir: 'dist',
   format: ['cjs'],
   clean: true,
-  minify: true,
+  minify: false,
   splitting: false,
   tsconfig: resolve(root, `tsconfig.dev.json`),
   outExtension({}) {

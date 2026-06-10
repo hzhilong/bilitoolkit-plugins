@@ -8,14 +8,32 @@ import { shareTask } from '../tasks/impl/share.js'
 import { coinTask } from '../tasks/impl/coin.js'
 import type { UpgradeTask } from '../tasks/base.js'
 import { dailyTaskStatusStore } from '../stores/daily-status.js'
-import { sleepRandom } from '@ybgnb/utils'
-import { appLogger } from 'bilitoolkit-runtime'
+import { sleepRandom, createLogger, serializeError } from '@ybgnb/utils'
 
 export async function runByUser(
   user: UserInfoWithCookie,
   { config, signal, logger, api }: TaskContext<Omit<InferConfig<MyTaskConfigFields>, 'users'>>,
 ): Promise<UserTaskResult> {
   if (!config) throw new Error('缺少配置')
+
+  const appLogger = createLogger(
+    async () => {
+      return await api.system.getLogLevel()
+    },
+    (logLevel, ...args) => {
+      console[logLevel](`[${new Date().toLocaleString()}]`, ...args)
+      api.system
+        .saveLog({
+          level: logLevel,
+          data: args.map((arg) => {
+            if (arg instanceof Error) return JSON.stringify(serializeError(arg))
+            return JSON.stringify(arg)
+          }),
+        })
+        .catch()
+    },
+  )
+
   const biliClient = new BiliClient({
     context: {
       userCookie: user.userCookie,
