@@ -11,7 +11,7 @@ import { Tool } from '@/tools/index'
 
 export class FavAllVideosTool extends Tool {
   title: string = '收藏投稿'
-  desc: string = '可一键收藏他人投稿的所有视频。'
+  desc: string = '可一键收藏他人投稿的所有视频（包括已注销的账号）'
   async executor({ user, signal, log }: ToolContext) {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)

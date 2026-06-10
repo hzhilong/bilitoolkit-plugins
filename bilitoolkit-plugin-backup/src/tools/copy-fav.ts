@@ -12,7 +12,7 @@ import { Tool } from '@/tools/index'
 
 export class CopyFavTool extends Tool {
   title: string = '快速拷贝收藏夹'
-  desc: string = '批量拷贝他人公开的收藏夹，亦可用于快速还原。'
+  desc: string = '批量拷贝他人公开的收藏夹（包括已注销的账号）'
   async executor({ user, signal, log }: ToolContext) {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)

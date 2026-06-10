@@ -2,9 +2,11 @@
 import type { ToolContext } from '@/types/tools'
 import { computed, useTemplateRef, ref, watch, onUnmounted } from 'vue'
 import { LogPrint, showError, showConfirm } from 'bilitoolkit-ui'
-import { getErrorMessage } from '@ybgnb/utils'
+import { getErrorMessage, isCanceledError } from '@ybgnb/utils'
 import type { User } from '@/core/types/execute'
 import type { Tool } from '@/tools'
+import { useAppSettingsStore } from '@/stores/app-settings'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps<{
   tool: Tool
@@ -27,7 +29,7 @@ watch(visible, (newVal) => {
 onUnmounted(() => {
   cancelTool()
 })
-
+const { appSettings } = storeToRefs(useAppSettingsStore())
 const execTool = async () => {
   if (abortController.value) {
     showError('已有工具正在运行')
@@ -40,11 +42,13 @@ const execTool = async () => {
     },
     user: props.user,
     signal: abortController.value.signal,
+    appSettings: appSettings.value,
   }
   try {
     await props.tool.executor(context)
   } catch (e) {
-    loggerRef.value?.addLog(getErrorMessage(e))
+    const errorMessage = getErrorMessage(e)
+    if (!errorMessage.includes('cancel') && !isCanceledError(e)) loggerRef.value?.addLog(errorMessage)
   } finally {
     abortController.value = undefined
   }

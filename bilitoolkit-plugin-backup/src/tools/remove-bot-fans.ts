@@ -9,7 +9,7 @@ import { sleepRandom } from '@ybgnb/utils'
 
 export class RemoveBotFansTool extends Tool {
   title: string = '移除机器人粉丝'
-  desc: string = '2025.4 后出现大量机器人粉丝，据传被关注后可能导致账号遭到举报/警告/封禁。'
+  desc: string = '2025.4 后出现大量机器人粉丝，据传被关注后可能导致账号遭到举报/警告/封禁'
   async executor({ user, signal, log }: ToolContext) {
     const userInfo = toValue(user)
     assertUserLoggedIn(userInfo)

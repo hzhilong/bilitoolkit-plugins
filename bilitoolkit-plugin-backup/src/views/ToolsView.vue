@@ -7,9 +7,19 @@ import type { Tool } from '@/tools'
 import { CopyFavTool } from '@/tools/copy-fav'
 import { FavAllVideosTool } from '@/tools/fav-all-videos'
 import { RemoveBotFansTool } from '@/tools/remove-bot-fans'
+import { GetVideosTool } from '@/tools/get-videos'
+import { GetFollowingsTool } from '@/tools/get-followings'
+import { GetFansTool } from '@/tools/get-fans'
 
 const { user } = useUser()
-const tools: Tool[] = [new CopyFavTool(), new FavAllVideosTool(), new RemoveBotFansTool()]
+const tools: Tool[] = [
+  new CopyFavTool(),
+  new FavAllVideosTool(),
+  new RemoveBotFansTool(),
+  new GetVideosTool(),
+  new GetFollowingsTool(),
+  new GetFansTool(),
+]
 const visible = ref(false)
 const currTool = ref<Tool>()
 const openTool = async (tool: Tool) => {
