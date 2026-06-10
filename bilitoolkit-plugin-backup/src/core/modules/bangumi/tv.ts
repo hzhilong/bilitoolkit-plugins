@@ -22,6 +22,10 @@ export class FollowedTvModule extends DataModule<FollowBangumi> {
     return data.title
   }
 
+  getUniqueKey(data: FollowBangumi): string {
+    return String(data.season_id)
+  }
+
   getPageSize() {
     return publicClient.followBangumi.buildPager(1, FollowBangumiTypeMap.tv.type).getPageSize()
   }

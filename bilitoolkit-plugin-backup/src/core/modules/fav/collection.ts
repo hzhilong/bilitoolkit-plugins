@@ -26,6 +26,10 @@ export class FavCollectionModule extends DataModule<FavCollection> {
     return `收藏的视频合集-${collection.title}`
   }
 
+  getUniqueKey(data: FavCollection): string {
+    return String(data.id)
+  }
+
   async fetchTotal({ client, signal }: ExecuteContext): Promise<number> {
     return (await client.favCollection.fetchPageWithNextParams(undefined, undefined, { signal })).total ?? 0
   }

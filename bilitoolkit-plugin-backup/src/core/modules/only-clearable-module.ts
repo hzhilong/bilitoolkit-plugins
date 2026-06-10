@@ -18,6 +18,10 @@ export abstract class OnlyClearableModule extends DataModule {
     return ''
   }
 
+  getUniqueKey(): string {
+    throw new Error('内部错误')
+  }
+
   getPageSize() {
     return 0
   }

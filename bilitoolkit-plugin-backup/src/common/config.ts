@@ -29,6 +29,7 @@ export const defaultAppSettings: AppSettings = {
   restoreMaxFailures: 0,
   clearMaxFailures: 0,
   avoidRiskControl: true,
+  checkExistingData: true,
 }
 
 // 备选

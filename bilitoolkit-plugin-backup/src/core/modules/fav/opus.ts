@@ -26,6 +26,10 @@ export class FavOpusModule extends DataModule<FavOpus> {
     return `收藏的专栏-${opus.content.slice(0, 30)}`
   }
 
+  getUniqueKey(data: FavOpus): string {
+    return String(data.opus_id)
+  }
+
   async fetchTotal({ client, signal, user }: ExecuteContext): Promise<number> {
     return (await client.spaceStatus.getFavNum(user.mid, { signal })).opus ?? 0
   }

@@ -43,6 +43,8 @@ export abstract class DataModule<D extends Data = Data> {
   abstract getDataTotalDesc(list: D[]): string
   /** 获取数据标题 */
   abstract getDataTitle(data: D): string
+  /** 获取用于唯一性判断的键，用户还原前检查现有数据 */
+  getUniqueKey?(data: Data): string
   /** 分页大小（备份时的数据接口分页策略，树形数据表示第二层的分页大小） */
   abstract getPageSize(): number
   /** 获取数据总条数 */
@@ -277,6 +279,14 @@ export abstract class DataModule<D extends Data = Data> {
       context.onProgress?.(1, '读取的数据为空')
       throw new Error('读取的数据为空')
     }
+
+    if (context.appSettings.checkExistingData && this.getUniqueKey) {
+      context.onProgress?.(1, '正在检查现有数据')
+      const currList = await this.fetchAll(context)
+      const currIds = new Set<string>(currList.map((item) => this.getUniqueKey!(item)))
+      list = list.filter((item) => !currIds.has(this.getUniqueKey!(item)))
+    }
+
     const successItems: D[] = []
     const failedItems: D[] = []
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)

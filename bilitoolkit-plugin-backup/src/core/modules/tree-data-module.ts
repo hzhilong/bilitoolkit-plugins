@@ -52,8 +52,8 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
   abstract fetchParentAll(context: ExecuteContext, mode?: FetchAllMode): Promise<P[]>
 
   /** 获取所有子节点 */
-  fetchChildrenAll(context: ExecuteContext, tag: P): Promise<C[]> {
-    return this.baseFetchChildrenAll(context, tag)
+  fetchChildrenAll(context: ExecuteContext, parent: P): Promise<C[]> {
+    return this.baseFetchChildrenAll(context, parent)
   }
 
   /** 树形数据不支持全局 page，这里直接获取第一层所有数据 */
@@ -77,6 +77,10 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
   abstract delParentData(context: ExecuteContext, parent: P): Promise<void>
   /** 删除子节点的数据 */
   abstract delChildData(context: ExecuteContext, child: C): Promise<void>
+
+  getUniqueKey(data: P): string {
+    return data._id
+  }
 
   /** 获取所有子节点数据 */
   protected baseFetchChildrenAll = async (context: ExecuteContext, parent: P): Promise<C[]> => {
@@ -142,6 +146,17 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
     context.onProgress?.(1, `即将还原：${this.getDataTotalDesc(list)}`)
     // 整体还原父节点
     await this.baseRestoreAllParent(list, context, successItems, failedItems)
+
+    if (context.appSettings.checkExistingData) {
+      context.onProgress?.(1, '正在检查现有数据')
+      for (const parent of successItems) {
+        const currChildList = await this.fetchChildrenAll(context, parent)
+        const currChildIds = new Set<string>(currChildList.map((item) => item._id))
+        parent.children = parent.children.filter((item) => !currChildIds.has(item._id))
+        parent.childrenSize = parent.children.length
+      }
+    }
+
     // 为子节点填充 parentIds 字段
     this.assignParentIds(successItems)
     // 还原子节点数据
@@ -222,9 +237,14 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
     let failureCount = 0
     const restoreMaxFailures = context.appSettings.restoreMaxFailures
 
-    for (const parent of parentList) {
+    for (let p = 0; p < parentList.length; p++) {
+      const parent = parentList[p]
       checkAbortSignal(context.signal)
       const { children, ...onlyParent } = parent
+      context.onProgress?.(
+        (p * 100) / parentList.length,
+        `[${p + 1}/${parentList.length}] 正在还原项目 [${this.getDataTitle(parent)}]`,
+      )
 
       const successChildItems: C[] = []
       const failedChildItems: C[] = []
@@ -243,10 +263,14 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
           handledChildIds.add(child._id)
           context.onProgress?.(progress, `[${i + 1}/${list.length}] 还原数据成功 [${this.getChildrenDataTitle(child)}]`)
         } catch (e) {
+          const errorMessage = getErrorMessage(e)
           context.onProgress?.(
             progress,
-            `[${i + 1}/${list.length}] 还原数据失败 [${this.getChildrenDataTitle(child)}] err：${getErrorMessage(e)}`,
+            `[${i + 1}/${list.length}] 还原数据失败 [${this.getChildrenDataTitle(child)}] err：${errorMessage}`,
           )
+          if (errorMessage.includes('风控')) {
+            throw e
+          }
           failedChildItems.push(child)
           failureCount++
           if (restoreMaxFailures !== 0 && failureCount > restoreMaxFailures) {

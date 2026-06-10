@@ -175,7 +175,6 @@ const handleChildrenChange = (index: number) => {
     <el-dialog
       :title="title"
       v-model="visible"
-      style="min-width: 300px; max-width: 700px; max-height: 88vh; overflow: auto"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="true"
@@ -243,6 +242,19 @@ const handleChildrenChange = (index: number) => {
 <style scoped lang="scss">
 .tree-select-dialog {
   display: contents;
+
+  ::v-deep(> .el-modal-dialog > .el-overlay-dialog > .el-dialog) {
+    min-width: 300px;
+    max-width: 700px;
+    max-height: 88vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    .el-dialog__body {
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
 
   .dialog-content {
     min-height: 200px;

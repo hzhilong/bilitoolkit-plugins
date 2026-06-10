@@ -14,10 +14,13 @@ const { appSettings } = storeToRefs(useAppSettingsStore())
       >
         <el-switch v-model="appSettings.avoidRiskControl" />
       </setting-item>
-      <setting-item title="还原最大允许失败次数" desc="0 为不限制">
+      <setting-item title="还原前是否检查现有数据">
+        <el-switch v-model="appSettings.checkExistingData" />
+      </setting-item>
+      <setting-item title="还原时最大允许失败次数" desc="0 为不限制">
         <el-input type="number" v-model.number="appSettings.restoreMaxFailures" :min="0" :max="10" />
       </setting-item>
-      <setting-item title="清空最大允许失败次数" desc="0 为不限制">
+      <setting-item title="清空时最大允许失败次数" desc="0 为不限制">
         <el-input type="number" v-model.number="appSettings.clearMaxFailures" :min="0" :max="10" />
       </setting-item>
     </setting-group>

@@ -26,6 +26,10 @@ export class BlackModule extends DataModule<Relation> {
     return `黑名单-${data.uname}`
   }
 
+  getUniqueKey(data: Relation): string {
+    return String(data.mid)
+  }
+
   async fetchPage(
     { client, signal }: ExecuteContext,
     params: FetchPageParams,

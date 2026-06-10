@@ -23,6 +23,10 @@ export class ToViewModule extends DataModule<ToViewItem> {
     return data.title
   }
 
+  getUniqueKey(data: ToViewItem): string {
+    return String(data.aid)
+  }
+
   async fetchTotal({ client, signal }: ExecuteContext): Promise<number> {
     return (await client.toview.getTotal({ signal })) ?? 0
   }

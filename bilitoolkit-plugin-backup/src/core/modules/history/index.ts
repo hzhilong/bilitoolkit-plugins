@@ -27,6 +27,10 @@ export class HistoryModule extends DataModule<History> {
     return `历史记录-${data.title}`
   }
 
+  getUniqueKey(data: History): string {
+    return String(data.history.oid)
+  }
+
   async fetchPage(
     { client, signal }: ExecuteContext,
     params: FetchPageParams,

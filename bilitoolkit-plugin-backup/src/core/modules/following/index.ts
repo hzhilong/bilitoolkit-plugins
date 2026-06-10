@@ -9,6 +9,7 @@ import { type FollowTag, type Following, toFollowTags, toFollowing } from '@/cor
 import type { TreeRangeMetas } from '@/core/types/data-range'
 import type { PageDataWithNextParams } from '@ybgnb/bili-api'
 import { apiSleep } from '@/core/utils/sleep'
+import { getErrorMessage } from '@ybgnb/utils'
 
 export class FollowingModule extends TreeDataModule<Following, FollowTag> {
   dataType: DataType = 'following'
@@ -59,7 +60,7 @@ export class FollowingModule extends TreeDataModule<Following, FollowTag> {
     params: FetchPageParams,
     tag: FollowTag,
   ): Promise<PageDataWithNextParams<Following>> {
-    const result = await client.relation.fetchRelationPageWithNextParams(tag.tagid, params, {
+    const result = await client.relation.fetchRelationPageWithNextParams(Number(tag._id), params, {
       signal,
     })
     return {
@@ -89,7 +90,13 @@ export class FollowingModule extends TreeDataModule<Following, FollowTag> {
       await apiSleep(signal)
     }
     await onProgress?.(undefined, `正在关注用户 [${following.uname}]`)
-    await client.relation.followUser(following.mid, { signal })
+    try {
+      await client.relation.followUser(following.mid, { signal })
+    } catch (e) {
+      if (!getErrorMessage(e).includes('已经关注') && !getErrorMessage(e).includes('已注销')) {
+        throw e
+      }
+    }
     await apiSleep(signal)
     if (parentIds.length !== 1 || parentIds[0] !== '0') {
       // 非默认分组

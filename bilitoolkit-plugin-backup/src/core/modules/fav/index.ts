@@ -76,7 +76,7 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
   ): Promise<PageDataWithNextParams<FavItem>> {
     const result = await client.fav.fetchPageWithNextParams(
       {
-        media_id: folder.id,
+        media_id: Number(folder._id),
       },
       params,
       {
