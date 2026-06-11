@@ -1,10 +1,10 @@
 {
   "name": "bilitoolkit-plugin-quick-upgrade",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
-  "description": "哔哩哔哩快速升级的定时任务插件",
+  "description": "帮助哔哩哔哩用户快速升级",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
@@ -36,13 +36,13 @@
     "dev": "chcp 65001 && vite",
     "build": "tsup",
     "npm login": "npm login",
-    "npm publish": "npm publish --access public"
+    "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/bili-api": "workspace:*",
+    "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/utils": "^0.2.8",
-    "bilitoolkit-types": "workspace:*",
-    "bilitoolkit-runtime": "workspace:*"
+    "bilitoolkit-types": "workspace:^",
+    "bilitoolkit-runtime": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "^22.16.5",
