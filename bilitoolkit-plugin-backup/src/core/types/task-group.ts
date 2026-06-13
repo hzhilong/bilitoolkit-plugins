@@ -87,7 +87,8 @@ export type CreateTaskGroup<O extends OperationType = OperationType> = Pick<
  * 任务组过滤条件
  */
 export type TaskGroupFilters = Partial<Pick<TaskGroup, 'operationType' | 'status'>> & {
-  /** 插件时间 */
+  /** 创建时间 */
   createdAt?: MaxLengthArray<number, 2>
+  /** 任务状态集合 */
   statusArr?: TaskGroupStatus[]
 }

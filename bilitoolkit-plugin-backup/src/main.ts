@@ -12,7 +12,7 @@ import { useAppSettingsStore } from '@/stores/app-settings'
 import { taskService } from '@/core/service/task'
 import { taskGroupService } from '@/core/service/task-group'
 
-if (appEnv.DEV) {
+if (import.meta.env.DEV) {
   import('element-plus/dist/index.css')
 }
 

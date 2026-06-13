@@ -1,7 +1,31 @@
-# bilitoolkit-plugin-backup
+# 哔哩备份姬
 
-「哔哩备份姬」
+## 项目简介
 
->  [哔哩工具姬](https://github.com/hzhilong/bilitoolkit)的插件
-> 
-> 从[bilibili-backup](https://github.com/hzhilong/bilibili-backup)移植过来
+[哔哩工具姬](https://github.com/hzhilong/bilitoolkit) 插件。
+
+一键备份和还原 B 站账号数据，快速完成账号数据迁移。
+
+部分数据支持手动选择分页范围或分批自动处理，以降低一次性处理大量数据带来的风控风险。
+
+## 截图
+
+![screenshot-01.png](doc/screenshots/screenshot-01.png)
+
+![screenshot-03.png](doc/screenshots/screenshot-03.png)
+
+## 安装使用
+
+1. 安装并启动 [哔哩工具姬](https://github.com/hzhilong/bilitoolkit)；
+2. 在插件市场中搜索并安装「哔哩备份姬」；
+3. 打开「哔哩备份姬」即可使用该项目；
+
+## 注意事项
+
+* 新账号请先提升至 2 级后再使用；
+* 刚注册的账号建议正常使用几天后再操作；
+* 数据量较大时，建议分批次或者手动选择分页范围进行备份或还原；
+* 还原关注时，建议手动选择较小范围，避免触发风控；
+* 使用本插件产生的任何后果由使用者自行承担；
+* 本项目仅供学习、研究和技术交流使用，请勿将其用于违反相关平台规则的用途；
+* 本项目与哔哩哔哩官方无任何关联。

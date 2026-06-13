@@ -17,13 +17,18 @@ import type { ComponentExposed } from 'vue-component-type-helpers'
 import { useUser } from '@/composables/useUser'
 import { createTaskGroup } from '@/core/task/task-group-handle'
 import { toIPC } from 'bilitoolkit-runtime'
+import { allRestorableDataTypes } from '@/core/modules/register'
 
 const { user } = useUser()
 const fetchPage = async (pageParams: PageParams, _filters: TaskGroupFilters) => {
-  return await taskGroupService.fetchPage(pageParams, {
-    statusArr: ['batchCompleted', 'completed'],
-    operationType: 'backup',
-  })
+  return await taskGroupService.fetchPage(
+    pageParams,
+    {
+      statusArr: ['batchCompleted', 'completed'],
+      operationType: 'backup',
+    },
+    (group) => group.items.some((item) => allRestorableDataTypes.includes(item.dataType)),
+  )
 }
 const tableRef = useTemplateRef<ComponentExposed<typeof PageTable<TaskGroup<'restore'>, TaskGroupFilters>>>('tableRef')
 const onRefresh = () => {

@@ -100,7 +100,7 @@ defineExpose({
       <el-form-item v-if="!viewMode" label="导出目录" prop="rootPath">
         <el-text type="info">{{ (options as BackupOptions).rootPath }}</el-text>
       </el-form-item>
-      <el-form-item label="导出格式" prop="exportTargets">
+      <!--      <el-form-item label="导出格式" prop="exportTargets">
         <el-checkbox-group v-model="options.exportTargets">
           <el-checkbox
             v-for="target in exportTargets"
@@ -111,7 +111,7 @@ defineExpose({
             :disabled="target === 'json'"
           />
         </el-checkbox-group>
-      </el-form-item>
+      </el-form-item>-->
       <template v-if="options.mode === 'normal'">
         <el-form-item label="数据范围" prop="dataRange.type">
           <el-radio-group v-model="options.dataRange.type" @change="onChangeDataRangeType">

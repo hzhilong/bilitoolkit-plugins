@@ -55,4 +55,5 @@ export const registeredModuleTypes: DataType[] = registeredModules.map((m) => m.
 
 export const allBackupableModules = registeredModules.filter((m) => m.operations.includes('backup'))
 export const allRestorableModules = registeredModules.filter((m) => m.operations.includes('restore'))
+export const allRestorableDataTypes = allRestorableModules.map((m) => m.dataType) as DataType[]
 export const allClearableModules = registeredModules.filter((m) => m.operations.includes('clear'))

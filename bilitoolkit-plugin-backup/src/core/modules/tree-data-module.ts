@@ -37,7 +37,7 @@ export abstract class TreeDataModule<C extends Child = Child, P extends Parent<C
 
   /** 获取所有数据（单个数据要包装为数组） */
   async fetchAll(context: ExecuteContext): Promise<P[]> {
-    await context.onProgress?.(0, `正在获取 ${this.treeRangeMetas[0].name}`)
+    //    await context.onProgress?.(0, `正在获取 ${this.treeRangeMetas[0].name}`)
     const parentList = await this.fetchParentAll(context)
     for (let i = 0; i < parentList.length; i++) {
       const parent = parentList[i]

@@ -6,7 +6,7 @@
   "main": "index.html",
   "productName": "BiliBackup",
   "productCNName": "哔哩备份姬",
-  "description": "一键对B站账号进行数据备份和还原，方便账号数据迁移/快速转生",
+  "description": "一键备份和还原 B 站账号数据，快速完成账号数据迁移。",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
@@ -37,16 +37,16 @@
     "dev(cache)": "chcp 65001 && vite",
     "build": "vite build",
     "npm login": "npm login",
-    "npm publish": "npm publish --access public"
+    "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/bili-api": "workspace:*",
+    "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/utils": "^0.2.8",
     "@ybgnb/vite-env": "^0.0.7",
     "axios": "^1.12.1",
-    "bilitoolkit-runtime": "workspace:*",
-    "bilitoolkit-types": "workspace:*",
-    "bilitoolkit-ui": "workspace:*",
+    "bilitoolkit-runtime": "workspace:^",
+    "bilitoolkit-types": "workspace:^",
+    "bilitoolkit-ui": "workspace:^",
     "consola": "^3.4.2",
     "dayjs": "^1.11.18",
     "dexie": "^4.2.0",

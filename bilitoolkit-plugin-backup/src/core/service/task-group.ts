@@ -75,7 +75,7 @@ export class TaskGroupService {
   /**
    * 获取分页数据
    */
-  async fetchPage(pageParams: PageParams, filters: TaskGroupFilters) {
+  async fetchPage(pageParams: PageParams, filters: TaskGroupFilters, customFilter?: (group: TaskGroup) => boolean) {
     const { pageNum, pageSize } = pageParams
     const { operationType, status, createdAt, statusArr } = filters ?? {}
     const offset = (pageNum - 1) * pageSize
@@ -85,7 +85,7 @@ export class TaskGroupService {
     let query
 
     if (statusArr && statusArr.length) {
-      const list = (
+      let list = (
         await Promise.all(
           statusArr.map((status) => {
             if (operationType != null) {
@@ -104,6 +104,10 @@ export class TaskGroupService {
       )
         .flat()
         .sort((a, b) => b.createdAt - a.createdAt)
+
+      if (customFilter) {
+        list = list.filter(customFilter)
+      }
 
       const count = list.length
 

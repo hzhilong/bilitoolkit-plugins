@@ -20,7 +20,7 @@ export default defineConfig((configEnv: ConfigEnv) => {
       vueJsx(),
       vueDevTools(),
       AutoImport({
-        include: [/\.vue$/, /\.vue\?vue$/, /\.[jt]sx$/],
+        include: [/\.vue$/, /\.vue\?vue/, /\.[jt]sx$/],
         resolvers: [
           ElementPlusResolver({
             importStyle: configEnv.mode === 'development' ? false : 'css',
@@ -28,7 +28,7 @@ export default defineConfig((configEnv: ConfigEnv) => {
         ],
       }),
       Components({
-        include: [/\.vue$/, /\.vue\?vue$/, /\.[jt]sx$/],
+        include: [/\.vue$/, /\.vue\?vue/, /\.[jt]sx$/],
         resolvers: [
           ElementPlusResolver({
             importStyle: configEnv.mode === 'development' ? false : 'css',
