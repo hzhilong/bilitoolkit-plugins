@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-quick-upgrade",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -23,7 +23,7 @@
     "directory": "bilitoolkit-plugin-quick-upgrade"
   },
   "bugs": {
-    "url": "https://github.com/hzhilong/bilitoolkit-task-plugin-example/issues"
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins/issues"
   },
   "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-quick-upgrade#readme",
   "engines": {

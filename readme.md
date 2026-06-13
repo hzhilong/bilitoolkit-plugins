@@ -1,5 +1,6 @@
-# 哔哩工具姬 插件合集
+# [哔哩工具姬](https://github.com/hzhilong/bilitoolkit) 插件合集
 
 | 插件名称                                     | 描述 |
 |------------------------------------------|------|
-| [速升姬](./bilitoolkit-plugin-quick-upgrade) | 帮助用户快速提升等级 |
+| [哔哩备份姬](./bilitoolkit-plugin-backup) | 一键备份和还原 B 站账号数据，快速完成账号数据迁移。 |
+| [速升姬](./bilitoolkit-plugin-quick-upgrade) | 用于自动完成每日经验任务，包括每日登录、观看、投币和分享。 |

@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-example",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -23,7 +23,7 @@
     "directory": "bilitoolkit-plugin-example"
   },
   "bugs": {
-    "url": "https://github.com/hzhilong/bilitoolkit-plugin-example/issues"
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins/issues"
   },
   "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-example#readme",
   "scripts": {
@@ -34,13 +34,13 @@
     "dev(cache)": "chcp 65001 && vite",
     "build": "vite build",
     "npm login": "npm login",
-    "npm publish": "npm publish --access public"
+    "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/bili-api": "workspace:*",
-    "bilitoolkit-runtime": "workspace:*",
-    "bilitoolkit-types": "workspace:*",
-    "bilitoolkit-ui": "workspace:*",
+    "@ybgnb/bili-api": "workspace:^",
+    "bilitoolkit-runtime": "workspace:^",
+    "bilitoolkit-types": "workspace:^",
+    "bilitoolkit-ui": "workspace:^",
     "element-plus": "^2.13.7",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",

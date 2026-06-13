@@ -22,12 +22,13 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hzhilong/bilitoolkit-plugin-backup"
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins",
+    "directory": "bilitoolkit-plugin-backup"
   },
   "bugs": {
-    "url": "https://github.com/hzhilong/bilitoolkit-plugin-backup/issues"
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins/issues"
   },
-  "homepage": "https://github.com/hzhilong/bilitoolkit-plugin-backup#readme",
+  "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-backup#readme",
   "scripts": {
     "删除缓存": "rimraf node_modules/.vite",
     "check": "vue-tsc --build --noEmit && eslint .",
