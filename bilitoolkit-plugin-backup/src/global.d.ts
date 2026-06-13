@@ -1,14 +1,13 @@
-
 // 对vue进行类型补充说明
 
-import type { ToolkitApi } from 'bilitoolkit-api-types'
+import type { ToolkitApi } from 'bilitoolkit-types'
 
 declare module '@vue/runtime-core' {
   // interface ComponentCustomOptions {}
 
   interface ComponentCustomProperties {
     // 哔哩工具姬 API
-    $toolkitApi: ToolkitApi;
+    $toolkitApi: ToolkitApi
   }
 }
 

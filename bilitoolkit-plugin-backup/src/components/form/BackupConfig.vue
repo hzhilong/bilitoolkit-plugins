@@ -24,16 +24,8 @@ export interface BackupConfigProps {
 const props = withDefaults(defineProps<BackupConfigProps>(), {})
 
 const options = defineModel<ExecuteOptions<'backup'>>({ required: true })
-const {
-  dataModule,
-  dataModuleName,
-  dataModuleColor,
-  exportTargets,
-  isTreeModule,
-  isBatchModule,
-  batchSizes,
-  backupDesc,
-} = useDataModule(() => props.dataType)
+const { dataModule, dataModuleName, dataModuleColor, isTreeModule, isBatchModule, batchSizes, backupDesc } =
+  useDataModule(() => props.dataType)
 const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const { dataRangeTypes, pageSize, onChangeDataRangeType } = useExecuteOptions<'backup'>(

@@ -1,12 +1,12 @@
 {
   "name": "bilitoolkit-plugin-backup",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "main": "index.html",
   "productName": "BiliBackup",
   "productCNName": "哔哩备份姬",
-  "description": "一键备份和还原 B 站账号数据，快速完成账号数据迁移。",
+  "description": "一键备份和还原 B 站账号数据，快速完成账号数据迁移",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
