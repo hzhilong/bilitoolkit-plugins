@@ -96,8 +96,8 @@ const groupModalId = ref<number>()
         minWidth="80px"
       ></ElTableColumn>
       <ElTableColumn align="center" prop="user" label="用户">
-        <template #default="{ row }: { row: TaskGroup<'backup'> }">
-          <BiliUserInfo :user="row.user" />
+        <template #default="{ row }">
+          <BiliUserInfo :user="(row as TaskGroup<'backup'>).user" />
         </template>
       </ElTableColumn>
       <ElTableColumn
@@ -108,14 +108,14 @@ const groupModalId = ref<number>()
         width="80px"
       ></ElTableColumn>
       <ElTableColumn align="center" prop="items" label="数据" width="200px">
-        <template #default="{ row }: { row: TaskGroup<'backup'> }">
-          <TaskGroupItemsTag :items="row.items"></TaskGroupItemsTag>
+        <template #default="{ row }">
+          <TaskGroupItemsTag :items="(row as TaskGroup<'backup'>).items"></TaskGroupItemsTag>
         </template>
       </ElTableColumn>
       <ElTableColumn align="center" label="操作" width="140px">
-        <template #default="{ row }: { row: TaskGroup<'backup'> }">
-          <ElButton type="primary" link @click="handleOpenModal(row)">查看</ElButton>
-          <ElButton type="primary" link @click="handleRestore(row)">还原数据</ElButton>
+        <template #default="{ row }">
+          <ElButton type="primary" link @click="handleOpenModal(row as TaskGroup<'backup'>)">查看</ElButton>
+          <ElButton type="primary" link @click="handleRestore(row as TaskGroup<'backup'>)">还原数据</ElButton>
         </template>
       </ElTableColumn>
     </PageTable>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch, useTemplateRef } from 'vue'
-import { PageTable, type PageParams } from 'bilitoolkit-ui'
+import { PageTable, type PageParams, type FetchPage } from 'bilitoolkit-ui'
 import { taskLogService } from '@/core/service/task-log'
 import type { TaskLog } from '@/core/types/log'
 import type { ComponentExposed } from 'vue-component-type-helpers'
@@ -8,7 +8,7 @@ import type { ComponentExposed } from 'vue-component-type-helpers'
 const props = defineProps<{ taskId: number }>()
 const visible = defineModel({ required: true, type: Boolean })
 
-const fetchPage = async (pageParams: PageParams) => {
+const fetchPage: FetchPage<TaskLog> = async (pageParams: PageParams) => {
   return await taskLogService.fetchPage(pageParams, props.taskId)
 }
 const tableRef = useTemplateRef<ComponentExposed<typeof PageTable<TaskLog, never>>>('tableRef')
@@ -41,8 +41,8 @@ watch(visible, (newVal) => {
       >
         <el-table-column prop="taskId" label="任务 ID" width="80px"></el-table-column>
         <el-table-column prop="createdAt" label="日志时间" width="150px">
-          <template #default="{ row }: { row: TaskLog }">
-            {{ new Date(row.createdAt).toLocaleString() }}
+          <template #default="{ row }">
+            {{ new Date((row as TaskLog).createdAt).toLocaleString() }}
           </template>
         </el-table-column>
         <el-table-column prop="content" label="日志内容"></el-table-column>

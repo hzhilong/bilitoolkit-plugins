@@ -65,7 +65,7 @@ onUnmounted(() => {
         width="50px"
       ></ElTableColumn>
       <ElTableColumn align="center" prop="user" label="用户">
-        <template #default="{ row }: { row: TaskGroup }">
+        <template #default="{ row }">
           <BiliUserInfo :user="row.user" />
         </template>
       </ElTableColumn>
@@ -77,18 +77,18 @@ onUnmounted(() => {
         width="80px"
       ></ElTableColumn>
       <ElTableColumn align="center" prop="progress" label="进度">
-        <template #default="{ row }: { row: TaskGroup }">
+        <template #default="{ row }">
           <span>{{ row.progressMsg ?? '' }}</span>
         </template>
       </ElTableColumn>
       <ElTableColumn align="center" prop="items" label="数据" width="200px">
-        <template #default="{ row }: { row: TaskGroup }">
+        <template #default="{ row }">
           <TaskGroupItemsTag :items="row.items"></TaskGroupItemsTag>
         </template>
       </ElTableColumn>
       <ElTableColumn align="center" label="操作" width="70px">
-        <template #default="{ row }: { row: TaskGroup }">
-          <ElButton type="primary" link @click="handleOpenModal(row)">查看</ElButton>
+        <template #default="{ row }">
+          <ElButton type="primary" link @click="handleOpenModal(row as TaskGroup)">查看</ElButton>
         </template>
       </ElTableColumn>
       <template #query>
