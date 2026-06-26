@@ -87,6 +87,8 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+    // 保持 symlink，不要解析真实路径
+    preserveSymlinks: true,
   },
   build: {
     minify: true,

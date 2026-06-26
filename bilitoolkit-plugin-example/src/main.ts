@@ -7,12 +7,13 @@ import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import router from '@/router'
 import 'element-plus/dist/index.css'
+import { setupDevProxyHook } from '@ybgnb/utils/dom'
 
 async function bootstrapApp() {
   const app = createApp(App)
 
   if (import.meta.env.DEV) {
-    import('./utils/dev-proxy-hook.js').then((m) => m.setupDevProxyHook())
+    setupDevProxyHook()
   }
 
   app.config.globalProperties.$toolkitApi = window.toolkitApi

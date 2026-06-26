@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { BiliUserCard, toolkitApi, PluginPageContent } from 'bilitoolkit-ui'
-import type { UserInfoWithCookie } from '@ybgnb/bili-api'
+import { BiliUserCard, toolkitApi, PluginPageContent, useSelectedUserStore } from 'bilitoolkit-ui'
 import { ref, onMounted } from 'vue'
 import type { AppThemeState } from 'bilitoolkit-types'
+import { storeToRefs } from 'pinia'
 
-const user = ref<UserInfoWithCookie>()
-const switchUser = async () => {
-  user.value = await toolkitApi.user.switchUser()
-}
+const { user } = storeToRefs(useSelectedUserStore())
 const theme = ref<AppThemeState>()
 const listenerTheme = async () => {
   theme.value = await toolkitApi.system.getAppThemeState()
@@ -25,9 +22,6 @@ onMounted(() => {
   <plugin-page-content>
     <el-config-provider :size="'small'" :z-index="3000">
       <div class="demo">
-        <div class="btn-list">
-          <el-button @click="switchUser">切换用户</el-button>
-        </div>
         <div class="user-wrapper">
           <span>{{ user ? '授权的用户：' : '未选择用户' }}</span>
           <bili-user-card v-if="user" :user="user"></bili-user-card>

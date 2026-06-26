@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-example",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -37,6 +37,7 @@
     "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
+    "@ybgnb/utils": "^0.2.9",
     "@ybgnb/bili-api": "workspace:^",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
