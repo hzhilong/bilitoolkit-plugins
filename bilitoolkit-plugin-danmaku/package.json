@@ -1,12 +1,10 @@
 {
   "name": "bilitoolkit-plugin-danmaku",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "type": "module",
   "main": "index.html",
-  "productName": "BiliBackup",
-  "productCNName": "快速查询弹幕及发送者",
-  "description": "",
+  "description": "快速查询弹幕及发送者",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",

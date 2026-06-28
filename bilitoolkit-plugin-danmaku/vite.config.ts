@@ -1,7 +1,6 @@
-import { type ConfigEnv, defineConfig, mergeConfig } from 'vite'
+import { type ConfigEnv, defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
-import { loadEnvConfig } from '@ybgnb/vite-env'
 import httpProxy from 'http-proxy'
 import { getDefaultClientConfig } from '@ybgnb/bili-api'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -18,7 +17,7 @@ const proxyInstance = httpProxy.createProxyServer({
  * 基础的 vite 配置
  */
 export default defineConfig((configEnv: ConfigEnv) => {
-  return mergeConfig(loadEnvConfig(configEnv), {
+  return {
     server: {
       host: '0.0.0.0',
       port: 5174,
@@ -114,5 +113,5 @@ export default defineConfig((configEnv: ConfigEnv) => {
       include: ['element-plus', 'element-plus/es', '@ybgnb/bili-api'],
       exclude: ['bilitoolkit-ui'],
     },
-  })
+  }
 })
