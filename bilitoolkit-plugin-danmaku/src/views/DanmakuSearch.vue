@@ -3,14 +3,12 @@ import { ref, onUnmounted } from 'vue'
 import { PluginPageContent, useSelectedUserStore, AppTooltip, useLoadingData } from 'bilitoolkit-ui'
 import { storeToRefs } from 'pinia'
 import { RecycleScroller } from 'vue-virtual-scroller'
-import { parseVideoId } from '@/utils/parse-video'
-import { type VideoPart, type DanmakuElem, type UserInfo, type UserCard } from '@ybgnb/bili-api'
+import { type VideoPart, type DanmakuElem, type UserInfo, type UserCard, parseVideoId } from '@ybgnb/bili-api'
 import { sleepRandom } from '@ybgnb/utils'
 import { formatDuration } from '@/utils/dm'
 import { crackUidHash } from '@/utils/crack'
 import { Search, ArrowUp } from '@element-plus/icons-vue'
 import { client } from '@/common/client'
-import { cloneDeep } from 'lodash-es'
 
 interface DMItem extends DanmakuElem {
   cracked?: boolean
