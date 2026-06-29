@@ -40,7 +40,7 @@ const saveFace = loadingData(async () => {
       <el-button v-if="emojiList.length > 0" type="primary" @click="saveFace()">保存表情包</el-button>
     </div>
     <div class="img-container">
-      <img v-for="item in emojiList" :src="item.gif_url ?? item.url" alt="cover" :key="item.url" />
+      <img v-for="item in emojiList" :src="item.gif_url ?? item.url" alt="cover" :key="item.url" loading="lazy" />
     </div>
   </PluginPageContent>
 </template>

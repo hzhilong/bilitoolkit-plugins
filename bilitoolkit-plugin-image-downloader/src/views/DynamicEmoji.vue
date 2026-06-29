@@ -41,7 +41,7 @@ const saveFace = loadingData(async () => {
       <el-button v-if="emojiList.length > 0" type="primary" @click="saveFace()">保存表情包</el-button>
     </div>
     <div class="img-container">
-      <img v-for="item in emojiList" :src="item.emoji.icon_url" alt="cover" :key="item.emoji.icon_url" />
+      <img v-for="item in emojiList" :src="item.emoji.icon_url" alt="cover" :key="item.emoji.icon_url" loading="lazy" />
     </div>
   </PluginPageContent>
 </template>

@@ -53,7 +53,7 @@ const saveFace = loadingData(async () => {
       <el-button v-if="picList.length > 0" type="primary" @click="saveFace()">保存图片</el-button>
     </div>
     <div class="img-container">
-      <img v-for="item in picList" :src="item" alt="cover" :key="item" />
+      <img v-for="item in picList" :src="item" alt="cover" :key="item" loading="lazy" />
     </div>
   </PluginPageContent>
 </template>
