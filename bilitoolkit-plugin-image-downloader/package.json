@@ -1,10 +1,10 @@
 {
   "name": "bilitoolkit-plugin-image-downloader",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "main": "index.html",
-  "description": "快速下载视频封面、专栏图片、用户头像、动态和评论表情包",
+  "description": "快速下载专栏、动态、评论中的图片与表情包，以及视频封面、直播封面和用户头像",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",

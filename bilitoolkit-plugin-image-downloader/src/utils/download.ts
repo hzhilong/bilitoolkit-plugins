@@ -1,6 +1,6 @@
 import { toolkitApi, showToast } from 'bilitoolkit-ui'
-import type { RichTextEmojiNode, Emote } from '@ybgnb/bili-api'
 import { sleepRandom } from '@ybgnb/utils'
+import type { ImageElInfo } from '@/types/types'
 
 function toSafeFilename(text?: string, maxLength = 255) {
   if (!text) return text
@@ -11,90 +11,56 @@ function toSafeFilename(text?: string, maxLength = 255) {
   return safe.slice(0, maxLength)
 }
 
-export const buildPath = (...parts: (string | undefined)[]) =>
-  parts
-    .filter((p) => !!p)
-    .join('/')
-    .replace(/\/+/g, '/')
-
-export const download = async (src: string, dir: string, fileName: string, openFolder: boolean = true) => {
-  const response = await fetch(src)
-  const buffer = await response.arrayBuffer()
-  const fileContent = new Uint8Array(buffer)
-  const root = await toolkitApi.file.getRootDir()
-  const filePath = buildPath(root, dir, toSafeFilename(fileName))
-  await toolkitApi.file.write(filePath, fileContent)
-  if (openFolder) {
-    await toolkitApi.system.showItemInFolder(filePath)
-    showToast('保存成功')
-  }
-  return filePath
-}
-
-export const downloadCover = async (src: string, fileName: string) => {
-  return download(src, 'cover', fileName)
-}
-
-export const downloadFace = async (src: string, fileName: string) => {
-  return download(src, 'face', fileName)
-}
-
 export const getFileSuffix = (url: string) => {
-  const path = url.split('?')[0]
-  const match = path.match(/\.[^.]+$/)
-  return match ? match[0] : ''
+  const index = url.lastIndexOf('.')
+  return index > -1 ? url.slice(index) : 'png'
 }
 
 export const getFileName = (url: string) => {
   try {
     const path = new URL(url).pathname
     const last = path.split('/').pop()
-    return last || ''
+    if (!last) return ''
+    const dotIndex = last.lastIndexOf('.')
+    return dotIndex > 0 ? last.slice(0, dotIndex) : last
   } catch {
     return crypto.randomUUID()
   }
 }
 
-export const downloadDynamicEmojis = async (emojis: RichTextEmojiNode[], parentDir?: string) => {
-  if (!emojis || emojis.length === 0) return
+export const buildPath = (...parts: (string | undefined)[]) =>
+  parts
+    .filter((p) => !!p)
+    .join('/')
+    .replace(/\/+/g, '/')
 
-  const dir = buildPath('emoji', parentDir)
+export const downloadImages = async (images: ImageElInfo[]) => {
+  if (!images || images.length === 0) return
+
+  const root = await toolkitApi.file.getRootDir()
   let firstFilePath: null | string = null
-  for (const { emoji } of emojis) {
-    const filePath = await download(emoji.icon_url, dir, `${emoji.text}${getFileSuffix(emoji.icon_url)}`, false)
-    await sleepRandom(500, 777)
-    if (!firstFilePath) {
-      firstFilePath = filePath
+
+  for (const { complete, url, fileName } of images) {
+    const response = await fetch(url)
+    const buffer = await response.arrayBuffer()
+    const fileContent = new Uint8Array(buffer)
+    const paths = fileName.split('/')
+    let filePath
+    if (paths.length === 1) {
+      filePath = buildPath(root, toSafeFilename(`${fileName}${getFileSuffix(url)}`))
+    } else {
+      filePath = buildPath(
+        root,
+        ...paths.slice(0, -1),
+        toSafeFilename(`${paths[paths.length - 1]}${getFileSuffix(url)}`),
+      )
     }
-  }
-  await toolkitApi.system.showItemInFolder(firstFilePath!)
-  showToast('保存成功')
-}
+    await toolkitApi.file.write(filePath, fileContent)
 
-export const downloadCommentEmojis = async (emojis: Emote[], parentDir?: string) => {
-  if (!emojis || emojis.length === 0) return
-
-  const dir = buildPath('emoji', parentDir)
-  let firstFilePath: null | string = null
-  for (const { text, url, gif_url } of emojis) {
-    const filePath = await download(gif_url ?? url, dir, `${text}${getFileSuffix(gif_url ?? url)}`, false)
-    await sleepRandom(500, 777)
-    if (!firstFilePath) {
-      firstFilePath = filePath
+    if (!complete) {
+      await sleepRandom(500, 777)
     }
-  }
-  await toolkitApi.system.showItemInFolder(firstFilePath!)
-  showToast('保存成功')
-}
 
-export const downloadOpusPics = async (pics: string[], parentDir?: string) => {
-  if (!pics || pics.length === 0) return
-
-  const dir = buildPath('opus', toSafeFilename(parentDir))
-  let firstFilePath: null | string = null
-  for (const url of pics) {
-    const filePath = await download(url, dir, getFileName(url), false)
-    await sleepRandom(100, 333)
     if (!firstFilePath) {
       firstFilePath = filePath
     }
