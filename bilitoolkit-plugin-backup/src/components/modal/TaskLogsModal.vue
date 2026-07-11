@@ -56,7 +56,7 @@ watch(visible, (newVal) => {
   display: contents;
 
   ::v-deep(> .el-modal-dialog > .el-overlay-dialog > .el-dialog) {
-    max-height: 90vh;
+    height: 90vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
