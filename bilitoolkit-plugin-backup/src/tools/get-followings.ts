@@ -17,7 +17,7 @@ export class GetFollowingsTool extends Tool {
 
     const client = await createBiliClient(userInfo)
 
-    const { value: sourceUid } = await inputUid('请输入已注销账号的用户 uid')
+    const sourceUid = await inputUid('请输入已注销账号的用户 uid')
 
     try {
       log(`正在获取用户 [${sourceUid}] 的关注（只能获取他人前100条数据）`)

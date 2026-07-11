@@ -10,11 +10,13 @@ import { RemoveBotFansTool } from '@/tools/remove-bot-fans'
 import { GetVideosTool } from '@/tools/get-videos'
 import { GetFollowingsTool } from '@/tools/get-followings'
 import { GetFansTool } from '@/tools/get-fans'
+import { DelFavByUpTool } from '@/tools/del-fav-by-up'
 
 const { user } = useUser()
 const tools: Tool[] = [
   new CopyFavTool(),
   new FavAllVideosTool(),
+  new DelFavByUpTool(),
   new RemoveBotFansTool(),
   new GetVideosTool(),
   new GetFollowingsTool(),

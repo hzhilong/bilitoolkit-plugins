@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-backup",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -46,7 +46,7 @@
     "@ybgnb/vite-env": "^0.0.7",
     "axios": "^1.12.1",
     "bilitoolkit-runtime": "workspace:^",
-    "bilitoolkit-types": "workspace:^",
+    "bilitoolkit-types": "0.0.2",
     "bilitoolkit-ui": "workspace:^",
     "consola": "^3.4.2",
     "dayjs": "^1.11.18",

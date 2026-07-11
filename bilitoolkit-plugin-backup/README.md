@@ -1,4 +1,5 @@
 # 哔哩备份姬
+![icon.png](public/icon.png)
 
 ## 项目简介
 
