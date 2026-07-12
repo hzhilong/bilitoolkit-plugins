@@ -19,6 +19,7 @@ export const DATA_TYPE_COLORS: Record<DataType, string> = {
   msg_sys: '#69b3a2',
   session: '#006d26',
   space_privacy: '#750061',
+  like_video: '#ffb78c',
 }
 
 export const DB_NAMES = {
@@ -34,12 +35,10 @@ export const defaultAppSettings: AppSettings = {
 
 // 备选
 const _1 = {
-  2: '#ff7f50',
   4: '#ffb347',
   5: '#5d6d7e',
   6: '#fc6c85',
   7: '#40e0d0',
-  8: '#ffb78c',
   9: '#c3b1e1',
 }
 const _2 = {
@@ -48,7 +47,6 @@ const _2 = {
   3: '#ce6f8c', // 玫瑰紫
   5: '#d99b5c', // 柿子橙
   6: '#a88b6f', // 卡其棕
-  8: '#c07ab8', // 淡紫罗兰
   9: '#e2a26a', // 杏黄色
   10: '#6f9e9e', // 灰蓝绿
 }

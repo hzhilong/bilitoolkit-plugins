@@ -17,6 +17,7 @@ import { SessionModule } from '@/core/modules/session'
 import { SpacePrivacyModule } from '@/core/modules/space/privacy'
 import { FavCollectionModule } from '@/core/modules/fav/collection'
 import { FavOpusModule } from '@/core/modules/fav/opus'
+import { LikeVideoModule } from '@/core/modules/space/like-video'
 
 /**
  * 注册的模块
@@ -39,6 +40,7 @@ export const registeredModules: DataModule[] = [
   new SysMsgModule(),
   new SessionModule(),
   new SpacePrivacyModule(),
+  new LikeVideoModule(),
 ]
 
 /**

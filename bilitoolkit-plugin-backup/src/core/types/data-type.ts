@@ -66,6 +66,10 @@ export const AllDataTypes = [
     type: 'space_privacy',
     name: '空间隐私设置',
   },
+  {
+    type: 'like_video',
+    name: '点赞过的视频',
+  },
 ] as const satisfies DataTypeMeta[]
 
 /**
