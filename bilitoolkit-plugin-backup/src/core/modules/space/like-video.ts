@@ -8,7 +8,7 @@ export class LikeVideoModule extends OnlyClearableModule {
   dataTypeName: string = DataTypeMap[this.dataType].name
 
   async clearData(context: ExecuteContext): Promise<string | void> {
-    const { client, signal, onProgress, user } = context
+    const { client, onProgress, user } = context
 
     const getLikeVideos = async () => {
       return client.api.get('https://api.bilibili.com/x/space/like/video', {

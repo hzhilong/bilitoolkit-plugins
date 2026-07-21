@@ -130,17 +130,26 @@ export class FavModule extends TreeDataModule<FavItem, FavFolder> {
       await apiSleep(signal)
     }
     const defaultFolder = list.find((f) => inArray(getFavFolderType(f), ['default_private', 'default_public']))!
-    onProgress?.(0, `正在获取默认收藏夹列表`)
-    const favItems = await this.baseFetchChildrenAll(context, defaultFolder as FavFolder)
-    onProgress?.(0, `正在处理默认收藏夹`)
-    const chunkList = chunk(favItems, 40)
-    for (let i = 0; i < chunkList.length; i++) {
-      const cList = chunkList[i]
-      await client.fav.batchDelFavItems(defaultFolder.id, cList.map((c) => `${c.id}:${c.type}`).join(','), { signal })
-      onProgress?.((i * 100) / count, `[${i + 1}/${chunkList.length}] 成功批量删除 ${cList.length} 个收藏视频`)
-      await apiSleep(signal)
-    }
+    onProgress?.(0, `正在清理默认收藏夹失效内容`)
     await client.fav.cleanFavItems(defaultFolder.id, { signal })
-    onProgress?.(0, `成功清空默认收藏夹的所有失效内容`)
+    await apiSleep(signal)
+    onProgress?.(0, `正在获取默认收藏夹列表`)
+    const { list: newList } = await client.fav.getFavFolders(undefined, undefined, { signal })
+    const newDefaultFolder = toVideoFavFolders(newList as FavFolder[]).find((f) =>
+      inArray(getFavFolderType(f), ['default_private', 'default_public']),
+    )!
+    await apiSleep(signal)
+    const favItems = await this.baseFetchChildrenAll(context, newDefaultFolder)
+    onProgress?.(0, `正在处理默认收藏夹`)
+    if (favItems.length > 0) {
+      const chunkList = chunk(favItems, 40)
+      for (let i = 0; i < chunkList.length; i++) {
+        const cList = chunkList[i]
+        await client.fav.batchDelFavItems(defaultFolder.id, cList.map((c) => `${c.id}:${c.type}`).join(','), { signal })
+        onProgress?.((i * 100) / count, `[${i + 1}/${chunkList.length}] 成功批量删除 ${cList.length} 个收藏视频`)
+        await apiSleep(signal)
+      }
+    }
+    onProgress?.(0, `成功清空默认收藏夹`)
   }
 }
