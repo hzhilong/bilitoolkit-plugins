@@ -37,7 +37,7 @@
     "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/utils": "^0.2.9",
+    "@ybgnb/utils": "^0.3.3",
     "@ybgnb/bili-api": "workspace:^",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",

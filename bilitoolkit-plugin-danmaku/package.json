@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@ybgnb/bili-api": "workspace:^",
-    "@ybgnb/utils": "^0.3.1",
+    "@ybgnb/utils": "^0.3.3",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
     "bilitoolkit-ui": "workspace:^",
