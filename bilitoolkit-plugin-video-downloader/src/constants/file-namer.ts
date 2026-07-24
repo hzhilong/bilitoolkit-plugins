@@ -98,7 +98,7 @@ export const fileNamerFields = {
   },
   downloadDateTime: {
     label: '发布时间',
-    resolve: ({ resolveDate, data: { video }, extendedFormats: { timeFormat, dateFormat } }) => {
+    resolve: ({ resolveDate, extendedFormats: { timeFormat, dateFormat } }) => {
       return dayjs(resolveDate).format(dateFormat + '_' + timeFormat)
     },
   },

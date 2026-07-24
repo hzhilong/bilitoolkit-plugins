@@ -3,7 +3,7 @@ import { ref, onUnmounted } from 'vue'
 import { PluginPageContent, useSelectedUserStore, AppTooltip, useLoadingData } from 'bilitoolkit-ui'
 import { storeToRefs } from 'pinia'
 import { RecycleScroller } from 'vue-virtual-scroller'
-import { type VideoPart, type DanmakuElem, type UserInfo, type UserCard, parseVideoId } from '@ybgnb/bili-api'
+import { type VideoPart, type DanmakuElem, type UserCard, parseVideoId } from '@ybgnb/bili-api'
 import { sleepRandom } from '@ybgnb/utils'
 import { formatDuration } from '@/utils/dm'
 import { crackUidHash } from '@/utils/crack'
@@ -55,7 +55,7 @@ const handleSearch = loadingData(async () => {
   console.log(`queryParams.value`, queryParams.value)
 })
 
-const formatUserLabel = (user: UserInfo) => {
+const formatUserLabel = (user: UserCard) => {
   return `${user.name}　${user.mid}　lv${user.level}`
 }
 
@@ -73,7 +73,7 @@ const crackUser = async (item: DMItem) => {
     setTimeout(() => {}, 2000)
   }
 }
-const handleOpenSpace = (user: UserInfo) => {
+const handleOpenSpace = (user: UserCard) => {
   assertLoggedIn()
   window.open(`https://space.bilibili.com/${user.mid}`)
 }
@@ -95,7 +95,7 @@ const searchTableData = loadingTableData(async () => {
   filteredList.value.splice(0, filteredList.value.length, ...matched)
 })
 
-let crackingAll = ref(false)
+const crackingAll = ref(false)
 let abortController: AbortController | null = null
 const cancelCrackAll = () => abortController?.abort()
 
@@ -113,8 +113,8 @@ const handleCrackAll = loadingTableData(async () => {
 
     const targets = filteredList.value.map((item, index) => ({ item, index })).filter(({ item }) => !item.cracked)
 
-    let chunkList: DMItem[] = []
-    let chunkUids: number[] = []
+    const chunkList: DMItem[] = []
+    const chunkUids: number[] = []
 
     const parseChunkUids = async () => {
       try {
@@ -123,7 +123,7 @@ const handleCrackAll = loadingTableData(async () => {
         ) as UserCard[]
         await sleepRandom(1111, 2222)
         const usersMap = new Map(users.map((u) => [u.mid, u]))
-        for (let dmItem of chunkList) {
+        for (const dmItem of chunkList) {
           dmItem.users.splice(
             0,
             dmItem.users.length,
@@ -135,7 +135,7 @@ const handleCrackAll = loadingTableData(async () => {
         chunkUids.length = 0
         chunkList.length = 0
       } catch (e) {
-        for (let dmItem of chunkList) {
+        for (const dmItem of chunkList) {
           dmItem.cracked = false
           dmItem.loading = false
         }
@@ -214,7 +214,7 @@ const isCollapseQuery = ref(false)
             :items="filteredList"
             :item-size="(t: DMItem) => 26 * ((t.users ?? []).length || 1)"
             key-field="id"
-            v-slot="{ item, index }: { item: DMItem }"
+            v-slot="{ item, index }: { item: DMItem; index: number }"
           >
             <div class="table-row">
               <div class="col index">{{ index + 1 }}</div>
@@ -232,6 +232,7 @@ const isCollapseQuery = ref(false)
                       type="primary"
                       size="small"
                       v-for="user in item.users"
+                      :key="user.mid"
                       @click="handleOpenSpace(user)"
                       >{{ formatUserLabel(user) }}</el-button
                     >

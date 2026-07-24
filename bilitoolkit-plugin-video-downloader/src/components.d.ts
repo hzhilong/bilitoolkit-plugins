@@ -26,12 +26,10 @@ declare module 'vue' {
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     FileNamerSettings: typeof import('./components/settings/FileNamerSettings.vue')['default']
-    PartResourcePicker: typeof import('./components/dialog/PartResourcePicker.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     VideoResourceDialog: typeof import('./components/dialog/VideoResourceDialog.vue')['default']
     VideoResourceSelector: typeof import('./components/dialog/VideoResourceSelector.vue')['default']
-    VideoResourceSelector2: typeof import('./components/dialog/VideoResourceSelector2.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
@@ -54,10 +52,8 @@ declare global {
   const ElSelect: typeof import('element-plus/es')['ElSelect']
   const ElSwitch: typeof import('element-plus/es')['ElSwitch']
   const FileNamerSettings: typeof import('./components/settings/FileNamerSettings.vue')['default']
-  const PartResourcePicker: typeof import('./components/dialog/PartResourcePicker.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
   const VideoResourceDialog: typeof import('./components/dialog/VideoResourceDialog.vue')['default']
   const VideoResourceSelector: typeof import('./components/dialog/VideoResourceSelector.vue')['default']
-  const VideoResourceSelector2: typeof import('./components/dialog/VideoResourceSelector2.vue')['default']
 }

@@ -5,7 +5,7 @@ import VideoResourceSelector from '@/components/dialog/VideoResourceSelector.vue
 import type { DownloadVideoData } from '@/types/download'
 import { showError } from 'bilitoolkit-ui'
 
-const props = defineProps<{
+defineProps<{
   videos: VideoInfo[]
 }>()
 

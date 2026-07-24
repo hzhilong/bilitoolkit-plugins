@@ -2,7 +2,7 @@
 import { Warning } from '@element-plus/icons-vue'
 import { PluginPageContent, useSelectedUserStore } from 'bilitoolkit-ui'
 import { ref } from 'vue'
-import type { UserCard, UserInfo } from '@ybgnb/bili-api'
+import type { UserCard } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
 import { crackUidHash } from '@/utils/crack'
 import { client } from '@/common/client'
@@ -16,7 +16,7 @@ const assertLoggedIn = () => {
     throw new Error('请先登录')
   }
 }
-const formatUserLabel = (user: UserInfo) => {
+const formatUserLabel = (user: UserCard) => {
   return `${user.name}　${user.mid}　lv${user.level}`
 }
 const handleCrack = async () => {
@@ -24,7 +24,7 @@ const handleCrack = async () => {
   const uids = crackUidHash(midHash.value, 10)
   users.value = (await client.user.getUserCards(uids)).filter((u) => u != null && u.level > 1) as UserCard[]
 }
-const handleOpenSpace = (user: UserInfo) => {
+const handleOpenSpace = (user: UserCard) => {
   assertLoggedIn()
   window.open(`https://space.bilibili.com/${user.mid}`)
 }
