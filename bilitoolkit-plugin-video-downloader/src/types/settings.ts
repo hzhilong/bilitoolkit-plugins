@@ -1,4 +1,5 @@
 import type { VideoQuality, AudioQuality, VideoCodecId } from '@ybgnb/bili-api'
+import type { DownloadResourceType } from 'bilitoolkit-types'
 
 export interface AppSettings {
   /** 优先下载的音频音质 */
@@ -10,4 +11,7 @@ export interface AppSettings {
 
   /** 下载后自动合并音频和视频 */
   autoMerge: boolean
+
+  /** 默认下载的资源 */
+  defaultResourceTypes: DownloadResourceType[]
 }

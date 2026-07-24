@@ -2,6 +2,12 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-rou
 
 export const appMenus: Array<RouteRecordRaw & { title: string }> = [
   {
+    title: '使用须知',
+    path: '/AboutView',
+    name: 'AboutView',
+    component: () => import('../views/AboutView.vue'),
+  },
+  {
     title: '视频下载',
     path: '/VideoDownloadView',
     name: 'VideoDownloadView',
@@ -12,12 +18,6 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     path: '/SettingsView',
     name: 'SettingsView',
     component: () => import('../views/SettingsView.vue'),
-  },
-  {
-    title: '关于',
-    path: '/AboutView',
-    name: 'AboutView',
-    component: () => import('../views/AboutView.vue'),
   },
 ]
 

@@ -4,6 +4,7 @@ import { videoQualityEntries, audioQualityEntries, videoCodecEntries } from '@yb
 import { storeToRefs } from 'pinia'
 import { useAppSettingsStore } from '@/stores/app-settings'
 import FileNamerSettings from '@/components/settings/FileNamerSettings.vue'
+import { downloadResourceNameMap } from 'bilitoolkit-types'
 const { appSettings } = storeToRefs(useAppSettingsStore())
 
 const handleVideoQualityChange = () => {
@@ -46,6 +47,11 @@ const handleVideoCodecChange = () => {
       </setting-item>
       <setting-item title="下载后自动合并音频和视频" desc="需同时下载音频和视频">
         <el-switch v-model="appSettings.autoMerge"> </el-switch>
+      </setting-item>
+      <setting-item title="默认下载的资源">
+        <el-checkbox-group v-model="appSettings.defaultResourceTypes">
+          <el-checkbox v-for="(item, key) in downloadResourceNameMap" :label="item" :value="key" :key="key" />
+        </el-checkbox-group>
       </setting-item>
     </setting-group>
     <setting-group name="文件命名模板">

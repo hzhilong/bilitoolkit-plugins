@@ -6,11 +6,12 @@ export const defaultAppSettings: () => AppSettings = () => ({
   preferredVideoQuality: 120,
   preferredVideoCodec: 7,
   autoMerge: true,
+  defaultResourceTypes: ['audio', 'video'],
 })
 
 export const defaultFileNamerFields: () => OptionalFileNamerFields[] = () => [
   'bvid',
-  'space',
+  '_',
   'title',
   'fileSeparator',
   'partTitle',

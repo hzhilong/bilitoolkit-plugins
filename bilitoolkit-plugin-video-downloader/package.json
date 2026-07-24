@@ -1,10 +1,10 @@
 {
   "name": "bilitoolkit-plugin-video-downloader",
-  "version": "0.0.3",
+  "version": "0.0.1",
   "private": false,
   "type": "module",
   "main": "index.html",
-  "description": "用于下载视频及相关资源，支持下载视频、音频、弹幕、字幕、封面等资源。",
+  "description": "下载视频、音频、弹幕、字幕、封面等资源",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",

@@ -3,21 +3,25 @@ import { FileNamer, baseFileNamingFieldMap, type BaseFileNamingField } from '@yb
 import { fileNamerFields } from '@/constants/file-namer'
 import type { DownloadResourceType } from 'bilitoolkit-types'
 
+export function createFileNamer({ fields, extendedFormats }: FileNamerSettings) {
+  return new FileNamer<FileNamingData>({
+    fields: fields.map((field) => {
+      if (field in baseFileNamingFieldMap) {
+        return field as BaseFileNamingField
+      }
+      return fileNamerFields[field as keyof typeof fileNamerFields]
+    }),
+    extendedFormats,
+  })
+}
+
 export const parseFileName = (data: FileNamingData, context: FileNamerSettings | FileNamer) => {
   let fileNamer: FileNamer<FileNamingData>
   if (context instanceof FileNamer) {
     fileNamer = context
   } else {
     const { fields, extendedFormats } = context
-    fileNamer = new FileNamer<FileNamingData>({
-      fields: fields.map((field) => {
-        if (field in baseFileNamingFieldMap) {
-          return field as BaseFileNamingField
-        }
-        return fileNamerFields[field as keyof typeof fileNamerFields]
-      }),
-      extendedFormats,
-    })
+    fileNamer = createFileNamer({ fields, extendedFormats })
   }
 
   return fileNamer.resolve(data)

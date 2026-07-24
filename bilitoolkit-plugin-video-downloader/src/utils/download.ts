@@ -1,0 +1,281 @@
+import type { DownloadVideoData, SelectedPartData, DownloadOption } from '@/types/download'
+import { showError, showToast, toolkitApi } from 'bilitoolkit-ui'
+import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
+import { createFileNamer, parseFullFileName } from '@/utils/file-namer'
+import type { FileNamingData, FileNamerSettings } from '@/types/file-namer'
+import {
+  type VideoInfo,
+  type VideoPart,
+  type AudioQuality,
+  type VideoQuality,
+  type VideoCodecId,
+  audioQualityMap,
+  videoQualityMap,
+  videoCodecIdMap,
+  type BiliClient,
+  type UserInfoWithCookie,
+  type PlayUrlData,
+} from '@ybgnb/bili-api'
+import type {
+  DownloadCreateOptions,
+  DownloadVideo,
+  DownloadVideoPart,
+  DownloadResource,
+  DownloadResourceType,
+  AudioDownloadResource,
+  VideoDownloadResource,
+  DMDownloadResource,
+  CoverDownloadResource,
+  BaseDownloadResource,
+} from 'bilitoolkit-types'
+import type { FileNamer } from '@ybgnb/file-naming'
+import { getVideoPartSnapshot, getVideoInfoSnapshot } from '@/utils/convert'
+import type { AppSettings } from '@/types/settings'
+
+const createDownloadOption = <Data>(value: Data, label: string): DownloadOption<Data> => {
+  return [value, label]
+}
+
+function getAudios(playData: PlayUrlData) {
+  return [...(playData.dash?.audio ?? []), playData.dash?.flac?.audio, ...(playData.dash?.dolby?.audio ?? [])].filter(
+    (a) => a != null,
+  )
+}
+
+export const buildPartWithPlayData = async (
+  {
+    client,
+    signal,
+    appSettings,
+  }: {
+    client: BiliClient
+    appSettings: AppSettings
+    signal?: AbortSignal
+  },
+  video: VideoInfo,
+  part: VideoPart,
+): Promise<SelectedPartData | null> => {
+  const partQuery = {
+    bvid: video.bvid,
+    cid: part.cid,
+  }
+  const subtitleItems = await client.videoPlayer.getSubtitles(partQuery)
+  await sleepRandom(1000, 1111)
+  const playData = await client.videoPlayer.getPlayUrl(partQuery, { signal })
+
+  if (!playData.dash) return null
+
+  let supportAudioQualities = [
+    ...new Set(
+      getAudios(playData)
+        .filter((a) => a != null)
+        .map((a) => a.id),
+    ),
+  ].sort((a, b) => b - a) as (AudioQuality | 0)[]
+  supportAudioQualities = supportAudioQualities.length > 0 ? supportAudioQualities : [0]
+  let supportVideoQualities = [...new Set((playData.dash.video ?? []).map((a) => a.id))].sort((a, b) => b - a) as (
+    | VideoQuality
+    | 0
+  )[]
+  supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
+  let supportVideoCodecs = [...new Set((playData.dash.video ?? []).map((a) => a.codecid as VideoCodecId))].sort(
+    (a, b) => b - a,
+  ) as (VideoCodecId | 0)[]
+  supportVideoCodecs = supportVideoCodecs.length > 0 ? supportVideoCodecs : [0]
+
+  const { preferredAudioQuality, preferredVideoQuality, preferredVideoCodec } = appSettings
+
+  const selectedAudioQuality =
+    supportAudioQualities.find((q) => q <= preferredAudioQuality) ??
+    supportAudioQualities?.[supportAudioQualities.length - 1] ??
+    0
+  const selectedVideoQuality =
+    supportVideoQualities.find((q) => q <= preferredVideoQuality) ??
+    supportVideoQualities?.[supportVideoQualities.length - 1] ??
+    0
+  const selectedVideoCodecId =
+    supportVideoCodecs.find((q) => q <= preferredVideoCodec) ?? supportVideoCodecs?.[supportVideoCodecs.length - 1] ?? 0
+
+  return {
+    info: part,
+    playUrlData: playData,
+    supportAudioQualities: supportAudioQualities.map((t) =>
+      createDownloadOption(t, t === 0 ? '音频不存在' : audioQualityMap[t]),
+    ),
+    selectedAudioQuality,
+    supportVideoQualities: supportVideoQualities.map((t) =>
+      createDownloadOption(t, t === 0 ? '视频不存在' : videoQualityMap[t]),
+    ),
+    selectedVideoQuality,
+    supportVideoCodecs: supportVideoCodecs.map((t) =>
+      createDownloadOption(t, t === 0 ? '视频不存在' : videoCodecIdMap[t]),
+    ),
+    selectedVideoCodecId,
+    playerSubtitleItems: subtitleItems,
+  }
+}
+
+export const createDownloadTasks = async (
+  {
+    appSettings,
+    fileNamerSettings,
+    user,
+  }: {
+    user: UserInfoWithCookie
+    appSettings: AppSettings
+    fileNamerSettings: FileNamerSettings
+  },
+  list: DownloadVideoData[],
+  title: string,
+) => {
+  const fileNamer = createFileNamer(fileNamerSettings)
+
+  const ipcVideos: DownloadVideo[] = []
+  const createOptions: DownloadCreateOptions = {
+    title: title,
+    videos: [],
+    userCookie: user.userCookie,
+    settings: {
+      autoMerge: appSettings.autoMerge,
+    },
+  }
+
+  for (const item of list) {
+    const { resourceTypes } = item
+    try {
+      if (item.parts.length < 1 || item.resourceTypes.length < 1) {
+        continue
+      }
+
+      const ipcParts: DownloadVideoPart[] = []
+      for (const part of item.parts) {
+        if (resourceTypes.includes('audio') && part.selectedAudioQuality === 0) {
+          resourceTypes.splice(resourceTypes.indexOf('audio'), 1)
+        }
+        if (resourceTypes.includes('video') && (part.selectedVideoQuality === 0 || part.selectedVideoCodecId === 0)) {
+          resourceTypes.splice(resourceTypes.indexOf('video'), 1)
+        }
+
+        const fileNamingData: FileNamingData = {
+          video: item.video,
+          part: part.info,
+          audioQuality: part.selectedAudioQuality as AudioQuality,
+          videoQuality: part.selectedVideoQuality as VideoQuality,
+          videoCodec: part.selectedVideoCodecId as VideoCodecId,
+        }
+
+        const ipcResources: DownloadResource[] = []
+        let partSubDir: undefined | string = undefined
+        const { segments } = parseFullFileName(fileNamingData, 'video', fileNamer)
+        if (segments.length > 0 && partSubDir === undefined) {
+          partSubDir = segments.slice(0, -1).join('/')
+        }
+        for (const resourceType of resourceTypes) {
+          const resourceData = buildDownloadResourceData(fileNamer, fileNamingData, resourceType, part)
+          if (resourceData) {
+            if (Array.isArray(resourceData)) {
+              for (const resourceItem of resourceData) {
+                ipcResources.push(resourceItem)
+              }
+            } else {
+              ipcResources.push(resourceData)
+            }
+          }
+        }
+        ipcParts.push({
+          resources: ipcResources,
+          snapshot: getVideoPartSnapshot(part.info),
+          subdirectory: partSubDir,
+        })
+      }
+
+      ipcVideos.push({
+        parts: ipcParts,
+        snapshot: getVideoInfoSnapshot(item.video),
+      })
+    } catch (e) {
+      showError(`新建下载任务 [${item.video.title}] 出错：${getErrorMessage(e)}`)
+      return
+    }
+  }
+
+  try {
+    createOptions.videos = ipcVideos
+    await toolkitApi.download.create(createOptions)
+    showToast(`成功创建 ${ipcVideos.length} 个下载任务`)
+  } catch (e) {
+    showError(`新建下载任务出错：${getErrorMessage(e)}`)
+    return
+  }
+}
+
+const buildDownloadResourceData = (
+  fileNamer: FileNamer<FileNamingData>,
+  fileNamingData: FileNamingData,
+  resourceType: DownloadResourceType,
+  { playUrlData, playerSubtitleItems }: SelectedPartData,
+): DownloadResource | DownloadResource[] | null => {
+  const { segments } = parseFullFileName(fileNamingData, resourceType, fileNamer)
+  const fullFilename = segments[segments.length - 1]
+  const baseData: BaseDownloadResource = {
+    type: resourceType,
+    fullFilename: fullFilename,
+    source: null!,
+  }
+  const { video, part, audioQuality, videoQuality, videoCodec } = fileNamingData
+
+  switch (resourceType) {
+    case 'audio':
+      const audioStream = getAudios(playUrlData).find((a) => a.id === audioQuality)
+      if (!audioStream) return null
+      const audioData: AudioDownloadResource = {
+        audio: audioStream,
+        audioQuality: audioQuality,
+      }
+      baseData.source = audioData
+      break
+
+    case 'video':
+      const videoStream = playUrlData.dash?.video?.find((a) => a.id === videoQuality && a.codecid === videoCodec)
+      if (!videoStream) return null
+      const videoData: VideoDownloadResource = {
+        video: videoStream,
+        videoQuality: videoQuality,
+        videoCodec: videoCodec,
+      }
+      baseData.source = videoData
+      break
+
+    case 'dm':
+      const dmData: DMDownloadResource = {
+        videoPart: part,
+      }
+      baseData.source = dmData
+      break
+
+    case 'cover':
+      const coverData: CoverDownloadResource = {
+        coverUrl: video.pic,
+      }
+      baseData.source = coverData
+      break
+
+    case 'subtitle':
+      const baseName = fullFilename.slice(0, fullFilename.lastIndexOf('.'))
+
+      const subtitleList: DownloadResource[] = []
+      for (const subtitleItem of playerSubtitleItems) {
+        const subtitleData: BaseDownloadResource<'subtitle'> = {
+          type: resourceType,
+          fullFilename: `${baseName}.${subtitleItem.lan}.json`,
+          source: {
+            subtitleItem: subtitleItem,
+          },
+        }
+        subtitleList.push(subtitleData)
+      }
+      return subtitleList
+  }
+
+  return baseData as DownloadResource
+}

@@ -72,6 +72,10 @@ export const fileNamerFields = {
     label: '分P 序号',
     resolve: ({ data: { part } }) => String(part.page),
   },
+  partSeqIgnoreSingle: {
+    label: '分P - (忽略单P)',
+    resolve: ({ data: { video, part } }) => (video.videos > 0 ? `${part.page} - ` : ''),
+  },
   cid: {
     label: '分P cid',
     resolve: ({ data: { part } }) => `${part.cid}`,
@@ -91,6 +95,12 @@ export const fileNamerFields = {
   videoCodec: {
     label: '视频编码',
     resolve: ({ data: { videoCodec } }) => videoCodecIdMap[videoCodec],
+  },
+  downloadDateTime: {
+    label: '发布时间',
+    resolve: ({ resolveDate, data: { video }, extendedFormats: { timeFormat, dateFormat } }) => {
+      return dayjs(resolveDate).format(dateFormat + '_' + timeFormat)
+    },
   },
 } as const satisfies Record<string, FileNamingFieldDefinition<FileNamingData>>
 
