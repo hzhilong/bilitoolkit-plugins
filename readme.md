@@ -9,4 +9,5 @@
 | [视频下载](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-video-downloader)   | 下载视频、音频、弹幕、字幕、封面等资源                    |
 | [透明头像](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-transparent-avatar) | 上传半透明的用户头像                             |
 | [评论搜索](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-comment-search)   | 根据 UID 或关键词，快速搜索评论区评论                    |
+| [移除机器人粉丝](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-remove-bot-followers)   | 批量移除并拉黑粉丝中的机器人或片姐                    |
 

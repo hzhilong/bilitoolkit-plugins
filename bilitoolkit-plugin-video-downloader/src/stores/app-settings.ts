@@ -10,7 +10,7 @@ import { DB_NAMES } from '@/constants/db'
  * 应用设置
  */
 export const useAppSettingsStore = defineStore(
-  'bilitoolkit-plugin-backup-settings',
+  'bilitoolkit-plugin-video-downloader-settings',
   () => {
     const appSettings = reactive<AppSettings>(defaultAppSettings())
 
