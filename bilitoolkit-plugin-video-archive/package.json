@@ -1,16 +1,16 @@
 {
-  "name": "bilitoolkit-plugin-quick-upgrade",
-  "version": "0.0.4",
+  "name": "bilitoolkit-plugin-video-archive",
+  "version": "0.0.1",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
-  "description": "帮助哔哩哔哩用户快速升级",
+  "description": "自动保存指定用户的最新视频投稿，方便补档",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
     "哔哩工具姬",
     "bilitoolkit-plugin",
-    "bilitoolkit-plugin:name:速升姬",
+    "bilitoolkit-plugin:name:视频存档",
     "bilitoolkit-plugin:type:task"
   ],
   "files": [
@@ -20,12 +20,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/hzhilong/bilitoolkit-plugins",
-    "directory": "bilitoolkit-plugin-quick-upgrade"
+    "directory": "bilitoolkit-plugin-video-archive"
   },
   "bugs": {
     "url": "https://github.com/hzhilong/bilitoolkit-plugins/issues"
   },
-  "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-quick-upgrade#readme",
+  "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-video-archive#readme",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
@@ -41,8 +41,10 @@
   "dependencies": {
     "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/utils": "^0.3.3",
+    "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
-    "bilitoolkit-runtime": "workspace:^"
+    "lodash-es": "^4.18.1",
+    "@ybgnb/file-naming": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.16.5",

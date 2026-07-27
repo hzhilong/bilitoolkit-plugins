@@ -51,7 +51,7 @@ export const taskConfigSchema = {
       type: 'users',
       description: '请选择需要快速升级的用户',
       required: true,
-    } satisfies TaskConfigField,
+    } as const satisfies TaskConfigField,
     ...Object.values(taskConfigSchemaMap),
   ],
 } as const
