@@ -72,9 +72,12 @@ export const buildPartWithPlayData = async (
     ),
   ].sort((a, b) => b - a) as (AudioQuality | 0)[]
   supportAudioQualities = supportAudioQualities.length > 0 ? supportAudioQualities : [0]
+
   const videos = playData.dash.video ?? []
+
   let supportVideoQualities = [...new Set(videos.map((a) => a.id))].sort((a, b) => b - a) as (VideoQuality | 0)[]
   supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
+
   let supportVideoCodecs = [...new Set(videos.map((a) => a.codecid as VideoCodecId))].sort((a, b) => b - a) as (
     | VideoCodecId
     | 0
@@ -87,10 +90,12 @@ export const buildPartWithPlayData = async (
     supportAudioQualities.find((q) => q <= preferredAudioQuality) ??
     supportAudioQualities?.[supportAudioQualities.length - 1] ??
     0
+
   const selectedVideoQuality =
     supportVideoQualities.find((q) => q <= preferredVideoQuality) ??
     supportVideoQualities?.[supportVideoQualities.length - 1] ??
     0
+
   let selectedVideoCodecId =
     supportVideoCodecs.find((q) => q <= preferredVideoCodec) ?? supportVideoCodecs?.[supportVideoCodecs.length - 1] ?? 0
 
@@ -99,6 +104,7 @@ export const buildPartWithPlayData = async (
       return [vq, videos.filter((v) => v.id === vq).map((v) => v.codecid)]
     }),
   ) as Record<VideoQuality | 0, (VideoCodecId | 0)[]>
+
   const supportVideoCodecMapQuality = Object.fromEntries(
     supportVideoCodecs.map((vc) => {
       return [vc, videos.filter((v) => v.codecid === vc).map((v) => v.id)]
@@ -109,6 +115,7 @@ export const buildPartWithPlayData = async (
   if (!codecList.includes(selectedVideoCodecId)) {
     selectedVideoCodecId = codecList[0] ?? 0
   }
+
   return {
     info: part,
     playUrlData: playData,
