@@ -20,6 +20,12 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     component: () => import('../views/CollectionDownloadView.vue'),
   },
   {
+    title: '收藏夹下载',
+    path: '/FavDownloadView',
+    name: 'FavDownloadView',
+    component: () => import('../views/FavDownloadView.vue'),
+  },
+  {
     title: '设置',
     path: '/SettingsView',
     name: 'SettingsView',

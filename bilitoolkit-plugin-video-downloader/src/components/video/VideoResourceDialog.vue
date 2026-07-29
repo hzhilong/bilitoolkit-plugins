@@ -41,7 +41,7 @@ const handleSubmit = async () => {
     <el-dialog
       title="请选择需要下载的资源"
       v-model="visible"
-      width="88%"
+      width="94%"
       style="max-height: 88vh"
       :close-on-click-modal="true"
       :close-on-press-escape="true"
