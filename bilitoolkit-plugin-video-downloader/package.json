@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-video-downloader",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "main": "index.html",

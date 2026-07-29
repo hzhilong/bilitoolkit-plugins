@@ -91,9 +91,24 @@ export const buildPartWithPlayData = async (
     supportVideoQualities.find((q) => q <= preferredVideoQuality) ??
     supportVideoQualities?.[supportVideoQualities.length - 1] ??
     0
-  const selectedVideoCodecId =
+  let selectedVideoCodecId =
     supportVideoCodecs.find((q) => q <= preferredVideoCodec) ?? supportVideoCodecs?.[supportVideoCodecs.length - 1] ?? 0
 
+  const supportVideoQualitiesMapCodec = Object.fromEntries(
+    supportVideoQualities.map((vq) => {
+      return [vq, videos.filter((v) => v.id === vq).map((v) => v.codecid)]
+    }),
+  ) as Record<VideoQuality | 0, (VideoCodecId | 0)[]>
+  const supportVideoCodecMapQuality = Object.fromEntries(
+    supportVideoCodecs.map((vc) => {
+      return [vc, videos.filter((v) => v.codecid === vc).map((v) => v.id)]
+    }),
+  ) as Record<VideoCodecId | 0, (VideoQuality | 0)[]>
+
+  const codecList = supportVideoQualitiesMapCodec[selectedVideoQuality]
+  if (!codecList.includes(selectedVideoCodecId)) {
+    selectedVideoCodecId = codecList[0] ?? 0
+  }
   return {
     info: part,
     playUrlData: playData,
@@ -104,20 +119,12 @@ export const buildPartWithPlayData = async (
     supportVideoQualities: supportVideoQualities.map((t) =>
       createDownloadOption(t, t === 0 ? '视频不存在' : videoQualityMap[t]),
     ),
-    supportVideoQualitiesMapCodec: Object.fromEntries(
-      supportVideoQualities.map((vq) => {
-        return [vq, videos.filter((v) => v.id === vq).map((v) => v.codecid)]
-      }),
-    ) as Record<VideoQuality | 0, (VideoCodecId | 0)[]>,
+    supportVideoQualitiesMapCodec: supportVideoQualitiesMapCodec,
     selectedVideoQuality,
     supportVideoCodecs: supportVideoCodecs.map((t) =>
       createDownloadOption(t, t === 0 ? '视频不存在' : videoCodecIdMap[t]),
     ),
-    supportVideoCodecMapQuality: Object.fromEntries(
-      supportVideoCodecs.map((vc) => {
-        return [vc, videos.filter((v) => v.codecid === vc).map((v) => v.id)]
-      }),
-    ) as Record<VideoCodecId | 0, (VideoQuality | 0)[]>,
+    supportVideoCodecMapQuality: supportVideoCodecMapQuality,
     selectedVideoCodecId,
   }
 }
