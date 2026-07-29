@@ -6,6 +6,8 @@ export const defaultAppSettings: () => AppSettings = () => ({
   preferredVideoQuality: 120,
   preferredVideoCodec: 7,
   autoMerge: true,
+  autoRenameOnConflict: true,
+  autoReparseOnUrlExpired: true,
   defaultResourceTypes: ['audio', 'video'],
 })
 

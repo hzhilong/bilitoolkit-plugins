@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import type { VideoInfo } from '@ybgnb/bili-api'
-import VideoResourceSelector from '@/components/dialog/VideoResourceSelector.vue'
+import VideoResourceSelector from '@/components/video/VideoResourceSelector.vue'
 import type { DownloadVideoData } from '@/types/download'
 import { showError } from 'bilitoolkit-ui'
 

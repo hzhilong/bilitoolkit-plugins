@@ -18,7 +18,7 @@ import { storeToRefs } from 'pinia'
 import { useAppSettingsStore } from '@/stores/app-settings'
 import { cloneDeep } from 'lodash-es'
 import type { DownloadVideoData, SelectedPartData } from '@/types/download'
-import { watch, onUnmounted, ref, computed } from 'vue'
+import { watch, onUnmounted, ref, computed, nextTick } from 'vue'
 import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import { buildPartWithPlayData } from '@/utils/download'
 
@@ -74,17 +74,32 @@ const initPartPlayerInfos = loadingData(async () => {
       allPartData.value.push(item)
     }
   }
+  await nextTick()
+  if (!isAllPartSelected.value) {
+    togglePartAll()
+  }
 })
 
 const handleVideoQualityChange = (part: SelectedPartData) => {
   if (part.selectedVideoQuality === 127 && part.selectedVideoCodecId === 7) {
     part.selectedVideoCodecId = 12
   }
+
+  const list = part.supportVideoQualitiesMapCodec[part.selectedVideoQuality]
+  if (!list.includes(part.selectedVideoCodecId)) {
+    part.selectedVideoCodecId = list[0] ?? 0
+  }
 }
 
 const handleVideoCodecChange = (part: SelectedPartData) => {
+  console.log(part)
   if (part.selectedVideoQuality === 127 && part.selectedVideoCodecId === 7) {
     part.selectedVideoQuality = 120
+  }
+
+  const list = part.supportVideoCodecMapQuality[part.selectedVideoCodecId]
+  if (!list.includes(part.selectedVideoQuality)) {
+    part.selectedVideoQuality = list[0] ?? 0
   }
 }
 
@@ -100,6 +115,7 @@ const {
   selectedIds: selectedParts,
   toggleSelect: handleSelectPart,
   isSelected: isPartSelected,
+  isAllSelected: isAllPartSelected,
   toggleAll: togglePartAll,
   getSelectedData: getSelectedPartData,
 } = useSelectData(
@@ -196,6 +212,7 @@ defineExpose({
             placeholder="音质"
             size="small"
             style="width: 100px"
+            @click.stop
           >
             <el-option v-for="[id, name] in part.supportAudioQualities" :key="id" :label="name" :value="id" />
           </el-select>
@@ -206,6 +223,7 @@ defineExpose({
             style="width: 80px"
             size="small"
             @change="handleVideoQualityChange(part)"
+            @click.stop
           >
             <el-option v-for="[id, name] in part.supportVideoQualities" :key="id" :label="name" :value="id" />
           </el-select>
@@ -216,6 +234,7 @@ defineExpose({
             size="small"
             style="width: 70px"
             @change="handleVideoCodecChange(part)"
+            @click.stop
           >
             <el-option v-for="[id, name] in part.supportVideoCodecs" :key="id" :label="name" :value="id" />
           </el-select>

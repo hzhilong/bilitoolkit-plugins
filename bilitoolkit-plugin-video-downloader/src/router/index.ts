@@ -14,6 +14,12 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     component: () => import('../views/VideoDownloadView.vue'),
   },
   {
+    title: '合集下载',
+    path: '/CollectionDownloadView',
+    name: 'CollectionDownloadView',
+    component: () => import('../views/CollectionDownloadView.vue'),
+  },
+  {
     title: '设置',
     path: '/SettingsView',
     name: 'SettingsView',

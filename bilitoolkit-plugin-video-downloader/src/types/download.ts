@@ -6,7 +6,6 @@ import {
   type AudioQuality,
   type VideoQuality,
   type VideoCodecId,
-  type PlayerSubtitleItem,
 } from '@ybgnb/bili-api'
 
 export interface DownloadVideoData {
@@ -23,8 +22,9 @@ export interface SelectedPartData {
   supportAudioQualities: DownloadOption<AudioQuality | 0>[]
   selectedAudioQuality: AudioQuality | 0
   supportVideoQualities: DownloadOption<VideoQuality | 0>[]
+  supportVideoQualitiesMapCodec: Record<VideoQuality | 0, (VideoCodecId | 0)[]>
   selectedVideoQuality: VideoQuality | 0
   supportVideoCodecs: DownloadOption<VideoCodecId | 0>[]
+  supportVideoCodecMapQuality: Record<VideoCodecId | 0, (VideoQuality | 0)[]>
   selectedVideoCodecId: VideoCodecId | 0
-  playerSubtitleItems: PlayerSubtitleItem[]
 }

@@ -12,6 +12,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    DownloadView: typeof import('./components/video/DownloadView.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
@@ -28,8 +29,8 @@ declare module 'vue' {
     FileNamerSettings: typeof import('./components/settings/FileNamerSettings.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    VideoResourceDialog: typeof import('./components/dialog/VideoResourceDialog.vue')['default']
-    VideoResourceSelector: typeof import('./components/dialog/VideoResourceSelector.vue')['default']
+    VideoResourceDialog: typeof import('./components/video/VideoResourceDialog.vue')['default']
+    VideoResourceSelector: typeof import('./components/video/VideoResourceSelector.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
@@ -38,6 +39,7 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const DownloadView: typeof import('./components/video/DownloadView.vue')['default']
   const ElAlert: typeof import('element-plus/es')['ElAlert']
   const ElButton: typeof import('element-plus/es')['ElButton']
   const ElCard: typeof import('element-plus/es')['ElCard']
@@ -54,6 +56,6 @@ declare global {
   const FileNamerSettings: typeof import('./components/settings/FileNamerSettings.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
-  const VideoResourceDialog: typeof import('./components/dialog/VideoResourceDialog.vue')['default']
-  const VideoResourceSelector: typeof import('./components/dialog/VideoResourceSelector.vue')['default']
+  const VideoResourceDialog: typeof import('./components/video/VideoResourceDialog.vue')['default']
+  const VideoResourceSelector: typeof import('./components/video/VideoResourceSelector.vue')['default']
 }

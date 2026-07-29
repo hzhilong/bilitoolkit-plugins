@@ -11,6 +11,10 @@ export interface AppSettings {
 
   /** 下载后自动合并音频和视频 */
   autoMerge: boolean
+  /** 存在相同文件时，是否自动添加序号避免重名 */
+  autoRenameOnConflict: boolean
+  /** 当下载链接失效时，自动尝试重新解析资源地址，获取有效链接继续下载 */
+  autoReparseOnUrlExpired: boolean
 
   /** 默认下载的资源 */
   defaultResourceTypes: DownloadResourceType[]

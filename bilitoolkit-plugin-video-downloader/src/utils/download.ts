@@ -31,6 +31,7 @@ import type {
 import type { FileNamer } from '@ybgnb/file-naming'
 import { getVideoPartSnapshot, getVideoInfoSnapshot } from '@/utils/convert'
 import type { AppSettings } from '@/types/settings'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 
 const createDownloadOption = <Data>(value: Data, label: string): DownloadOption<Data> => {
   return [value, label]
@@ -59,8 +60,6 @@ export const buildPartWithPlayData = async (
     bvid: video.bvid,
     cid: part.cid,
   }
-  const subtitleItems = await client.videoPlayer.getSubtitles(partQuery)
-  await sleepRandom(1000, 1111)
   const playData = await client.videoPlayer.getPlayUrl(partQuery, { signal })
 
   if (!playData.dash) return null
@@ -73,14 +72,13 @@ export const buildPartWithPlayData = async (
     ),
   ].sort((a, b) => b - a) as (AudioQuality | 0)[]
   supportAudioQualities = supportAudioQualities.length > 0 ? supportAudioQualities : [0]
-  let supportVideoQualities = [...new Set((playData.dash.video ?? []).map((a) => a.id))].sort((a, b) => b - a) as (
-    | VideoQuality
+  const videos = playData.dash.video ?? []
+  let supportVideoQualities = [...new Set(videos.map((a) => a.id))].sort((a, b) => b - a) as (VideoQuality | 0)[]
+  supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
+  let supportVideoCodecs = [...new Set(videos.map((a) => a.codecid as VideoCodecId))].sort((a, b) => b - a) as (
+    | VideoCodecId
     | 0
   )[]
-  supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
-  let supportVideoCodecs = [...new Set((playData.dash.video ?? []).map((a) => a.codecid as VideoCodecId))].sort(
-    (a, b) => b - a,
-  ) as (VideoCodecId | 0)[]
   supportVideoCodecs = supportVideoCodecs.length > 0 ? supportVideoCodecs : [0]
 
   const { preferredAudioQuality, preferredVideoQuality, preferredVideoCodec } = appSettings
@@ -106,20 +104,29 @@ export const buildPartWithPlayData = async (
     supportVideoQualities: supportVideoQualities.map((t) =>
       createDownloadOption(t, t === 0 ? '视频不存在' : videoQualityMap[t]),
     ),
+    supportVideoQualitiesMapCodec: Object.fromEntries(
+      supportVideoQualities.map((vq) => {
+        return [vq, videos.filter((v) => v.id === vq).map((v) => v.codecid)]
+      }),
+    ) as Record<VideoQuality | 0, (VideoCodecId | 0)[]>,
     selectedVideoQuality,
     supportVideoCodecs: supportVideoCodecs.map((t) =>
       createDownloadOption(t, t === 0 ? '视频不存在' : videoCodecIdMap[t]),
     ),
+    supportVideoCodecMapQuality: Object.fromEntries(
+      supportVideoCodecs.map((vc) => {
+        return [vc, videos.filter((v) => v.codecid === vc).map((v) => v.id)]
+      }),
+    ) as Record<VideoCodecId | 0, (VideoQuality | 0)[]>,
     selectedVideoCodecId,
-    playerSubtitleItems: subtitleItems,
   }
 }
 
 export const createDownloadTasks = async (
   {
+    user,
     appSettings,
     fileNamerSettings,
-    user,
   }: {
     user: UserInfoWithCookie
     appSettings: AppSettings
@@ -137,6 +144,7 @@ export const createDownloadTasks = async (
     userCookie: user.userCookie,
     settings: {
       autoMerge: appSettings.autoMerge,
+      autoReparseOnUrlExpired: appSettings.autoReparseOnUrlExpired,
     },
   }
 
@@ -170,8 +178,9 @@ export const createDownloadTasks = async (
         if (segments.length > 0 && partSubDir === undefined) {
           partSubDir = segments.slice(0, -1).join('/')
         }
+        const client = await createBiliClient(user)
         for (const resourceType of resourceTypes) {
-          const resourceData = buildDownloadResourceData(fileNamer, fileNamingData, resourceType, part)
+          const resourceData = await buildDownloadResourceData(client, fileNamer, fileNamingData, resourceType, part)
           if (resourceData) {
             if (Array.isArray(resourceData)) {
               for (const resourceItem of resourceData) {
@@ -182,6 +191,13 @@ export const createDownloadTasks = async (
             }
           }
         }
+
+        if (appSettings.autoRenameOnConflict) {
+          for (const ipcResource of ipcResources) {
+            ipcResource.fullFilename = await toolkitApi.file.getUniqueFileName(ipcResource.fullFilename, partSubDir)
+          }
+        }
+
         ipcParts.push({
           resources: ipcResources,
           snapshot: getVideoPartSnapshot(part.info),
@@ -209,12 +225,13 @@ export const createDownloadTasks = async (
   }
 }
 
-const buildDownloadResourceData = (
+const buildDownloadResourceData = async (
+  client: BiliClient,
   fileNamer: FileNamer<FileNamingData>,
   fileNamingData: FileNamingData,
   resourceType: DownloadResourceType,
-  { playUrlData, playerSubtitleItems }: SelectedPartData,
-): DownloadResource | DownloadResource[] | null => {
+  { playUrlData }: SelectedPartData,
+): Promise<DownloadResource | DownloadResource[] | null> => {
   const { segments } = parseFullFileName(fileNamingData, resourceType, fileNamer)
   const fullFilename = segments[segments.length - 1]
   const baseData: BaseDownloadResource = {
@@ -264,7 +281,14 @@ const buildDownloadResourceData = (
       const baseName = fullFilename.slice(0, fullFilename.lastIndexOf('.'))
 
       const subtitleList: DownloadResource[] = []
-      for (const subtitleItem of playerSubtitleItems) {
+
+      const partQuery = {
+        bvid: video.bvid,
+        cid: part.cid,
+      }
+      const subtitleItems = await client.videoPlayer.getSubtitles(partQuery)
+      await sleepRandom(1111, 2233)
+      for (const subtitleItem of subtitleItems) {
         const subtitleData: BaseDownloadResource<'subtitle'> = {
           type: resourceType,
           fullFilename: `${baseName}.${subtitleItem.lan}.json`,
