@@ -1,36 +1,21 @@
-export interface User {
-  mid: number
-  uname: string
-  face: string
+import type { DanmakuElem, UserCard } from '@ybgnb/bili-api'
+
+export interface DMItem
+  extends Pick<
+    DanmakuElem,
+    'content' | 'progress' | 'mode' | 'fontsize' | 'color' | 'ctime' | 'pool' | 'midHash' | 'idStr' | 'weight'
+  > {
+  cracked?: boolean
+  loading?: boolean
+  uids: number[]
+  users: Pick<UserCard, 'mid' | 'name' | 'face' | 'level'>[]
 }
 
-export interface UserRankItem extends User {
-  commentCount: number
-  time: number
-}
-
-export interface UserQuery {
-  name?: string
-  uid?: number
-}
-
-export interface StatsHistory {
-  id: number
-  top3Desc: string
-  time: number
-}
-
-export interface StatsHistoryItem extends UserRankItem {
-  id: number
-  historyId?: number
-}
-
-export interface StatsHistoryItemQuery {
-  mid?: number
-  historyId?: number
-}
-
-export interface Ranking {
-  list: Array<UserRankItem>
-  time: number
+export interface DMXml {
+  bvid: string
+  title: string
+  cid: number
+  page: number
+  part: string
+  items: DMItem[]
 }

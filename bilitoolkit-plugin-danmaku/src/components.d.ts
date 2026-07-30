@@ -12,11 +12,16 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    DanmakuSearchPage: typeof import('./components/DanmakuSearchPage.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
+    KeyValueTag: typeof import('./components/KeyValueTag.vue')['default']
+    QueryFormItem: typeof import('./components/QueryFormItem.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
@@ -27,11 +32,16 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const DanmakuSearchPage: typeof import('./components/DanmakuSearchPage.vue')['default']
+  const ElAlert: typeof import('element-plus/es')['ElAlert']
   const ElButton: typeof import('element-plus/es')['ElButton']
+  const ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
   const ElIcon: typeof import('element-plus/es')['ElIcon']
   const ElInput: typeof import('element-plus/es')['ElInput']
   const ElOption: typeof import('element-plus/es')['ElOption']
   const ElSelect: typeof import('element-plus/es')['ElSelect']
+  const KeyValueTag: typeof import('./components/KeyValueTag.vue')['default']
+  const QueryFormItem: typeof import('./components/QueryFormItem.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
 }

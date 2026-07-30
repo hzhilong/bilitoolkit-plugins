@@ -7,6 +7,8 @@ import 'bilitoolkit-ui/style.css'
 import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import { router } from '@/router'
+import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 if (import.meta.env.DEV) {
   import('element-plus/dist/index.css')
@@ -17,6 +19,10 @@ if (import.meta.env.DEV) {
 
 async function bootstrapApp() {
   const app = createApp(App)
+
+  app.use(ElementPlus, {
+    locale: zhCn,
+  })
 
   // 挂载到全局属性
   app.config.globalProperties.$toolkitApi = window.toolkitApi

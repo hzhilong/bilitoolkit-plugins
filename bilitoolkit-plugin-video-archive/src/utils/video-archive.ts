@@ -191,14 +191,13 @@ async function parseDownloadVideoPart(
     ),
   ].sort((a, b) => b - a) as (AudioQuality | 0)[]
   supportAudioQualities = supportAudioQualities.length > 0 ? supportAudioQualities : [0]
-  let supportVideoQualities = [...new Set((playData.dash!.video ?? []).map((a) => a.id))].sort((a, b) => b - a) as (
-    | VideoQuality
+  const videos = playData.dash!.video ?? []
+  let supportVideoQualities = [...new Set(videos.map((a) => a.id))].sort((a, b) => b - a) as (VideoQuality | 0)[]
+  supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
+  let supportVideoCodecs = [...new Set(videos.map((a) => a.codecid as VideoCodecId))].sort((a, b) => b - a) as (
+    | VideoCodecId
     | 0
   )[]
-  supportVideoQualities = supportVideoQualities.length > 0 ? supportVideoQualities : [0]
-  let supportVideoCodecs = [...new Set((playData.dash!.video ?? []).map((a) => a.codecid as VideoCodecId))].sort(
-    (a, b) => b - a,
-  ) as (VideoCodecId | 0)[]
   supportVideoCodecs = supportVideoCodecs.length > 0 ? supportVideoCodecs : [0]
 
   const selectedAudioQuality =
@@ -209,8 +208,20 @@ async function parseDownloadVideoPart(
     supportVideoQualities.find((q) => q <= preferredVideoQuality) ??
     supportVideoQualities?.[supportVideoQualities.length - 1] ??
     0
-  const selectedVideoCodecId =
+
+  let selectedVideoCodecId =
     supportVideoCodecs.find((q) => q <= preferredVideoCodec) ?? supportVideoCodecs?.[supportVideoCodecs.length - 1] ?? 0
+
+  const supportVideoQualitiesMapCodec = Object.fromEntries(
+    supportVideoQualities.map((vq) => {
+      return [vq, videos.filter((v) => v.id === vq).map((v) => v.codecid)]
+    }),
+  ) as Record<VideoQuality | 0, (VideoCodecId | 0)[]>
+
+  const codecList = supportVideoQualitiesMapCodec[selectedVideoQuality]
+  if (!codecList.includes(selectedVideoCodecId)) {
+    selectedVideoCodecId = codecList[0] ?? 0
+  }
 
   const resources: DownloadResource[] = []
 

@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-danmaku",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -44,7 +44,9 @@
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
     "bilitoolkit-ui": "workspace:^",
+    "dayjs": "^1.11.21",
     "element-plus": "^2.13.7",
+    "fast-xml-parser": "^5.10.1",
     "lodash-es": "^4.18.1",
     "pinia": "^3.0.3",
     "vue": "^3.5.34",

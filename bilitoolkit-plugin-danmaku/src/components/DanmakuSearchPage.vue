@@ -1,43 +1,59 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
-import { PluginPageContent, useSelectedUserStore, AppTooltip, useLoadingData } from 'bilitoolkit-ui'
-import { storeToRefs } from 'pinia'
+import { PluginPageContent, useSelectedUserStore, AppTooltip, useLoadingData, showWarning } from 'bilitoolkit-ui'
 import { RecycleScroller } from 'vue-virtual-scroller'
-import { type VideoPart, type DanmakuElem, type UserCard, parseVideoId } from '@ybgnb/bili-api'
-import { sleepRandom } from '@ybgnb/utils'
-import { formatDuration } from '@/utils/dm'
+import {
+  type VideoPart,
+  type DanmakuElem,
+  type UserCard,
+  parseVideoId,
+  type VideoId,
+  type VideoInfo,
+} from '@ybgnb/bili-api'
+import { sleepRandom, formatDuration } from '@ybgnb/utils'
 import { crackUidHash } from '@/utils/crack'
 import { Search, ArrowUp } from '@element-plus/icons-vue'
-import { client } from '@/common/client'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
+import type { DMItem } from '@/types'
+import QueryFormItem from '@/components/QueryFormItem.vue'
+import { createDMFile } from '@/utils/file'
 
-interface DMItem extends DanmakuElem {
-  cracked?: boolean
-  loading?: boolean
-  uids: number[]
-  users: UserCard[]
-}
+const props = defineProps<{
+  fetchDM: (videoPart: VideoPart, videoInfo: VideoInfo) => Promise<DanmakuElem[]>
+  alert?: string
+  beforeQueryPart?: (videoId: VideoId) => Promise<void>
+}>()
 
 const { loading, loadingData } = useLoadingData()
 const { loading: loadingTable, loadingData: loadingTableData } = useLoadingData()
 const videoUrl = ref('')
 const queryParams = ref<{ keyword?: string; uid?: number }>({})
+const videoId = ref<VideoId>()
+const videoInfo = ref<VideoInfo>()
 const videoPart = ref<VideoPart>()
 const parts = ref<VideoPart[]>([])
 const searched = ref<boolean>(false)
 let dmList: DMItem[] = []
 const filteredList = ref<DMItem[]>([])
+const listKey = ref(0)
 
-const { user } = storeToRefs(useSelectedUserStore())
-const assertLoggedIn = () => {
-  if (user.value == null) {
-    throw new Error('请先登录')
-  }
+const setTableData = (data: DMItem[]) => {
+  filteredList.value.splice(0, filteredList.value.length, ...data)
+  listKey.value++
 }
+
+const selectedUserStore = useSelectedUserStore()
+const { assertLoggedIn } = selectedUserStore
 
 const fetchParts = loadingData(async () => {
   assertLoggedIn()
-  const videoId = await parseVideoId(videoUrl.value)
-  parts.value = await client.videoInfo.getParts(videoId)
+  videoId.value = await parseVideoId(videoUrl.value)
+  videoInfo.value = await publicClient.videoInfo.getInfo(videoId.value)
+
+  if (props.beforeQueryPart) {
+    await props.beforeQueryPart(videoId.value)
+  }
+  parts.value = await publicClient.videoInfo.getParts(videoId.value)
   await sleepRandom(500, 777)
   videoPart.value = parts.value.length > 0 ? parts.value[0] : undefined
 })
@@ -47,12 +63,15 @@ const handleSearch = loadingData(async () => {
   searched.value = false
   cancelCrackAll()
   queryParams.value = {}
-  dmList = (await client.dm.fetchAll(videoPart.value!))
+  dmList = (await props.fetchDM(videoPart.value!, videoInfo.value!))
     .sort((a, b) => a.progress - b.progress)
     .map((dm) => ({ ...dm, uids: [], users: [] }))
-  filteredList.value.splice(0, filteredList.value.length, ...dmList)
+  if (dmList.length === 0) {
+    showWarning('弹幕为空')
+    return
+  }
+  setTableData(dmList)
   searched.value = true
-  console.log(`queryParams.value`, queryParams.value)
 })
 
 const formatUserLabel = (user: UserCard) => {
@@ -64,7 +83,7 @@ const crackUser = async (item: DMItem) => {
     item.loading = true
     const uids = crackUidHash(item.midHash)
     item.uids.splice(0, item.uids.length, ...uids)
-    const users = (await client.user.getUserCards(uids)).filter((u) => u != null && u.level > 1) as UserCard[]
+    const users = (await publicClient.user.getUserCards(uids)).filter((u) => u != null && u.level > 1) as UserCard[]
     await sleepRandom(1111, 2222)
     item.users.splice(0, item.users.length, ...users)
     item.cracked = true
@@ -82,7 +101,7 @@ const searchTableData = loadingTableData(async () => {
   const { keyword, uid } = queryParams.value
 
   if (!keyword && !uid) {
-    filteredList.value.splice(0, filteredList.value.length, ...dmList)
+    setTableData(dmList)
     return
   }
 
@@ -92,7 +111,7 @@ const searchTableData = loadingTableData(async () => {
     return true
   })
 
-  filteredList.value.splice(0, filteredList.value.length, ...matched)
+  setTableData(matched)
 })
 
 const crackingAll = ref(false)
@@ -118,7 +137,7 @@ const handleCrackAll = loadingTableData(async () => {
 
     const parseChunkUids = async () => {
       try {
-        const users = (await client.user.getUserCards(chunkUids, { signal })).filter(
+        const users = (await publicClient.user.getUserCards(chunkUids, { signal })).filter(
           (u) => u != null && u.level > 1,
         ) as UserCard[]
         await sleepRandom(1111, 2222)
@@ -132,14 +151,15 @@ const handleCrackAll = loadingTableData(async () => {
           dmItem.cracked = true
           dmItem.loading = false
         }
-        chunkUids.length = 0
-        chunkList.length = 0
       } catch (e) {
         for (const dmItem of chunkList) {
           dmItem.cracked = false
           dmItem.loading = false
         }
         throw e
+      } finally {
+        chunkUids.length = 0
+        chunkList.length = 0
       }
     }
 
@@ -162,6 +182,12 @@ const handleCrackAll = loadingTableData(async () => {
 })
 
 const isCollapseQuery = ref(false)
+
+const saveFile = async () => {
+  const { title, bvid } = videoInfo.value!
+  const { cid, part, page } = videoPart.value!
+  await createDMFile({ bvid, title, cid, part, page, items: filteredList.value })
+}
 </script>
 
 <template>
@@ -171,14 +197,21 @@ const isCollapseQuery = ref(false)
         <div class="query-form-wrapper">
           <div class="query-form">
             <div></div>
+            <el-alert v-if="alert" :title="alert" type="info" />
             <el-input v-model.trim="videoUrl" placeholder="请输入B站视频链接 / b23分享链接 / BV号 / av号">
               <template #prepend> 视频链接 </template>
               <template #append><el-button type="primary" :icon="Search" @click="fetchParts"></el-button></template>
             </el-input>
-            <el-select v-model="videoPart" v-if="parts.length > 0">
-              <template #prefix>视频分 P</template>
-              <el-option v-for="item in parts" :key="item.cid" :label="item.part" :value="item" />
-            </el-select>
+            <slot name="query-form"></slot>
+            <QueryFormItem v-if="parts.length > 0" prefix="视频分 P">
+              <el-select v-model="videoPart">
+                <el-option v-for="item in parts" :key="item.cid" :label="item.part" :value="item" />
+              </el-select>
+            </QueryFormItem>
+
+            <template v-if="videoPart && videoInfo">
+              <slot name="dm-query-form" :videoPart="videoPart" :videoInfo="videoInfo"></slot>
+            </template>
             <el-button v-if="videoPart" type="primary" @click="handleSearch">查询弹幕</el-button>
           </div>
         </div>
@@ -187,7 +220,7 @@ const isCollapseQuery = ref(false)
           <el-icon><ArrowUp /></el-icon>
         </div>
       </div>
-      <div v-if="dmList && dmList.length > 0" class="table-wrapper">
+      <div v-if="videoPart && dmList && dmList.length > 0" class="table-wrapper">
         <div class="hint">温馨提示：超过 10 位的用户 uid 无法解析</div>
         <div class="table-query">
           <div class="total-label">{{ `当前弹幕数量 ：${filteredList.length}` }}</div>
@@ -201,6 +234,7 @@ const isCollapseQuery = ref(false)
           <el-button type="primary" @click="handleCrackAll">{{
             crackingAll ? '取消解析' : '解析当前所有发送者'
           }}</el-button>
+          <el-button type="primary" @click="saveFile">保存当前弹幕为XML文件</el-button>
         </div>
         <div class="table-header">
           <div class="col index">序号</div>
@@ -211,6 +245,7 @@ const isCollapseQuery = ref(false)
         <div class="table-body-wrapper" v-loading="loadingTable">
           <RecycleScroller
             class="table-body"
+            :key="listKey"
             :items="filteredList"
             :item-size="(t: DMItem) => 26 * ((t.users ?? []).length || 1)"
             key-field="id"

@@ -5,7 +5,7 @@ import { ref } from 'vue'
 import type { UserCard } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
 import { crackUidHash } from '@/utils/crack'
-import { client } from '@/common/client'
+import { publicClient } from 'bilitoolkit-runtime/biliapi'
 
 const midHash = ref('')
 const users = ref<UserCard[]>([])
@@ -22,7 +22,7 @@ const formatUserLabel = (user: UserCard) => {
 const handleCrack = async () => {
   assertLoggedIn()
   const uids = crackUidHash(midHash.value, 10)
-  users.value = (await client.user.getUserCards(uids)).filter((u) => u != null && u.level > 1) as UserCard[]
+  users.value = (await publicClient.user.getUserCards(uids)).filter((u) => u != null && u.level > 1) as UserCard[]
 }
 const handleOpenSpace = (user: UserCard) => {
   assertLoggedIn()
