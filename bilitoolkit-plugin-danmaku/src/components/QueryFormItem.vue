@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   prefix: string
-  small: boolean
+  small?: boolean
 }>()
 </script>
 

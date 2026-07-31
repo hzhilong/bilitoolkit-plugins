@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useTemplateRef, ref, computed, onUnmounted, nextTick } from 'vue'
+import { useTemplateRef, ref, onUnmounted } from 'vue'
 import { parseDMFile, createDMFile } from '@/utils/file'
 import type { DMXml, DMItem } from '@/types'
 import { useLoadingData, AppTooltip, useSelectedUserStore, PluginPageContent } from 'bilitoolkit-ui'
-import { formatDuration, sleepRandom, formatTime } from '@ybgnb/utils'
+import { formatDuration, sleepRandom } from '@ybgnb/utils'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { UserCard } from '@ybgnb/bili-api'
@@ -168,10 +168,10 @@ const crackUser = async (item: DMItem) => {
     setTimeout(() => {}, 2000)
   }
 }
-const formatUserLabel = (user: UserCard) => {
+const formatUserLabel = (user: DMItem['users'][number]) => {
   return `${user.name}　${user.mid}　lv${user.level}`
 }
-const handleOpenSpace = (user: UserCard) => {
+const handleOpenSpace = (user: DMItem['users'][number]) => {
   assertLoggedIn()
   window.open(`https://space.bilibili.com/${user.mid}`)
 }

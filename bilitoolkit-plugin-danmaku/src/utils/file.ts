@@ -30,6 +30,7 @@ export async function createDMFile(dmXml: DMXml, newFile: boolean = true) {
       ]
       const users = JSON.stringify(item.users ?? [])
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dObj: any = {
         '@_p': attrs.join(','),
         '#text': item.content,
@@ -97,8 +98,10 @@ export async function parseDMFile(xmlStr: string): Promise<DMXml | null> {
     }
 
     const dList = i.d || []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dmItems = dList.map((d: any) => {
       const pStr = d['@_p'] || ''
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const parts = pStr.split(',').map((s: any) => s.trim())
       // 顺序必须与生成时一致：
       // progress/1000, mode, fontsize, color, ctime, pool, midHash, idStr, weight

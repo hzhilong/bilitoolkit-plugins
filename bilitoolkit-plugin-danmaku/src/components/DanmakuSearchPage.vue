@@ -74,7 +74,7 @@ const handleSearch = loadingData(async () => {
   searched.value = true
 })
 
-const formatUserLabel = (user: UserCard) => {
+const formatUserLabel = (user: DMItem['users'][number]) => {
   return `${user.name}　${user.mid}　lv${user.level}`
 }
 
@@ -92,7 +92,7 @@ const crackUser = async (item: DMItem) => {
     setTimeout(() => {}, 2000)
   }
 }
-const handleOpenSpace = (user: UserCard) => {
+const handleOpenSpace = (user: DMItem['users'][number]) => {
   assertLoggedIn()
   window.open(`https://space.bilibili.com/${user.mid}`)
 }
