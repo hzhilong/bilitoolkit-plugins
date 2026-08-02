@@ -7,6 +7,12 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     name: 'DeleteForwardView',
     component: () => import('../views/DeleteForwardView.vue'),
   },
+  {
+    title: '删除图文动态',
+    path: '/DeleteOpusView',
+    name: 'DeleteOpusView',
+    component: () => import('../views/DeleteOpusView.vue'),
+  },
 ]
 
 export const router = createRouter({
