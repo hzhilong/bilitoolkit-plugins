@@ -21,8 +21,4 @@ export class LoadStateRepo implements LoadStateStorage {
   async delete(oid: BiliCommentOId): Promise<void> {
     await db.loadState.delete(oid)
   }
-
-  async deleteAll(): Promise<void> {
-    await db.loadState.clear()
-  }
 }

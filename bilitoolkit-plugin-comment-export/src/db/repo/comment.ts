@@ -35,10 +35,6 @@ export class CommentRepo implements CommentStorage {
     await db.comment.delete(rpid)
   }
 
-  async deleteAll(): Promise<void> {
-    await db.comment.clear()
-  }
-
   async getCount(): Promise<number> {
     return db.comment.count()
   }
