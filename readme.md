@@ -14,4 +14,5 @@
 | [评论导出](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-comment-export)   | 导出评论，支持本地浏览和查询                         |
 | [动态删除](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-dynamic-delete)   | 可批量删除动态，包括转发、抽奖以及图文动态                  |
 | [批量取关](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-batch-unfollow)   | 批量取消关注用户，可选择关注分组进行操作                  |
+| [黑名单分享](https://github.com/hzhilong/bilitoolkit-plugins/blob/main/bilitoolkit-plugin-blacklist-share)   | 支持黑名单列表导出与导入，方便用户共享黑名单数据并批量拉黑                  |
 
