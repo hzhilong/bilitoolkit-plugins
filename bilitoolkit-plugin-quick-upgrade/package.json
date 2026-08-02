@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-quick-upgrade",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -45,8 +45,8 @@
     "bilitoolkit-runtime": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^22.16.5",
     "@vue/eslint-config-prettier": "^10.2.0",
+    "@types/node": "^22.16.5",
     "@vue/eslint-config-typescript": "^14.6.0",
     "eslint": "^9.31.0",
     "prettier": "3.6.2",
