@@ -26,7 +26,7 @@ export const parseContentTags = (data: ContentWithComment): [string, string][] =
     const text =
       dynamic.modules.module_dynamic.desc?.text ??
       dynamic.modules.module_dynamic.major?.article?.title ??
-      dynamic.modules.module_dynamic.major?.opus?.title ??
+      dynamic.modules.module_dynamic.major?.opus?.summary.text ??
       `${dynamic.basic.comment_id_str}`
     extraTags = [
       ['标题', truncateText(text, 10)],
