@@ -109,6 +109,7 @@ const handleDelete = async () => {
           <el-checkbox-group v-model="selectedTypes" style="width: 242px; padding-left: 14px">
             <el-checkbox
               v-for="type in dynamicTypeOptions"
+              :key="type"
               :label="DynamicTypeMap[type as DynamicType].description"
               :value="type"
             />

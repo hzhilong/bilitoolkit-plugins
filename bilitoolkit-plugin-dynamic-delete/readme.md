@@ -4,7 +4,7 @@
 
 [哔哩工具姬](https://github.com/hzhilong/bilitoolkit) 插件。
 
-可批量删除抽奖和转发的动态。
+可批量删除动态，包括转发、抽奖以及图文动态。
 
 ## 安装使用
 
