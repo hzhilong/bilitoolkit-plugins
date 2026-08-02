@@ -6,6 +6,7 @@ import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
 import { getVideoAid } from '../../utils/dynamic.js'
 import { dailyTaskStatusStore } from '../../stores/daily-status.js'
 import { dynamicStore } from '../../stores/dynamic.js'
+import { av2bv } from '@ybgnb/bili-api'
 
 export class CoinTask extends UpgradeTask {
   toggleField: TaskConfigField = taskConfigSchemaMap.coin
@@ -45,7 +46,8 @@ export class CoinTask extends UpgradeTask {
       while (successCount < needCoins && failedCount < 5) {
         // 从动态获取视频aid，通过热门榜单补充
         logger.info(`${logPrefix(this)} 从动态/热门榜单获取视频中`)
-        const { aid, index, bvid } = await getVideoAid(biliClient, dynamicList, dynamicIndex, signal)
+        const { aid, index } = await getVideoAid(biliClient, dynamicList, dynamicIndex, signal)
+        const bvid = av2bv(aid)
         dynamicIndex = index + 1
 
         await sleepRandom(600, 1000)

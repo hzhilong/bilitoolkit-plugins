@@ -5,13 +5,15 @@ import type { UpgradeTaskResult, UpgradeTaskContext } from '../../types/index.js
 import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
 import { getVideoAid } from '../../utils/dynamic.js'
 import { dynamicStore } from '../../stores/dynamic.js'
+import { av2bv } from '@ybgnb/bili-api'
 
 export class ShareTask extends UpgradeTask {
   toggleField: TaskConfigField = taskConfigSchemaMap.share
 
   async run({ signal, biliClient, logger, logPrefix }: UpgradeTaskContext): Promise<UpgradeTaskResult> {
     try {
-      const { aid, bvid } = await getVideoAid(biliClient, await dynamicStore.get(biliClient, signal), undefined, signal)
+      const { aid } = await getVideoAid(biliClient, await dynamicStore.get(biliClient, signal), undefined, signal)
+      const bvid = av2bv(aid)
       logger.info(`${logPrefix(this)} 即将分享视频 [${bvid}]`)
       await sleepRandom(600, 1000)
       await biliClient.videoAction.share({ aid: aid }, { signal })

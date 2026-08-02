@@ -10,7 +10,6 @@ export async function getVideoAid(
   const result = await getVideoAids(client, dynamicList, 1, startIndex, signal)
   return {
     aid: result.aids[0],
-    bvid: result.bvids[0],
     index: result.index,
   }
 }
@@ -24,24 +23,20 @@ export async function getVideoAids(
 ): Promise<{
   index: number
   aids: number[]
-  bvids: string[]
 }> {
   let index = startIndex
   const aids: Array<number> = []
-  const bvids: Array<string> = []
-  if (count < 1) return { index, aids, bvids }
+  if (count < 1) return { index, aids }
 
   if (dynamicList) {
     for (; index < dynamicList.length; index++) {
       const dynamic = dynamicList[index]
       if (dynamic.type === DynamicTypeMap.DYNAMIC_TYPE_AV.type) {
         const aid = dynamic.modules.module_dynamic.major?.archive?.aid
-        const bvid = dynamic.modules.module_dynamic.major?.archive?.bvid
-        if (aid && bvid) {
+        if (aid) {
           aids.push(Number(aid))
-          bvids.push(bvid)
           if (aids.length >= count) {
-            return { index, aids, bvids }
+            return { index, aids }
           }
         }
       }
@@ -53,8 +48,7 @@ export async function getVideoAids(
     if (!popularList || popularList.length < count - aids.length) throw new Error('获取热门视频失败')
 
     aids.push(...popularList.slice(0, count - aids.length).map((v) => v.aid))
-    bvids.push(...popularList.slice(0, count - aids.length).map((v) => v.bvid))
   }
 
-  return { index, aids, bvids }
+  return { index, aids }
 }
