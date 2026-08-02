@@ -5,7 +5,7 @@ import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
 import type { ExecuteContext } from '@/core/types/execute'
 import { delCommentByMsg } from '@/core/utils/comment'
-import { getErrorMessage, sleepRandom, isCanceledError } from '@ybgnb/utils'
+import { getErrorMessage, sleepRandom, isCanceledError, createAbortError } from '@ybgnb/utils'
 import { apiSleep } from '@/core/utils/sleep'
 
 export class CommentModule extends DataModule {
@@ -90,7 +90,7 @@ export class CommentModule extends DataModule {
       } catch (e) {
         onProgress?.(progress, `删除关联评论失败  [${native_uri}] ${getErrorMessage(e)}`)
         if (isCanceledError(e)) {
-          throw e
+          throw createAbortError()
         }
       }
     }
