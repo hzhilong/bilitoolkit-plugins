@@ -18,7 +18,7 @@ export const parseContentTags = (data: ContentWithComment): [string, string][] =
     const video = content as VideoInfo
     extraTags = [
       ['bvid', video.bvid],
-      ['标题', video.bvid],
+      ['标题', truncateText(video.title, 10)],
       ['作者', video.owner.name],
     ]
   } else if (type === 17) {
