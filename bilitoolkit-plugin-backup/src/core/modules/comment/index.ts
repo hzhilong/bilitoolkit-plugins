@@ -39,7 +39,13 @@ export class CommentModule extends DataModule {
   async clearData(context: ExecuteContext): Promise<string | void> {
     const { client, signal, onProgress } = context
     onProgress?.(0, '正在获取被回复的通知消息')
-    const replyList = await client.message.fetchReplyAll(undefined, undefined, { signal })
+    const replyList = await client.message.fetchReplyAll(
+      undefined,
+      async (currList) => {
+        onProgress?.(0, `已获取 ${currList.length} 条被回复的通知消息`)
+      },
+      { signal },
+    )
     onProgress?.(0, `已获取 ${replyList.length} 条被回复的通知消息`)
 
     const deletedCache = new Set<string>()
@@ -63,11 +69,20 @@ export class CommentModule extends DataModule {
         if (delResult) await apiSleep(signal)
       } catch (e) {
         onProgress?.(progress, `删除关联评论失败  [${title}] ${getErrorMessage(e)}`)
+        if (isCanceledError(e)) {
+          throw createAbortError()
+        }
       }
     }
 
     onProgress?.(0, '正在获取被点赞的通知消息')
-    const likeList = await client.message.fetchLikeAll(undefined, undefined, { signal })
+    const likeList = await client.message.fetchLikeAll(
+      undefined,
+      async (currList) => {
+        onProgress?.(0, `已获取 ${currList.length} 条被点赞的通知消息`)
+      },
+      { signal },
+    )
     onProgress?.(0, `已获取 ${likeList.length} 条被点赞的通知消息`)
     for (let i = 0; i < likeList.length; i++) {
       const msg = likeList[i]

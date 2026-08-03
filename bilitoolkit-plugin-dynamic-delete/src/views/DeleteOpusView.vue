@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref, useTemplateRef, onUnmounted } from 'vue'
 import {
   PluginPageContent,
   useSelectedUserStore,
@@ -99,6 +99,7 @@ const handleDelete = async () => {
     isDeleting.value = false
   }
 }
+onUnmounted(() => abortController?.abort())
 </script>
 
 <template>
