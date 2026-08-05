@@ -24,9 +24,9 @@ import { defaultSanitizePathSegment } from '@ybgnb/file-naming'
 
 export const handleVideoArchive = async (context: ArchiveTaskContext): Promise<ArchiveTaskResult | null> => {
   const nowDate = new Date()
-  const { logger, logPrefix, user, biliClient, signal, api, targetUid } = context
+  const { logger, logPrefix, user, biliClient, signal, api, targetUid, taskConfigCreatedAt } = context
 
-  const lastTime = await lastQueryTimeRepo.get(targetUid)
+  const lastTime = (await lastQueryTimeRepo.get(targetUid)) ?? taskConfigCreatedAt
   let destUserInfo: ArchiveTaskResult['user'] | null = null
 
   try {

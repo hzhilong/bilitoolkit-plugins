@@ -29,6 +29,7 @@ export interface ArchiveTaskContext {
   biliClient: BiliClient
   signal: AbortSignal | undefined
   api: TaskPluginToolkitApi
+  taskConfigCreatedAt?: number
 }
 
 /**

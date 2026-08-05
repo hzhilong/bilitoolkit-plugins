@@ -8,7 +8,7 @@ import { parsePositiveInteger } from '../utils/parse.js'
 
 export async function runByUser(
   user: UserInfoWithCookie,
-  { config, signal, logger, api }: TaskContext<Omit<InferConfig<MyTaskConfigFields>, 'user'>>,
+  { config, signal, logger, api, taskConfigCreatedAt }: TaskContext<Omit<InferConfig<MyTaskConfigFields>, 'user'>>,
 ): Promise<ArchiveTaskResult | null> {
   if (!config) throw new Error('缺少配置')
   if (config.uid == null) throw new Error('uid 配置无效')
@@ -38,5 +38,6 @@ export async function runByUser(
     biliClient,
     signal,
     api,
+    taskConfigCreatedAt,
   })
 }
