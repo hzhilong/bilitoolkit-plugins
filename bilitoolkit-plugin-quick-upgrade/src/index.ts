@@ -18,7 +18,7 @@ const plugin: TaskPlugin<MyTaskConfigFields> = {
     return {
       success: true,
       message: '任务执行完成',
-      details: `<div style="display: flex;gap: 30px;">${detailsHtml.join('\n')}</div>`,
+      details: `<div style="display: flex;gap: 30px;align-items: flex-start;">${detailsHtml.join('\n')}</div>`,
     }
   },
 }
