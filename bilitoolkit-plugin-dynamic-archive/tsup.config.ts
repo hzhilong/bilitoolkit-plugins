@@ -28,7 +28,7 @@ export default defineConfig({
     const manifest = {
       taskSchedule,
       taskConfigSchema,
-      alert: '工具姬 0.1.1 以下版本的，创建该插件任务后建议手动执行一次',
+      alert: '【工具姬】需 0.1.1 及以上版本才可正常运行该插件（旧版升级上来的请重新登录用户）',
     } as TaskPluginMeta
     await writeFile('dist/plugin-meta.json', JSON.stringify(manifest, null, 2))
   },
