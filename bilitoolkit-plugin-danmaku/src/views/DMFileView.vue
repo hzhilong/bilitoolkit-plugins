@@ -50,8 +50,8 @@ const handleFileChange = (event: Event) => {
 const dmListKey = ref(0)
 const filteredList = ref<DMItem[]>([])
 const setTableData = (data: DMItem[]) => {
+  filteredList.value = data
   dmListKey.value++
-  filteredList.value.splice(0, filteredList.value.length, ...data)
 }
 const queryParams = ref<{
   keyword?: string

@@ -38,7 +38,7 @@ const filteredList = ref<DMItem[]>([])
 const listKey = ref(0)
 
 const setTableData = (data: DMItem[]) => {
-  filteredList.value.splice(0, filteredList.value.length, ...data)
+  filteredList.value = data
   listKey.value++
 }
 
