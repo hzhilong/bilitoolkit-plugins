@@ -31,6 +31,8 @@ export const defaultAppSettings: AppSettings = {
   clearMaxFailures: 0,
   avoidRiskControl: true,
   checkExistingData: true,
+  businessRequestIntervalMinMs: 1333,
+  businessRequestIntervalMaxMs: 2333,
 }
 
 // 备选

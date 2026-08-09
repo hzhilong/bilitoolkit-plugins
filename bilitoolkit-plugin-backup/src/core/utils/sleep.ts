@@ -1,5 +1,11 @@
 import { sleepRandom } from '@ybgnb/utils'
+import { useAppSettingsStore } from '@/stores/app-settings'
 
 export const apiSleep = async (abortSignal?: AbortSignal) => {
-  await sleepRandom(1111, 1666, abortSignal)
+  const settings = useAppSettingsStore().appSettings
+  await sleepRandom(
+    settings.businessRequestIntervalMinMs ?? 1333,
+    settings.businessRequestIntervalMaxMs ?? 2233,
+    abortSignal,
+  )
 }
