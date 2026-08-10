@@ -4,7 +4,7 @@
 
 [哔哩工具姬](https://github.com/hzhilong/bilitoolkit) 插件。
 
-自动下载收藏夹中所有视频。
+自动下载收藏夹中的所有视频。
 
 ## 安装使用
 

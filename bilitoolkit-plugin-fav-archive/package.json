@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
-  "description": "自动下载收藏夹中所有视频",
+  "description": "自动下载收藏夹中的所有视频",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
