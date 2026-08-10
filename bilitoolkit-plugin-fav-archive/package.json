@@ -1,0 +1,58 @@
+{
+  "name": "bilitoolkit-plugin-fav-archive",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "description": "自动下载收藏夹中所有视频",
+  "author": "hzhilong",
+  "keywords": [
+    "BiliToolkit",
+    "哔哩工具姬",
+    "bilitoolkit-plugin",
+    "bilitoolkit-plugin:name:收藏夹存档",
+    "bilitoolkit-plugin:type:task"
+  ],
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins",
+    "directory": "bilitoolkit-plugin-fav-archive"
+  },
+  "bugs": {
+    "url": "https://github.com/hzhilong/bilitoolkit-plugins/issues"
+  },
+  "homepage": "https://github.com/hzhilong/bilitoolkit-plugins/tree/main/bilitoolkit-plugin-fav-archive#readme",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "check": "tsc -p tsconfig.dev.json --noEmit && eslint .",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/",
+    "dev": "chcp 65001 && vite",
+    "build": "tsup",
+    "npm login": "npm login",
+    "pnpm publish": "pnpm publish --access public"
+  },
+  "dependencies": {
+    "@ybgnb/bili-api": "workspace:^",
+    "@ybgnb/utils": "^0.3.3",
+    "bilitoolkit-runtime": "workspace:^",
+    "bilitoolkit-types": "workspace:^",
+    "lodash-es": "^4.18.1",
+    "@ybgnb/file-naming": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "eslint": "^9.31.0",
+    "prettier": "3.6.2",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.2"
+  }
+}
