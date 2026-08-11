@@ -34,7 +34,8 @@ const handleDelete = async () => {
   try {
     assertLoggedIn()
 
-    await showConfirm('确认删除吗')
+    await showConfirm('确定删除所选类型的所有动态吗？')
+    await showConfirm('确定清空吗')
     isDeleting.value = true
     let successCount = 0
     abortController = new AbortController()

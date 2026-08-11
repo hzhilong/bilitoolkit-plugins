@@ -50,8 +50,8 @@ const handleDelete = async () => {
       return
     }
 
-    await showConfirm('确认删除所选类型的所有动态吗？')
-    await showConfirm('确定吗')
+    await showConfirm('确定删除所选类型的所有动态吗？')
+    await showConfirm('确定清空吗')
     isDeleting.value = true
     let successCount = 0
     abortController = new AbortController()
@@ -122,6 +122,7 @@ onUnmounted(() => abortController?.abort())
         </QueryFormItem>
         <el-button type="primary" @click="handleDelete">{{ isDeleting ? '停止删除动态' : '删除所有动态' }}</el-button>
       </div>
+      <el-alert description="请注意，发布的部分纯文字动态也会被B站认定为图文动态"></el-alert>
       <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>
     </div>
   </PluginPageContent>
