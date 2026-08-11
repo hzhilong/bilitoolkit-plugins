@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, onUnmounted } from 'vue'
-import { PluginPageContent, useSelectedUserStore, LogPrint } from 'bilitoolkit-ui'
+import { PluginPageContent, useSelectedUserStore, LogPrint, showConfirm } from 'bilitoolkit-ui'
 import { getErrorMessage } from '@ybgnb/utils'
 import { BiliClient } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
@@ -29,6 +29,7 @@ const handleStart = async () => {
 
   try {
     assertLoggedIn()
+    await showConfirm('确定清空评论吗')
     loading.value = true
     abortController = new AbortController()
     const client = new BiliClient({
