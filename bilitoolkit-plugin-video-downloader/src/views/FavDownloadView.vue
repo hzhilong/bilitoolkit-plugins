@@ -84,7 +84,7 @@ const fetchVideos = async (url: string) => {
       for (let j = 0; j < mediaCount; j++) {
         const media = medias[j]
 
-        loading(`${logPrefix}[${i + 1}/${mediaCount}] 正在获取视频...`)
+        loading(`${logPrefix}[${j + 1}/${mediaCount}] 正在获取视频...`)
         try {
           const videoInfo = await client.videoInfo.getInfo({ aid: media.id }, { signal })
           videos.push(videoInfo)
