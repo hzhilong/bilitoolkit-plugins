@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
-import { PluginPageContent, useSelectedUserStore, LogPrint, QueryFormItem } from 'bilitoolkit-ui'
+import { PluginPageContent, useSelectedUserStore, LogPrint, QueryFormItem, showConfirm } from 'bilitoolkit-ui'
 import { getErrorMessage } from '@ybgnb/utils'
 import { BiliClient } from '@ybgnb/bili-api'
 import { getFollowTag, getFollowList, batchUnfollow } from '@/utils/follow'
 import { storeToRefs } from 'pinia'
 
-let userStore = useSelectedUserStore()
+const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
 const { user } = storeToRefs(userStore)
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
@@ -33,6 +33,7 @@ const handleStart = async () => {
     const logger = (msg: string) => {
       addLog(msg)
     }
+    await showConfirm(`确定一键取关该分组内最多 ${batchSize.value} 个用户吗？`)
     const list = await getFollowList(tags, {
       client,
       maxSize: batchSize.value,
