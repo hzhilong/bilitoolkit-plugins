@@ -1,6 +1,6 @@
 {
-  "name": "bilitoolkit-plugin-fav-archive",
-  "version": "0.0.1",
+  "name": "bilitoolkit-plugin-favorites-archive",
+  "version": "0.0.2",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",

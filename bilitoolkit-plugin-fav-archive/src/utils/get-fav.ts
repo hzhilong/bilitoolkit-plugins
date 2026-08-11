@@ -83,7 +83,7 @@ export async function getFavList(
     let filteredList = reversedList.filter((item) => {
       if (!prevQueryFavTime) return true
       if (item.fav_time > prevQueryFavTime) return true
-      if (item.fav_time === prevQueryFavTime && item.ctime > prevQueryCtime) return true
+      if (item.fav_time === prevQueryFavTime && item.ctime < prevQueryCtime) return true
       if (item.fav_time === prevQueryFavTime && item.ctime === prevQueryCtime) {
         return !downloadAids.has(item.id)
       }
