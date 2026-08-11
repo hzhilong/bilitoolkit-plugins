@@ -116,6 +116,17 @@ const getTitle = (_list: DownloadVideoData[]) => {
     return `【收藏夹】${title.slice(0, 40)}${folders.value.length > 3 ? '等' : ''}`
   }
 }
+const getSubDir = () => {
+  if (folders.value.length === 1) {
+    return `【收藏夹】${folders.value[0].title}`
+  } else {
+    const title = folders.value
+      .slice(0, 3)
+      .map((f) => f.title)
+      .join(', ')
+    return `【收藏夹】${title.slice(0, 40)}${folders.value.length > 3 ? '等' : ''}`
+  }
+}
 </script>
 
 <template>
@@ -123,6 +134,7 @@ const getTitle = (_list: DownloadVideoData[]) => {
     placeholder="请输入用户链接 / b23分享链接 / 用户UID"
     :fetchVideos="fetchVideos"
     :getTitle="getTitle"
+    :getSubDir="getSubDir"
   ></DownloadView>
 </template>
 

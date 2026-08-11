@@ -15,6 +15,7 @@ const props = defineProps<{
   placeholder: string
   fetchVideos: (url: string) => Promise<VideoInfo[]>
   getTitle: (list: DownloadVideoData[]) => string
+  getSubDir?: () => string
 }>()
 
 const url = ref('')
@@ -41,6 +42,7 @@ const handleSubmit = async (list: DownloadVideoData[]) => {
       },
       list,
       props.getTitle(list),
+      props.getSubDir?.(),
     )
   } finally {
     loadingDialog.close()

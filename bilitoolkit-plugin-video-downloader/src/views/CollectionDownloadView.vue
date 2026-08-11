@@ -35,6 +35,9 @@ const fetchVideos = async (url: string) => {
 const getTitle = (_list: DownloadVideoData[]) => {
   return `【合集】${collection.value!.title}`
 }
+const getSubDir = () => {
+  return `【合集】${collection.value!.title}`
+}
 </script>
 
 <template>
@@ -42,6 +45,7 @@ const getTitle = (_list: DownloadVideoData[]) => {
     placeholder="请输入存在于合集的B站视频链接 / b23分享链接 / BV号 / av号"
     :fetchVideos="fetchVideos"
     :getTitle="getTitle"
+    :getSubDir="getSubDir"
   ></DownloadView>
 </template>
 

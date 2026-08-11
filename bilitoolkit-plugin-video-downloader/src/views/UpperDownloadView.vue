@@ -106,6 +106,10 @@ const fetchVideos = async (url: string) => {
 const getTitle = (_list: DownloadVideoData[]) => {
   return title.value ?? `${getFormattedDateTime()}`
 }
+
+const getSubDir = () => {
+  return title.value ?? `${getFormattedDateTime()}`
+}
 </script>
 
 <template>
@@ -113,6 +117,7 @@ const getTitle = (_list: DownloadVideoData[]) => {
     placeholder="请输入用户链接 / b23分享链接 / 用户UID"
     :fetchVideos="fetchVideos"
     :getTitle="getTitle"
+    :getSubDir="getSubDir"
   ></DownloadView>
 </template>
 

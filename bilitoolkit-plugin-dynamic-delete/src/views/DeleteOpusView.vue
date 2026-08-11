@@ -50,7 +50,8 @@ const handleDelete = async () => {
       return
     }
 
-    await showConfirm('确认删除所选动态吗？')
+    await showConfirm('确认删除所选类型的所有动态吗？')
+    await showConfirm('确定吗')
     isDeleting.value = true
     let successCount = 0
     abortController = new AbortController()

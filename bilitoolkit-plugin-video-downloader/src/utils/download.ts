@@ -148,6 +148,7 @@ export const createDownloadTasks = async (
   },
   list: DownloadVideoData[],
   title: string,
+  subDir?: string,
 ) => {
   const fileNamer = createFileNamer(fileNamerSettings)
 
@@ -187,7 +188,7 @@ export const createDownloadTasks = async (
         }
 
         const ipcResources: DownloadResource[] = []
-        let partSubDir: undefined | string = undefined
+        let partSubDir: undefined | string = subDir
         const { segments } = parseFullFileName(fileNamingData, 'video', fileNamer)
         if (segments.length > 0 && partSubDir === undefined) {
           partSubDir = segments.slice(0, -1).join('/')
