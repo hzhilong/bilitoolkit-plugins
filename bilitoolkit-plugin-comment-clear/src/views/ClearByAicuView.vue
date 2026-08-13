@@ -71,7 +71,7 @@ const handleStart = async () => {
       client,
       logger,
       signal,
-      uid: 498707198,
+      uid: user.value!.mid,
     })
     virtualSelectDialogVisible.value = true
   } catch (e) {
