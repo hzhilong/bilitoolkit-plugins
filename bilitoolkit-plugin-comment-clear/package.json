@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-comment-clear",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -10,7 +10,7 @@
     "BiliToolkit",
     "哔哩工具姬",
     "bilitoolkit-plugin",
-    "bilitoolkit-plugin:name:评论清空",
+    "bilitoolkit-plugin:name:评论删除",
     "bilitoolkit-plugin:type:ui"
   ],
   "files": [

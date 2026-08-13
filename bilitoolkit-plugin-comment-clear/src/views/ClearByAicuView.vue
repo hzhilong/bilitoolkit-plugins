@@ -1,15 +1,38 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, onUnmounted } from 'vue'
-import { PluginPageContent, useSelectedUserStore, LogPrint, showConfirm } from 'bilitoolkit-ui'
+import {
+  PluginPageContent,
+  useSelectedUserStore,
+  LogPrint,
+  VirtualSelectDialog,
+  type VirtualSelectDialogProps,
+  AppTooltip,
+} from 'bilitoolkit-ui'
 import { getErrorMessage } from '@ybgnb/utils'
 import { BiliClient } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
-import { clearCommentsByAicu } from '@/utils/comment'
+import { fetchCommentsByAicu } from '@/utils/aicu'
+import { deleteComments } from '@/utils/delete-comment'
+import type { CommentMeta } from '@/types'
+import { AppError } from 'bilitoolkit-types'
+import { handleCopyComment, handleOpenComment } from '@/utils/action'
 
 const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
 const { user } = storeToRefs(userStore)
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
+const virtualSelectDialogProps = ref<VirtualSelectDialogProps<CommentMeta, 'rpid'>>({
+  title: '请选择要删除的评论',
+  options: [],
+  defaultSelectedIds: [],
+  getDataLabel: (item: CommentMeta) => item.title,
+  idKey: 'rpid',
+  multiple: true,
+  canSelectAll: true,
+  itemHeight: 28,
+  itemWidth: 700,
+})
+const virtualSelectDialogVisible = ref<boolean>(false)
 
 const addLog = (msg: string) => {
   loggerRef.value?.addLog(msg)
@@ -23,15 +46,18 @@ let abortController: AbortController | null = null
 const handleStart = async () => {
   if (loading.value) {
     abortController?.abort()
+    abortController = null
     loading.value = false
+    virtualSelectDialogProps.value.options = []
+    virtualSelectDialogVisible.value = false
     return
   }
 
   try {
     assertLoggedIn()
-    await showConfirm('确定清空评论吗')
     loading.value = true
     abortController = new AbortController()
+    const signal = abortController.signal
     const client = new BiliClient({
       context: {
         userCookie: user.value!.userCookie,
@@ -41,20 +67,60 @@ const handleStart = async () => {
       addLog(msg)
     }
 
-    await clearCommentsByAicu({ client, logger, signal: abortController.signal, uid: user.value!.mid })
+    virtualSelectDialogProps.value.options = await fetchCommentsByAicu({
+      client,
+      logger,
+      signal,
+      uid: user.value!.mid,
+    })
+    virtualSelectDialogVisible.value = true
   } catch (e) {
     addLog(getErrorMessage(e))
   } finally {
+    abortController?.abort()
+    abortController = null
     loading.value = false
   }
 }
 
 onUnmounted(() => abortController?.abort())
+
+const handleDelete = async (list: CommentMeta[]) => {
+  try {
+    if (!list || list.length === 0) throw new AppError('未选择数据')
+
+    loading.value = true
+    abortController = new AbortController()
+    const signal = abortController.signal
+    const client = new BiliClient({
+      context: {
+        userCookie: user.value!.userCookie,
+      },
+    })
+    const logger = (msg: string) => {
+      addLog(msg)
+    }
+    await deleteComments(
+      {
+        client,
+        logger,
+        signal,
+      },
+      list,
+    )
+  } catch (e) {
+    addLog(getErrorMessage(e))
+  } finally {
+    abortController?.abort()
+    abortController = null
+    loading.value = false
+  }
+}
 </script>
 
 <template>
-  <PluginPageContent
-    ><div class="page-content">
+  <PluginPageContent>
+    <div class="page-content">
       <el-alert
         show-icon
         title="通过查询 Aicu 并删除自己的所有评论"
@@ -62,11 +128,21 @@ onUnmounted(() => abortController?.abort())
         :closable="false"
       />
       <div class="actions">
-        <el-button @click="handleStart">{{ loading ? '停止删除' : '开始删除' }}</el-button>
+        <el-button @click="handleStart">{{ loading ? '停止操作' : '查询所有评论' }}</el-button>
         <el-button @click="handleClearLog">清空日志</el-button>
       </div>
-      <LogPrint ref="loggerRef" class="log-print-box"></LogPrint></div
-  ></PluginPageContent>
+      <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>
+    </div>
+    <VirtualSelectDialog v-bind="virtualSelectDialogProps" v-model="virtualSelectDialogVisible" @confirm="handleDelete">
+      <template #item-label="{ item }: { item: CommentMeta }">
+        <div class="comment-item">
+          <AppTooltip class="comment-item-title" :content="item.title" />
+          <el-button link type="primary" @click.stop="handleCopyComment(item)">复制链接</el-button>
+          <el-button link type="primary" @click.stop="handleOpenComment(item)">打开</el-button>
+        </div>
+      </template>
+    </VirtualSelectDialog>
+  </PluginPageContent>
 </template>
 
 <style scoped lang="scss">

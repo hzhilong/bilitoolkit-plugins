@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "main": "index.html",
-  "description": "可一键清空动态，包括转发、抽奖以及图文动态",
+  "description": "可批量删除动态，包括转发、抽奖以及图文动态",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
