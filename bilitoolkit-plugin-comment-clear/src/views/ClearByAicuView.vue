@@ -71,7 +71,7 @@ const handleStart = async () => {
       client,
       logger,
       signal,
-      uid: user.value!.mid,
+      uid: 498707198,
     })
     virtualSelectDialogVisible.value = true
   } catch (e) {
@@ -166,6 +166,17 @@ const handleDelete = async (list: CommentMeta[]) => {
     width: 100%;
     flex: 1;
     min-height: 0;
+  }
+}
+.comment-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+
+  .comment-item-title {
+    flex: 1;
+    min-width: 0;
   }
 }
 </style>
