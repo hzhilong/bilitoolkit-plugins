@@ -4,16 +4,16 @@ import {
   PluginPageContent,
   useSelectedUserStore,
   LogPrint,
-  showConfirm,
   QueryFormItem,
   useSelectData,
   showError,
 } from 'bilitoolkit-ui'
 import { storeToRefs } from 'pinia'
 import { publicClient } from 'bilitoolkit-runtime/biliapi'
-import type { OnPageFetched, Dynamic, DynamicType } from '@ybgnb/bili-api'
+import type { DynamicType } from '@ybgnb/bili-api'
 import { DynamicTypeMap } from '@ybgnb/bili-api'
-import { sleepRandom, getErrorMessage, inArray } from '@ybgnb/utils'
+import { inArray, getErrorMessage } from '@ybgnb/utils'
+import { deleteFilterDynamics } from '@/utils/dynamic'
 
 const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
@@ -21,7 +21,10 @@ const { user } = storeToRefs(userStore)
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
 
 const dynamicTypeOptions: DynamicType[] = [DynamicTypeMap.DYNAMIC_TYPE_WORD.type, DynamicTypeMap.DYNAMIC_TYPE_DRAW.type]
-const { selectedIds: selectedTypes } = useSelectData(dynamicTypeOptions, (type: DynamicType) => type)
+const { selectedIds: selectedTypes } = useSelectData(dynamicTypeOptions, (type: DynamicType) => type, [
+  DynamicTypeMap.DYNAMIC_TYPE_WORD.type,
+  DynamicTypeMap.DYNAMIC_TYPE_DRAW.type,
+])
 
 const keyword = ref<string>()
 const isDeleting = ref(false)
@@ -29,11 +32,6 @@ let abortController: AbortController | null = null
 
 const addLog = (msg: string) => {
   loggerRef.value?.addLog(msg)
-}
-
-function truncateText(text: string, maxLength: number, placeholder: string = '...'): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength) + placeholder
 }
 
 const handleDelete = async () => {
@@ -46,55 +44,47 @@ const handleDelete = async () => {
     assertLoggedIn()
 
     if (selectedTypes.value.length == 0) {
-      showError('请选择要删除的动态类型')
+      showError('请选择要查询的动态类型')
       return
     }
-
-    await showConfirm('确定删除所选类型的所有动态吗？')
-    await showConfirm('确定清空吗')
     isDeleting.value = true
-    let successCount = 0
     abortController = new AbortController()
-    const bizOptions = {
-      signal: abortController.signal,
-    }
-    addLog(`正在获取动态`)
-    const onPageFetched: OnPageFetched<Dynamic> = async (currList: Dynamic[], _list: Dynamic[]) => {
-      if (currList == null || currList.length === 0) return false
 
-      addLog(`已获取 ${currList.length} 条动态`)
-      for (const dynamic of currList) {
-        if (bizOptions.signal.aborted) return false
+    await deleteFilterDynamics(
+      {
+        client: publicClient,
+        addLog: addLog,
+        signal: abortController.signal,
+        currUid: user.value!.mid!,
+      },
+      (dynamic) => {
+        if (!inArray(dynamic.type, selectedTypes.value)) return false
 
-        if (!inArray(dynamic.type, selectedTypes.value)) continue
+        const opus = dynamic.modules.module_dynamic.major?.opus
+        if (!opus) return false
 
-        const dynamicContent = dynamic.modules.module_dynamic.major?.opus?.summary.text ?? ''
-        const title = dynamicContent || dynamic.id_str
-
+        const {
+          title,
+          summary: { text },
+        } = opus
         const keywordText = keyword.value?.trim() ?? ''
 
-        if (keywordText.length === 0 || dynamicContent.includes(keywordText)) {
-          try {
-            await publicClient.spaceDynamic.deleteDynamic(dynamic.id_str, bizOptions)
-          } catch (e) {
-            addLog(`删除动态失败 ${getErrorMessage(e)}：【${truncateText(title, 20)}】`)
-            throw e
-          }
-
-          successCount++
-          addLog(`成功删除动态：【${truncateText(title, 20)}】`)
-          if (bizOptions.signal.aborted) return false
-          await sleepRandom(1122, 2233)
+        return keywordText.length === 0 || text.includes(keywordText) || (!!title && title.includes(keywordText))
+      },
+      (dynamic) => {
+        const {
+          title,
+          summary: { text },
+        } = dynamic.modules.module_dynamic.major!.opus!
+        if (title) {
+          return `[${title}] ${text}`
         }
-      }
-      return true
-    }
-    await publicClient.spaceDynamic.fetchAll({ host_mid: user.value!.mid }, undefined, onPageFetched, bizOptions)
-    if (successCount > 0) {
-      addLog(`成功删除 ${successCount} 条动态`)
-    } else {
-      addLog(`未找到符合条件的转发动态`)
-    }
+        return text
+      },
+      500,
+    )
+  } catch (e) {
+    addLog(getErrorMessage(e))
   } finally {
     abortController?.abort()
     isDeleting.value = false
@@ -117,10 +107,10 @@ onUnmounted(() => abortController?.abort())
             />
           </el-checkbox-group>
         </QueryFormItem>
-        <QueryFormItem prefix="内容关键词">
-          <el-input v-model.trim="keyword" placeholder="可为空" clearable size="small" style="width: 120px"> </el-input>
+        <QueryFormItem prefix="动态关键词">
+          <el-input v-model.trim="keyword" placeholder="可为空" clearable style="width: 120px"> </el-input>
         </QueryFormItem>
-        <el-button type="primary" @click="handleDelete">{{ isDeleting ? '停止删除动态' : '删除所有动态' }}</el-button>
+        <el-button type="primary" @click="handleDelete">{{ isDeleting ? '停止操作' : '查询所有动态' }}</el-button>
       </div>
       <el-alert description="请注意，发布的部分纯文字动态也会被B站认定为图文动态"></el-alert>
       <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>

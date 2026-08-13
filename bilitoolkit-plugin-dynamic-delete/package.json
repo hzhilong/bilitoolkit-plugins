@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-dynamic-delete",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@ybgnb/bili-api": "workspace:^",
-    "@ybgnb/utils": "^0.3.3",
+    "@ybgnb/utils": "^0.3.4",
     "bili-comment-core": "workspace:^",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",

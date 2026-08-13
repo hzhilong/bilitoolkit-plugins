@@ -41,7 +41,7 @@
   "dependencies": {
     "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/file-naming": "^0.0.1",
-    "@ybgnb/utils": "^0.3.3",
+    "@ybgnb/utils": "^0.3.4",
     "bili-comment-core": "workspace:^",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
