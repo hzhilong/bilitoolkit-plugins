@@ -49,6 +49,11 @@ const saveImages = loadingData(async () => {
   }
   await downloadImages(infoList)
 })
+const isVideo = (url: string) => {
+  const clean = url.split('?')[0].split('#')[0]
+  const ext = clean.split('.').pop()?.toLowerCase()
+  return ext && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv'].includes(ext)
+}
 </script>
 
 <template>
@@ -59,14 +64,10 @@ const saveImages = loadingData(async () => {
       <el-button v-if="images.length > 0" type="primary" @click="saveImages()">保存{{ typeName }}</el-button>
     </div>
     <div class="images-container" ref="imagesContainerRef">
-      <img
-        v-for="item in images"
-        :src="item.url"
-        :alt="item.fileName"
-        :key="item.url"
-        :data-file-name="item.fileName"
-        loading="lazy"
-      />
+      <template v-for="item in images" :key="item.url">
+        <video v-if="isVideo(item.url)" :src="item.url" autoplay loop muted playsinline></video>
+        <img v-else :src="item.url" :alt="item.fileName" :data-file-name="item.fileName" loading="lazy" />
+      </template>
     </div>
   </PluginPageContent>
 </template>
@@ -89,10 +90,12 @@ const saveImages = loadingData(async () => {
   overflow-y: auto;
   gap: 10px;
 
+  > video:only-child,
   > img:only-child {
     max-width: 100%;
   }
 
+  > video,
   > img {
     max-width: 150px;
   }

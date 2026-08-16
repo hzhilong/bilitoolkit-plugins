@@ -17,7 +17,24 @@ const fetchImages = async (): Promise<ImageInfo[]> => {
   list.push(...getEmojisFromRichText(nodes, parentDir))
   list.push(...getPicsFromRichText(nodes, parentDir))
   const pics: MajorOpusPic[] = dynamic.modules.module_dynamic.major?.opus?.pics ?? []
-  list.push(...pics.map((p: MajorOpusPic) => ({ url: p.url, fileName: `${parentDir}/${getFileName(p.url)}` })))
+  list.push(
+    ...pics
+      .map((p: MajorOpusPic) => {
+        const ps: ImageInfo[] = []
+        if (p.live_url) {
+          ps.push({
+            url: p.live_url,
+            fileName: `${parentDir}/${getFileName(p.live_url)}`,
+          })
+        }
+        ps.push({
+          url: p.url,
+          fileName: `${parentDir}/${getFileName(p.url)}`,
+        })
+        return ps
+      })
+      .flat(),
+  )
   const summaryNodes = dynamic.modules.module_dynamic.major?.opus?.summary.rich_text_nodes ?? []
   list.push(...getEmojisFromRichText(summaryNodes, parentDir))
   list.push(...getPicsFromRichText(summaryNodes, parentDir))
