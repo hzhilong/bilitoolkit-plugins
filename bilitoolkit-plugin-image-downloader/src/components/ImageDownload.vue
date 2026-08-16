@@ -32,7 +32,7 @@ const handleFetchImages = loadingData(async () => {
   }
 })
 const saveImages = loadingData(async () => {
-  const imgList = imagesContainerRef.value?.querySelectorAll('img')
+  const imgList = imagesContainerRef.value?.querySelectorAll('img, video')
   if (!imgList || !imgList.length) {
     showWarning(`图片为空`)
     return
@@ -41,11 +41,19 @@ const saveImages = loadingData(async () => {
   const infoList: ImageElInfo[] = []
   for (let i = 0; i < imgList.length; i++) {
     const img = imgList[i]
-    infoList.push({
-      url: img.src,
-      fileName: img.dataset.fileName ?? crypto.randomUUID(),
-      complete: img.complete,
-    })
+    if (img instanceof HTMLImageElement) {
+      infoList.push({
+        url: img.src,
+        fileName: img.dataset.fileName ?? crypto.randomUUID(),
+        complete: img.complete,
+      })
+    } else if (img instanceof HTMLVideoElement) {
+      infoList.push({
+        url: img.src,
+        fileName: img.dataset.fileName ?? crypto.randomUUID(),
+        complete: true,
+      })
+    }
   }
   await downloadImages(infoList)
 })
@@ -65,7 +73,15 @@ const isVideo = (url: string) => {
     </div>
     <div class="images-container" ref="imagesContainerRef">
       <template v-for="item in images" :key="item.url">
-        <video v-if="isVideo(item.url)" :src="item.url" autoplay loop muted playsinline></video>
+        <video
+          v-if="isVideo(item.url)"
+          :src="item.url"
+          :data-file-name="item.fileName"
+          autoplay
+          loop
+          muted
+          playsinline
+        ></video>
         <img v-else :src="item.url" :alt="item.fileName" :data-file-name="item.fileName" loading="lazy" />
       </template>
     </div>
