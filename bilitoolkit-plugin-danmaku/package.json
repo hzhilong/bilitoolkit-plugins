@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "main": "index.html",
-  "description": "快速查询弹幕及发送者",
+  "description": "快速查询视频弹幕",
   "author": "hzhilong",
   "keywords": [
     "BiliToolkit",
