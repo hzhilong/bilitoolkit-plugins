@@ -2,7 +2,7 @@
 import { allFileNamerFields } from '@/constants/file-namer'
 import type { OptionalFileNamerFields } from '@/types/file-namer'
 import { storeToRefs } from 'pinia'
-import { watch, reactive, computed, ref } from 'vue'
+import { watch, reactive, computed, ref, onBeforeUpdate, onActivated } from 'vue'
 import { debounce } from 'lodash-es'
 import { useFileNamerSettingsStore } from '@/stores/file-namer-settings'
 import dayjs from 'dayjs'
@@ -10,6 +10,7 @@ import { dateFormatMap, timeFormatMap, serialNumberFormatMap } from '@ybgnb/file
 import type { DownloadResourceType } from 'bilitoolkit-types'
 import { parseFullFileName } from '@/utils/file-namer'
 import { fileNamingDataExample } from '@/constants/video-example'
+import { VueDraggable } from 'vue-draggable-plus'
 
 const fileNamerSettingsStore = useFileNamerSettingsStore()
 const { reset } = fileNamerSettingsStore
@@ -20,13 +21,45 @@ const exampleList: {
   fileName: string
 }[] = reactive([])
 
+const currFields = ref<
+  Array<{
+    id: string
+    field: OptionalFileNamerFields
+  }>
+>([])
+
+const initCurrFields = () => {
+  currFields.value = settings.value.fields.map((field) => ({
+    id: crypto.randomUUID(),
+    field,
+  }))
+}
+
+const resetDefault = () => {
+  reset()
+  initCurrFields()
+}
+
+onActivated(initCurrFields)
+
+watch(
+  () => currFields.value,
+  (newValue) => {
+    settings.value.fields = newValue.map((f) => f.field)
+  },
+  { deep: true },
+)
+
 const handleAddField = debounce((key: OptionalFileNamerFields) => {
-  settings.value.fields.push(key)
+  currFields.value.push({
+    id: crypto.randomUUID(),
+    field: key,
+  })
 }, 100)
 
-const handleRemoveField = debounce((index: number) => {
-  settings.value.fields.splice(index, 1)
-}, 100)
+const handleRemoveField = (index: number) => {
+  currFields.value.splice(index, 1)
+}
 
 const updateExampleList = () => {
   const types: [DownloadResourceType, string][] = [
@@ -89,12 +122,19 @@ const seqFormatExample = computed(() => {
     <div class="form-item">
       <div class="label">
         <span>文件命名模板：</span>
-        <span class="hint">(点击可移除)</span>
+        <span class="hint">(右键可移除)</span>
       </div>
       <div class="value-section fields">
-        <div class="field" v-for="(item, index) in settings.fields" :key="item" @click="handleRemoveField(index)">
-          {{ allFileNamerFields[item as OptionalFileNamerFields].label }}
-        </div>
+        <VueDraggable v-model="currFields" :animation="200" class="field-list">
+          <el-dropdown v-for="({ field, id }, index) in currFields" :key="id" trigger="contextmenu">
+            <div class="field">{{ allFileNamerFields[field as OptionalFileNamerFields].label }}</div>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click.stop="handleRemoveField(index)">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </VueDraggable>
       </div>
     </div>
     <div class="form-item example-list">
@@ -136,7 +176,7 @@ const seqFormatExample = computed(() => {
         </div>
       </div>
     </div>
-    <ElButton @click="reset">恢复默认</ElButton>
+    <ElButton @click="resetDefault">恢复默认</ElButton>
   </div>
 </template>
 
@@ -178,13 +218,23 @@ const seqFormatExample = computed(() => {
         align-items: center;
         gap: 10px;
 
-        > .field {
+        .field-list {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px;
+          user-select: none;
+        }
+
+        .field {
+          font-size: 14px;
+          line-height: 22px;
           padding: 0px 10px;
           text-wrap: nowrap;
           color: var(--el-color-primary);
           border: 1px solid var(--el-border-color-light);
           border-radius: 16px;
-          cursor: pointer;
+          cursor: move;
 
           &:hover {
             background-color: var(--app-color-primary-transparent-10);
