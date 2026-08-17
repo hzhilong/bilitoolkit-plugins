@@ -86,6 +86,9 @@ const fetchDM = async ({ cid }: VideoPart): Promise<DanmakuElem[]> => {
 
 <template>
   <DanmakuSearchPage :fetchDM="fetchDM">
+    <template #query-form>
+      <el-alert description="一次性获取过多弹幕可能会触发风控，建议每次的日期范围设置在一两年左右"></el-alert>
+    </template>
     <template #dm-query-form="{ videoInfo }">
       <QueryFormItem prefix="日期范围">
         <el-date-picker
