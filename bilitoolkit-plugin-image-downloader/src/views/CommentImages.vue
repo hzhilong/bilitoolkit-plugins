@@ -15,7 +15,7 @@ const fetchImages = async (): Promise<ImageInfo[] | void> => {
   if (emote) {
     list.push(
       ...Object.values(emote).map((r) => ({
-        url: r.gif_url ?? r.url,
+        url: r.gif_url || r.url,
         fileName: `${parentDir}/${r.text}`,
       })),
     )

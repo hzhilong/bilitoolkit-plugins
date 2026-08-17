@@ -7,7 +7,7 @@ export const getEmojisFromRichText = (nodes: RichTextNode[], parentDir?: string)
   return nodes
     .filter((r) => r.type === 'RICH_TEXT_NODE_TYPE_EMOJI')
     .map((r: RichTextEmojiNode) => ({
-      url: r.emoji.gif_url ?? r.emoji.icon_url,
+      url: r.emoji.gif_url || r.emoji.icon_url,
       fileName: `${parentDir}${r.emoji.text}`,
     }))
 }

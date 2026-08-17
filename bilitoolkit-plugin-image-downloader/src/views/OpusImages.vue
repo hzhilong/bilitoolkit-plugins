@@ -21,21 +21,30 @@ const fetchImages = async (): Promise<ImageInfo[] | void> => {
       list.push(
         ...paragraphs
           .filter((p: any) => p.para_type === 2 && p.pic?.pics != null)
-          .map((p: any) => [...p.pic.pics.map((pi: any) => pi.url)])
-          .flat()
-          .map((p: string) => ({ url: p, fileName: `${parentDir}/${getFileName(p)}` })),
+          .map((p: any) => [
+            ...p.pic.pics.map((pi: any) => {
+              return { url: pi.url, fileName: `${parentDir}/${pi.comment || getFileName(pi.url)}` }
+            }),
+          ])
+          .flat(),
       )
       list.push(
         ...paragraphs
           .filter((p: any) => p.para_type === 1 && p.text?.nodes != null)
           .map((p: any) => [
             ...p.text?.nodes
-              .filter((pd: any) => pd.type === 'TEXT_NODE_TYPE_RICH' && pd.rich && pd.rich.emoji != null)
+              .filter(
+                (pd: any) =>
+                  pd.type === 'TEXT_NODE_TYPE_RICH' &&
+                  pd.rich &&
+                  pd.rich.type === 'RICH_TEXT_NODE_TYPE_EMOJI' &&
+                  pd.rich.emoji != null,
+              )
               .map((pd: any) => pd.rich.emoji),
           ])
           .flat()
           .map((pe: any) => ({
-            url: pe.gif_url ?? pe.icon_url,
+            url: pe.gif_url || pe.icon_url,
             fileName: `${parentDir}/${pe.text}`,
           })),
       )

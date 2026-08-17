@@ -114,6 +114,7 @@ const isVideo = (url: string) => {
   > video,
   > img {
     max-width: 150px;
+    object-fit: contain;
   }
 }
 </style>
