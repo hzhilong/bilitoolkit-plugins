@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import { PluginPageContent, useSelectedUserStore, AppTooltip, useLoadingData, showWarning } from 'bilitoolkit-ui'
-import { RecycleScroller } from 'vue-virtual-scroller'
 import {
   type VideoPart,
   type DanmakuElem,
@@ -17,6 +16,7 @@ import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { DMItem } from '@/types'
 import QueryFormItem from '@/components/QueryFormItem.vue'
 import { createDMFile } from '@/utils/file'
+import { useVirtualList } from '@vueuse/core'
 
 const props = defineProps<{
   fetchDM: (videoPart: VideoPart, videoInfo: VideoInfo) => Promise<DanmakuElem[]>
@@ -36,6 +36,9 @@ const searched = ref<boolean>(false)
 let dmList: DMItem[] = []
 const filteredList = ref<DMItem[]>([])
 const listKey = ref(0)
+const { list, containerProps, wrapperProps } = useVirtualList(filteredList, {
+  itemHeight: 26,
+})
 
 const setTableData = (data: DMItem[]) => {
   filteredList.value = data
@@ -243,39 +246,22 @@ const saveFile = async () => {
           <div class="col users">发送者</div>
         </div>
         <div class="table-body-wrapper" v-loading="loadingTable">
-          <RecycleScroller
-            class="table-body"
-            :key="listKey"
-            :items="filteredList"
-            :item-size="(t: DMItem) => 26 * ((t.users ?? []).length || 1)"
-            key-field="id"
-            v-slot="{ item, index }: { item: DMItem; index: number }"
-          >
-            <div class="table-row">
-              <div class="col index">{{ index + 1 }}</div>
-              <div class="col progress">{{ formatDuration(item.progress / 1000) }}</div>
-              <AppTooltip class="col content" :content="item.content"></AppTooltip>
-              <div class="col users">
-                <span v-if="!item.cracked">
-                  <template v-if="item.loading">解析中</template>
-                  <el-button v-else link type="primary" size="small" @click="crackUser(item)">解析</el-button>
-                </span>
-                <div v-else>
-                  <div class="cell-users">
-                    <el-button
-                      link
-                      type="primary"
-                      size="small"
-                      v-for="user in item.users"
-                      :key="user.mid"
-                      @click="handleOpenSpace(user)"
-                      >{{ formatUserLabel(user) }}</el-button
-                    >
-                  </div>
+          <div class="table-body" v-bind="containerProps">
+            <div v-bind="wrapperProps">
+              <div class="table-row" v-for="item in list" :key="item.data.idStr" style="height: 26px">
+                <div class="col index">{{ item.index + 1 }}</div>
+                <div class="col progress">{{ formatDuration(item.data.progress / 1000) }}</div>
+                <AppTooltip class="col content" :content="item.data.content"></AppTooltip>
+                <div class="col users">
+                  <span v-if="!item.data.cracked">
+                    <template v-if="item.data.loading">解析中</template>
+                    <el-button v-else link type="primary" size="small" @click="crackUser(item.data)">解析</el-button>
+                  </span>
+                  <AppTooltip v-else :content="item.data.users.map(formatUserLabel).join(' , ')" />
                 </div>
               </div>
             </div>
-          </RecycleScroller>
+          </div>
         </div>
       </div>
     </div>
@@ -391,23 +377,8 @@ const saveFile = async () => {
     }
 
     .col.users {
-      height: fit-content;
-    }
-
-    .cell-users {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-
-      ::v-deep(.el-button + .el-button) {
-        margin-left: 0 !important;
-      }
-
-      ::v-deep(.el-button) {
-        height: 26px !important;
-        line-height: 26px !important;
-        user-select: text;
-      }
+      min-width: 0;
+      overflow: hidden;
     }
 
     .table-query {

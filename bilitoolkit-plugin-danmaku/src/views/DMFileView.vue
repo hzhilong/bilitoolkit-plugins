@@ -4,7 +4,6 @@ import { parseDMFile, createDMFile } from '@/utils/file'
 import type { DMXml, DMItem } from '@/types'
 import { useLoadingData, AppTooltip, useSelectedUserStore, PluginPageContent } from 'bilitoolkit-ui'
 import { formatDuration, sleepRandom } from '@ybgnb/utils'
-import { RecycleScroller } from 'vue-virtual-scroller'
 import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { UserCard } from '@ybgnb/bili-api'
 import { crackUidHash } from '@/utils/crack'
@@ -12,6 +11,7 @@ import KeyValueTag from '@/components/KeyValueTag.vue'
 import { formatColor, formatMode, formatPool, modeMap, poolMap } from '@/utils/format'
 import dayjs from 'dayjs'
 import QueryFormItem from '@/components/QueryFormItem.vue'
+import { useToggle, useVirtualList } from '@vueuse/core'
 
 const selectedUserStore = useSelectedUserStore()
 const { assertLoggedIn } = selectedUserStore
@@ -53,6 +53,11 @@ const setTableData = (data: DMItem[]) => {
   filteredList.value = data
   dmListKey.value++
 }
+
+const { list, containerProps, wrapperProps } = useVirtualList(filteredList, {
+  itemHeight: 28,
+})
+
 const queryParams = ref<{
   keyword?: string
   midHash?: string
@@ -235,45 +240,30 @@ const handleOpenSpace = (user: DMItem['users'][number]) => {
         <div class="col users">发送者</div>
       </div>
       <div class="table-body-wrapper" v-loading="loadingTable">
-        <RecycleScroller
-          class="table-body"
-          :key="dmListKey"
-          :items="filteredList"
-          :item-size="(t: DMItem) => 28 * ((t.users ?? []).length || 1)"
-          key-field="idStr"
-          v-slot="{ item, index }: { item: DMItem; index: number }"
-        >
-          <div class="table-row" :style="{ height: `${((item.users ?? []).length || 1) * 28}px` }">
-            <div class="col index">{{ index + 1 }}</div>
-            <AppTooltip class="col" :content="item.idStr"></AppTooltip>
-            <div class="col">{{ formatDuration(item.progress / 1000) }}</div>
-            <AppTooltip class="col content" :content="item.content"></AppTooltip>
-            <div class="col">{{ item.midHash }}</div>
-            <div class="col">{{ dayjs.unix(Number(item.ctime)).format('YYYY-MM-DD HH:mm:ss') }}</div>
-            <div class="col">{{ item.fontsize }}</div>
-            <div class="col">{{ formatColor(item.color) }}</div>
-            <div class="col">{{ formatMode(item.mode) }}</div>
-            <AppTooltip class="col" :content="formatPool(item.pool)"></AppTooltip>
-            <div class="col">{{ item.weight }}</div>
-            <div class="col users">
-              <span v-if="!item.cracked">
-                <template v-if="item.loading">解析中</template>
-                <el-button v-else link type="primary" size="small" @click="crackUser(item)">解析</el-button>
-              </span>
-              <div v-else>
-                <div class="cell-users">
-                  <AppTooltip
-                    v-for="user in item.users"
-                    :key="user.mid"
-                    @click.stop="handleOpenSpace(user)"
-                    :content="formatUserLabel(user)"
-                    ><span class="user-info">{{ formatUserLabel(user) }}</span></AppTooltip
-                  >
-                </div>
+        <div class="table-body" v-bind="containerProps">
+          <div v-bind="wrapperProps">
+            <div class="table-row" v-for="item in list" :key="item.data.idStr" style="height: 28px">
+              <div class="col index">{{ item.index + 1 }}</div>
+              <AppTooltip class="col" :content="item.data.idStr"></AppTooltip>
+              <div class="col">{{ formatDuration(item.data.progress / 1000) }}</div>
+              <AppTooltip class="col content" :content="item.data.content"></AppTooltip>
+              <div class="col">{{ item.data.midHash }}</div>
+              <div class="col">{{ dayjs.unix(Number(item.data.ctime)).format('YYYY-MM-DD HH:mm:ss') }}</div>
+              <div class="col">{{ item.data.fontsize }}</div>
+              <div class="col">{{ formatColor(item.data.color) }}</div>
+              <div class="col">{{ formatMode(item.data.mode) }}</div>
+              <AppTooltip class="col" :content="formatPool(item.data.pool)"></AppTooltip>
+              <div class="col">{{ item.data.weight }}</div>
+              <div class="col users">
+                <span v-if="!item.data.cracked">
+                  <template v-if="item.data.loading">解析中</template>
+                  <el-button v-else link type="primary" size="small" @click="crackUser(item.data)">解析</el-button>
+                </span>
+                <AppTooltip v-else :content="item.data.users.map(formatUserLabel).join(' , ')" />
               </div>
             </div>
           </div>
-        </RecycleScroller>
+        </div>
       </div>
     </div>
   </PluginPageContent>
@@ -305,13 +295,13 @@ const handleOpenSpace = (user: DMItem['users'][number]) => {
     .table-header,
     .table-row {
       display: grid;
-      grid-template-columns: 44px 170px 74px 4fr 80px 150px 48px 76px 80px 66px 50px minmax(200px, 2fr);
+      grid-template-columns: 64px 170px 74px 4fr 80px 150px 48px 76px 80px 66px 50px minmax(200px, 2fr);
       align-items: stretch;
       width: 100%;
     }
 
     .table-header {
-      width: calc(100% - 18px);
+      width: calc(100% - 8px);
       height: 32px;
       font-weight: bold;
       border-left: 1px solid var(--el-border-color);
@@ -343,35 +333,16 @@ const handleOpenSpace = (user: DMItem['users'][number]) => {
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0 4px;
     }
 
     .col.content {
       justify-self: stretch;
     }
 
-    .cell-users {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-
-      ::v-deep(.el-button + .el-button) {
-        margin-left: 0 !important;
-      }
-
-      ::v-deep(.el-button) {
-        height: 26px !important;
-        line-height: 26px !important;
-        user-select: text;
-      }
-      .user-info {
-        color: var(--el-color-primary);
-        font-size: 12px;
-        cursor: pointer;
-
-        &:hover {
-          border-bottom: 1px solid var(--app-color-primary-transparent-70);
-        }
-      }
+    .col.users {
+      min-width: 0;
+      overflow: hidden;
     }
 
     .table-query,

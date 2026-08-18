@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-danmaku",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -39,6 +39,7 @@
     "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
+    "@vueuse/core": "^13.9.0",
     "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/utils": "^0.3.4",
     "bilitoolkit-runtime": "workspace:^",
@@ -51,8 +52,7 @@
     "pinia": "^3.0.3",
     "vue": "^3.5.34",
     "vue-component-type-helpers": "^3.2.9",
-    "vue-router": "^4.5.1",
-    "vue-virtual-scroller": "^3.0.4"
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
