@@ -1,17 +1,41 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { parseVideoId } from '@ybgnb/bili-api'
+import { parseVideoId, av2bv } from '@ybgnb/bili-api'
 import { client } from '@/common/client'
 import type { ImageInfo } from '@/types/types'
+import { AppError } from 'bilitoolkit-types'
 
 const url = ref('')
-const fetchImages = async (): Promise<ImageInfo> => {
+const fetchImages = async (): Promise<ImageInfo[]> => {
+  const list: ImageInfo[] = []
   const videoId = await parseVideoId(url.value)
-  const videoInfo = await client.videoInfo.getInfo(videoId)
-  return {
-    url: videoInfo.pic,
-    fileName: `视频封面/${videoInfo.bvid}_${videoInfo.title}`,
+  let bvid = videoId.bvid!
+  if (videoId.aid) {
+    bvid = av2bv(videoId.aid)
   }
+  const cards = await client.api.get('https://api.bilibili.com/x/article/cards', {
+    query: {
+      ids: bvid,
+      web_location: '333.1305',
+    },
+  })
+  const videoInfo = cards[bvid]
+  if (!videoInfo) {
+    throw new AppError('视频不存在')
+  }
+  const cover = cards[bvid].pic
+  const cover43 = cards[bvid].cover43
+  if (cover43 && cover43 !== cover) {
+    list.push({
+      url: cover43,
+      fileName: `视频封面/${bvid}_${videoInfo.title}_4-3`,
+    })
+  }
+  list.push({
+    url: cover,
+    fileName: `视频封面/${bvid}_${videoInfo.title}`,
+  })
+  return list
 }
 </script>
 
