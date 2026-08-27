@@ -2,7 +2,7 @@
 import { allFileNamerFields } from '@/constants/file-namer'
 import type { OptionalFileNamerFields } from '@/types/file-namer'
 import { storeToRefs } from 'pinia'
-import { watch, reactive, computed, ref, onBeforeUpdate, onActivated } from 'vue'
+import { watch, reactive, computed, ref, onActivated } from 'vue'
 import { debounce } from 'lodash-es'
 import { useFileNamerSettingsStore } from '@/stores/file-namer-settings'
 import dayjs from 'dayjs'

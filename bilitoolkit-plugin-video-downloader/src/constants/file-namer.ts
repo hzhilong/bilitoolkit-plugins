@@ -97,7 +97,7 @@ export const fileNamerFields = {
     resolve: ({ data: { videoCodec } }) => videoCodecIdMap[videoCodec],
   },
   downloadDateTime: {
-    label: '发布时间',
+    label: '下载时间',
     resolve: ({ resolveDate, extendedFormats: { timeFormat, dateFormat } }) => {
       return dayjs(resolveDate).format(dateFormat + '_' + timeFormat)
     },
