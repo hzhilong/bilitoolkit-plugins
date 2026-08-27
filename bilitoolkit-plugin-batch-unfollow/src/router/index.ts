@@ -7,6 +7,12 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     name: 'BatchUnfollow',
     component: () => import('../views/BatchUnfollowView.vue'),
   },
+  {
+    title: '取关已注销用户',
+    path: '/UnfollowCancelledView',
+    name: 'UnfollowCancelledView',
+    component: () => import('../views/UnfollowCancelledView.vue'),
+  },
 ]
 
 export const router = createRouter({

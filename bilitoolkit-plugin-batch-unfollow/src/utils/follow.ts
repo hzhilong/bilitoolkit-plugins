@@ -77,6 +77,27 @@ export async function getFollowList(
   }
 }
 
+export async function getAllFollows({ client, logger }: { client: BiliClient; logger: (msg: string) => void }) {
+  try {
+    const abortController = new AbortController()
+    const signal = abortController.signal
+    loadingDialog.show({
+      message: '获取关注中...',
+      showCancel: true,
+      onCancel: () => abortController.abort(),
+    })
+    logger(`正在获取关注列表`)
+    if (signal.aborted) throw createAbortError()
+
+    const relations = await client.relation.fetchFollowingsAll(undefined, undefined, undefined, { signal })
+
+    logger(`总共获取 ${relations.length} 个关注`)
+    return relations
+  } finally {
+    loadingDialog.close()
+  }
+}
+
 export async function batchUnfollow(
   list: Relation[],
   {
