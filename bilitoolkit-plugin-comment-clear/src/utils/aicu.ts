@@ -1,9 +1,9 @@
 import { BiliClient } from '@ybgnb/bili-api'
 import { sleepRandom } from '@ybgnb/utils'
 import { AppError } from 'bilitoolkit-types'
-import type { CommentMeta } from '@/types'
+import type { AicuCommentMeta } from '@/types'
 
-async function getAicuTicket(signal: AbortSignal) {
+async function getAicuTicket(signal: AbortSignal, logger: (msg: string) => void) {
   const enqueueRep = await fetch('https://api.aicu.cc/api/v4/queue/enqueue', { signal: signal })
   if (!enqueueRep.ok) {
     throw new AppError(`请求 Aicu 接口失败：${enqueueRep.status} ${enqueueRep.statusText ?? ''}`)
@@ -15,37 +15,80 @@ async function getAicuTicket(signal: AbortSignal) {
     throw new AppError(`请求 Aicu 接口失败：${message}`)
   }
 
-  const { ticket } = data
+  const { ticket, status } = data
   if (!ticket) {
     throw new AppError(`请求 Aicu 接口失败，ticket 为空`)
   }
-  return ticket as string
+
+  if (status === 'ready') return ticket
+
+  return new Promise((resolve, reject) => {
+    const eventSource = new EventSource(`https://api.aicu.cc/api/v4/queue/stream?ticket=${ticket}`)
+
+    eventSource.addEventListener('position', function (e) {
+      const result = JSON.parse(e.data)
+      logger(`正在排队，前方还有${result.ahead}人`)
+    })
+    eventSource.addEventListener('ready', function () {
+      resolve(ticket)
+    })
+    eventSource.addEventListener('abort', function (e) {
+      const result = JSON.parse(e.data)
+      reject(result.message ?? '获取 ticket 出错')
+    })
+    eventSource.addEventListener('expired', function (e) {
+      const result = JSON.parse(e.data)
+      reject(result.message ?? '排队已超时，请重新发起查询')
+    })
+    eventSource.addEventListener('error', function () {
+      reject('获取 ticket 出错，请重新排队')
+    })
+    eventSource.onerror = () => {
+      reject('获取 ticket 出错，请重新排队')
+    }
+  })
 }
 
-export async function fetchCommentsByAicu(context: {
-  client: BiliClient
-  logger: (msg: string) => void
-  signal: AbortSignal
-  uid: number
-}) {
+export async function fetchCommentsByAicu(
+  context: {
+    client: BiliClient
+    logger: (msg: string) => void
+    signal: AbortSignal
+    uid: number
+  },
+  query: { stime?: number; etime?: number; keyword?: string; mode?: string },
+) {
   const { logger, signal, uid } = context
 
+  const params = new URLSearchParams({
+    uid: String(uid),
+    pn: '1',
+    ps: '100',
+    keyword: query.keyword ?? '',
+    need_count: 'true',
+    mode: query.mode ?? '0',
+    ticket: '',
+    stime: query.stime ? String(Math.floor(query.stime / 1000)) : '',
+    etime: query.etime ? String(Math.floor(query.etime / 1000)) : '',
+  })
+
   let pn = 1
-  const allReply: CommentMeta[] = []
+  const allReply: AicuCommentMeta[] = []
   while (true) {
-    const ticket = await getAicuTicket(signal)
+    const ticket = await getAicuTicket(signal, logger)
     await sleepRandom(666, 1111, signal)
 
-    const rep = await fetch(
-      `https://api.aicu.cc/api/v4/search/getreply?uid=${uid}&pn=${pn}&ps=100&keyword=+&need_count=true&mode=0&ticket=${ticket}`,
-      {
-        signal: signal,
-      },
-    )
+    params.set('pn', String(pn))
+    params.set('ticket', ticket)
+
+    const rep = await fetch(`https://api.aicu.cc/api/v4/search/getreply?${params}`, {
+      signal: signal,
+    })
     if (!rep.ok) {
       logger(`请求第${pn}页数据失败：${rep.status} ${rep.statusText ?? ''}`)
       if (allReply.length > 1) {
-        break
+        logger('请求出错，已中断')
+        return allReply
       } else {
         throw new AppError('请求出错，已停止')
       }
@@ -68,12 +111,14 @@ export async function fetchCommentsByAicu(context: {
       const {
         message,
         rpid,
+        time,
         dyn: { oid, type },
       } = reply
       allReply.push({
         rpid: rpid,
         type,
         oid,
+        time,
         rootid: reply.parent?.rootid ?? '0',
         title: message,
       })

@@ -1,7 +1,7 @@
-import { BiliClient } from '@ybgnb/bili-api'
+import { BiliClient, type ReplyMessage } from '@ybgnb/bili-api'
 import type { CommentWithNotif } from '@/types'
 import { parseCommentsByNotif } from '@/utils/parse-comment'
-import { sleepRandom } from '@ybgnb/utils'
+import { sleepRandom, getErrorMessage } from '@ybgnb/utils'
 
 export async function fetchCommentsByNotif(context: {
   client: BiliClient
@@ -12,26 +12,50 @@ export async function fetchCommentsByNotif(context: {
   const rpidCache = new Set<string>()
 
   logger('正在获取被回复的通知消息')
-  const replyList = await client.message.fetchReplyAll(
-    undefined,
-    async (currList) => {
-      logger(`已获取 ${currList.length} 条被回复的通知消息`)
-    },
-    { signal },
-  )
+  const replyList: ReplyMessage[] = []
+  try {
+    await client.message.fetchReplyAll(
+      undefined,
+      async (currList) => {
+        logger(`已获取 ${currList.length} 条被回复的通知消息`)
+        replyList.push(...currList)
+      },
+      { signal },
+    )
+  } catch (e) {
+    logger(`请求错误：${getErrorMessage(e)}`)
+    if (replyList.length > 0) {
+      logger('已中断')
+    } else {
+      throw e
+    }
+  }
   logger(`共获取 ${replyList.length} 条被回复的通知消息`)
 
   const allComments: Array<CommentWithNotif> = parseCommentsByNotif(replyList, rpidCache)
   logger('-------------')
   logger('正在获取被点赞的通知消息')
   await sleepRandom(1111, 2233, signal)
-  const likeList = await client.message.fetchLikeAll(
-    undefined,
-    async (currList) => {
-      logger(`已获取 ${currList.length} 条被点赞的通知消息`)
-    },
-    { signal },
-  )
+
+  const likeList: ReplyMessage[] = []
+  try {
+    await client.message.fetchLikeAll(
+      undefined,
+      async (currList) => {
+        logger(`已获取 ${currList.length} 条被点赞的通知消息`)
+        likeList.push(...currList)
+      },
+      { signal },
+    )
+  } catch (e) {
+    logger(`请求错误：${getErrorMessage(e)}`)
+    if (likeList.length > 0) {
+      logger('已中断')
+    } else {
+      throw e
+    }
+  }
+
   logger(`共获取 ${likeList.length} 条被点赞的通知消息`)
 
   const commentByLike = parseCommentsByNotif(likeList, rpidCache)

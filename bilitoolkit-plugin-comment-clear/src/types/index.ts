@@ -14,3 +14,7 @@ export interface CommentWithNotif extends CommentMeta {
   likeMsgId?: number
   replyMsgId?: number
 }
+
+export interface AicuCommentMeta extends CommentMeta {
+  time: number
+}
