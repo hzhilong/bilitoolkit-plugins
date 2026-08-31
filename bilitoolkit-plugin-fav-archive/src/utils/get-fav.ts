@@ -102,6 +102,11 @@ export async function getFavList(
       filteredList = filteredList.filter((item) => item.attr === 0)
       const currTaskHandleList = filteredList.slice(0, remainingCount)
       for (const favItem of currTaskHandleList) {
+        if (favItem.type !== 2) {
+          logger.info(`资源 ${favItem.bvid} ${favItem.title} 非UP主上传的视频稿件，暂不支持下载`)
+          continue
+        }
+
         logger.info(`${logPrefix} 正在获取视频信息 ${favItem.bvid} ${favItem.title}`)
         result.push({
           ...(await biliClient.videoInfo.getInfo({ aid: favItem.id }, { signal })),

@@ -24,7 +24,11 @@ export default defineConfig({
     }
   },
   onSuccess: async () => {
-    const manifest = { taskSchedule, taskConfigSchema }
+    const manifest = {
+      taskSchedule,
+      taskConfigSchema,
+      alert: '仅支持下载 UP 主发布的普通视频',
+    }
     await writeFile('dist/plugin-meta.json', JSON.stringify(manifest, null, 2))
   },
 })
