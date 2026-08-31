@@ -54,23 +54,25 @@ export function parseCommentsByNotif(
 
     if (rpid === '0') continue
 
-    if (rpidCache.has(rpid)) {
-      // 重复
-      continue
-    }
-
     const meta = parseCommentMeta(rpid, native_uri)
 
     if (!meta) continue
 
-    allComments.push({
+    const commentWithNotif: CommentWithNotif = {
       ...meta,
       title: 'target_reply_content' in msg.item ? msg.item.target_reply_content || title : title,
       likeMsgId: 'like_time' in msg ? msg.id : undefined,
       replyMsgId: 'reply_time' in msg ? msg.id : undefined,
-    } as CommentWithNotif)
+      isDuplicateReply: false,
+    }
 
-    rpidCache.add(rpid)
+    if (rpidCache.has(rpid)) {
+      commentWithNotif.isDuplicateReply = true
+    } else {
+      rpidCache.add(rpid)
+    }
+
+    allComments.push(commentWithNotif)
   }
   return allComments
 }

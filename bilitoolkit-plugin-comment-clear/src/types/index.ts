@@ -13,6 +13,7 @@ export interface CommentMeta extends CommentSource {
 export interface CommentWithNotif extends CommentMeta {
   likeMsgId?: number
   replyMsgId?: number
+  isDuplicateReply?: boolean
 }
 
 export interface AicuCommentMeta extends CommentMeta {

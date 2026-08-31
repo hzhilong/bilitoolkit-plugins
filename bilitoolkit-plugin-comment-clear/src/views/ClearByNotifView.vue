@@ -12,7 +12,7 @@ import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
 import { BiliClient } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
 import { fetchCommentsByNotif } from '@/utils/fetch-comment'
-import type { CommentMeta, CommentWithNotif } from '@/types'
+import type { CommentWithNotif } from '@/types'
 import { AppError } from 'bilitoolkit-types'
 import { deleteComments } from '@/utils/delete-comment'
 import { handleCopyComment, handleOpenComment } from '@/utils/action'
@@ -21,11 +21,11 @@ const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
 const { user } = storeToRefs(userStore)
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
-const virtualSelectDialogProps = ref<VirtualSelectDialogProps<CommentMeta, 'rpid'>>({
+const virtualSelectDialogProps = ref<VirtualSelectDialogProps<CommentWithNotif, 'rpid'>>({
   title: '请选择要删除的评论',
   options: [],
   defaultSelectedIds: [],
-  getDataLabel: (item: CommentMeta) => item.title,
+  getDataLabel: (item: CommentWithNotif) => item.title,
   idKey: 'rpid',
   multiple: true,
   canSelectAll: true,
@@ -84,7 +84,7 @@ const handleStart = async () => {
 
 onUnmounted(() => abortController?.abort())
 
-const handleDelete = async (list: CommentMeta[]) => {
+const handleDelete = async (list: CommentWithNotif[]) => {
   try {
     if (!list || list.length === 0) throw new AppError('未选择数据')
 
@@ -99,27 +99,33 @@ const handleDelete = async (list: CommentMeta[]) => {
     const logger = (msg: string) => {
       addLog(msg)
     }
+    const delMsg = async (comment: CommentWithNotif) => {
+      if (comment.likeMsgId) {
+        await sleepRandom(999, 1333, signal)
+        await client.message.setLikeMsgState(comment.likeMsgId, 1, { signal })
+        await sleepRandom(999, 1333, signal)
+        await client.message.delLikeMessage(comment.likeMsgId, { signal })
+      } else if (comment.replyMsgId) {
+        await sleepRandom(999, 1333, signal)
+        await client.message.delReplyMessage(comment.replyMsgId, { signal })
+      }
+      addLog(`已删除关联的通知消息`)
+    }
+    const onlyDelMsg = list.filter((item: CommentWithNotif) => item.isDuplicateReply === true)
+    const filteredMsg = list.filter((item: CommentWithNotif) => !item.isDuplicateReply)
     await deleteComments(
       {
         client,
         logger,
         signal,
       },
-      list,
-      async (item: CommentMeta) => {
-        const comment = item as CommentWithNotif
-        if (comment.likeMsgId) {
-          await sleepRandom(999, 1333, signal)
-          await client.message.setLikeMsgState(comment.likeMsgId, 1, { signal })
-          await sleepRandom(999, 1333, signal)
-          await client.message.delLikeMessage(comment.likeMsgId, { signal })
-        } else if (comment.replyMsgId) {
-          await sleepRandom(999, 1333, signal)
-          await client.message.delReplyMessage(comment.replyMsgId, { signal })
-        }
-        addLog(`已删除关联的通知消息`)
-      },
+      filteredMsg,
+      delMsg,
     )
+    for (const item of onlyDelMsg) {
+      await delMsg(item)
+    }
+    addLog(`成功删除${filteredMsg.length}条评论及其关联的通知消息`)
   } catch (e) {
     addLog(getErrorMessage(e))
   } finally {
@@ -145,7 +151,7 @@ const handleDelete = async (list: CommentMeta[]) => {
       <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>
     </div>
     <VirtualSelectDialog v-bind="virtualSelectDialogProps" v-model="virtualSelectDialogVisible" @confirm="handleDelete">
-      <template #item-label="{ item }: { item: CommentMeta }">
+      <template #item-label="{ item }: { item: CommentWithNotif }">
         <div class="comment-item">
           <AppTooltip class="comment-item-title" :content="item.title" />
           <el-button link type="primary" @click.stop="handleCopyComment(item)">复制链接</el-button>

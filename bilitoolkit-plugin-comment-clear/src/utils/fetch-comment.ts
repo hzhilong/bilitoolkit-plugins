@@ -26,6 +26,7 @@ export async function fetchCommentsByNotif(context: {
     logger(`请求错误：${getErrorMessage(e)}`)
     if (replyList.length > 0) {
       logger('已中断')
+      return parseCommentsByNotif(replyList, rpidCache)
     } else {
       throw e
     }
