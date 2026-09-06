@@ -1,5 +1,5 @@
 import type { Fans, AppSettings, RobotFans } from '@/types'
-import { sleepRandom, chunk, createAbortError, sleep } from '@ybgnb/utils'
+import { sleepRandom, chunk, createAbortError, sleep, getErrorMessage } from '@ybgnb/utils'
 import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import {
   type UserCardData,
@@ -8,8 +8,9 @@ import {
   type UserCard,
   RelationAttributeMap,
   type BiliClient,
+  type Relation,
 } from '@ybgnb/bili-api'
-import { showConfirm, loadingDialog } from 'bilitoolkit-ui'
+import { showConfirm, loadingDialog, showError } from 'bilitoolkit-ui'
 
 function calcAttentionScamScore(attention: number, attentionScoreStart: number): number {
   if (attention <= attentionScoreStart) return 0
@@ -124,14 +125,29 @@ export const getRobotFans = async (
       showCancel: true,
       onCancel,
     })
-    const fans = (
-      await client.relation.fetchFansAll(context.user.mid, undefined, undefined, {
-        signal,
-      })
-    ).filter((fan) => {
-      // 非互相关注
-      return fan.attribute !== RelationAttributeMap.Mutual
-    })
+
+    let fans: Relation[] = []
+
+    try {
+      await client.relation.fetchFansAll(
+        context.user.mid,
+        undefined,
+        async (currList) => {
+          fans.push(...currList)
+        },
+        {
+          signal,
+        },
+      )
+      fans = fans.filter((fan) => fan.attribute !== RelationAttributeMap.Mutual)
+    } catch (e) {
+      console.error(e)
+      fans = fans.filter((fan) => fan.attribute !== RelationAttributeMap.Mutual)
+      if (fans.length < 1) {
+        throw e
+      }
+      showError(getErrorMessage(e))
+    }
 
     const userCards: (UserCard | null)[] = []
     for (const chunkList of chunk(fans, 50)) {
