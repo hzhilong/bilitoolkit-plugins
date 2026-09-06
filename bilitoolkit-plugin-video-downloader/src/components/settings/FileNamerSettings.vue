@@ -234,10 +234,16 @@ const seqFormatExample = computed(() => {
           color: var(--el-color-primary);
           border: 1px solid var(--el-border-color-light);
           border-radius: 16px;
-          cursor: move;
+          cursor: pointer;
 
           &:hover {
             background-color: var(--app-color-primary-transparent-10);
+          }
+        }
+
+        &.curr-fields {
+          .field {
+            cursor: move;
           }
         }
       }

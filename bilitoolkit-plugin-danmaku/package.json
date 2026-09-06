@@ -41,7 +41,7 @@
   "dependencies": {
     "@vueuse/core": "^13.9.0",
     "@ybgnb/bili-api": "workspace:^",
-    "@ybgnb/utils": "^0.3.4",
+    "@ybgnb/utils": "^1.0.0",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
     "bilitoolkit-ui": "workspace:^",
