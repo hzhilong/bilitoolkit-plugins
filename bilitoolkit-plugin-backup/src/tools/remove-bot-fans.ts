@@ -16,6 +16,10 @@ export class RemoveBotFansTool extends Tool {
 
     const client = await createBiliClient(userInfo)
 
+    log('============================================')
+    log('= 推荐使用哔哩工具姬插件【移除机器人粉丝】 ')
+    log('============================================')
+
     log('正在获取粉丝列表')
     const fans = await client.relation.fetchFansAll(undefined, undefined, undefined, {
       signal,

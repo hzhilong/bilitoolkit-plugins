@@ -2,7 +2,7 @@
 import type { ToolContext } from '@/types/tools'
 import { computed, useTemplateRef, ref, watch, onUnmounted } from 'vue'
 import { LogPrint, showError, showConfirm } from 'bilitoolkit-ui'
-import { getErrorMessage, isCanceledError } from '@ybgnb/utils'
+import { getErrorMessage } from '@ybgnb/utils'
 import type { User } from '@/core/types/execute'
 import type { Tool } from '@/tools'
 import { useAppSettingsStore } from '@/stores/app-settings'
@@ -48,7 +48,7 @@ const execTool = async () => {
     await props.tool.executor(context)
   } catch (e) {
     const errorMessage = getErrorMessage(e)
-    if (!errorMessage.includes('cancel') && !isCanceledError(e)) loggerRef.value?.addLog(errorMessage)
+    loggerRef.value?.addLog(errorMessage)
   } finally {
     abortController.value = undefined
   }
