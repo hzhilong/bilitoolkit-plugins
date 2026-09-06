@@ -1,16 +1,15 @@
 import type { Fans, AppSettings, RobotFans } from '@/types'
 import { sleepRandom, chunk, createAbortError, sleep, getErrorMessage } from '@ybgnb/utils'
-import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 import {
+  BiliClient,
   type UserCardData,
   type SpaceNavNum,
   type UserInfoWithCookie,
   type UserCard,
   RelationAttributeMap,
-  type BiliClient,
-  type Relation,
 } from '@ybgnb/bili-api'
 import { showConfirm, loadingDialog, showError } from 'bilitoolkit-ui'
+import { createBiliClient } from 'bilitoolkit-runtime/biliapi'
 
 function calcAttentionScamScore(attention: number, attentionScoreStart: number): number {
   if (attention <= attentionScoreStart) return 0
@@ -36,7 +35,7 @@ export const calcRobotScore = async (
   let userCardData: UserCardData
 
   try {
-    await sleepRandom(1111, 1666)
+    await sleepRandom(1111, 1666, signal)
     userCardData = await client.user.getUserCard(
       { mid: mid },
       {
@@ -78,7 +77,14 @@ export const calcRobotScore = async (
 
   try {
     await sleepRandom(1111, 2233)
-    navNum = await client.spaceStatus.getNavNum(mid, { signal })
+    navNum = await client.api.get('https://api.bilibili.com/x/space/navnum', {
+      query: {
+        mid: mid,
+        web_location: '333.1387',
+      },
+      signal,
+      referer: `https://space.bilibili.com/${mid}`,
+    })
   } catch (err) {
     console.error(`获取用户[${mid}]信息出错`, err)
     return score
@@ -126,32 +132,14 @@ export const getRobotFans = async (
       onCancel,
     })
 
-    let fans: Relation[] = []
-
-    try {
-      await client.relation.fetchFansAll(
-        context.user.mid,
-        undefined,
-        async (currList) => {
-          fans.push(...currList)
-        },
-        {
-          signal,
-        },
-      )
-      fans = fans.filter((fan) => fan.attribute !== RelationAttributeMap.Mutual)
-    } catch (e) {
-      console.error(e)
-      fans = fans.filter((fan) => fan.attribute !== RelationAttributeMap.Mutual)
-      if (fans.length < 1) {
-        throw e
-      }
-      showError(getErrorMessage(e))
-    }
+    const fans = (
+      await client.relation.fetchFansAll(context.user.mid, undefined, undefined, {
+        signal,
+      })
+    ).filter((fan) => fan.attribute !== RelationAttributeMap.Mutual)
 
     const userCards: (UserCard | null)[] = []
     for (const chunkList of chunk(fans, 50)) {
-      await sleepRandom(1111, 2233)
       userCards.push(
         ...(await client.user.getUserCards(
           chunkList.map((r) => r.mid),
@@ -173,8 +161,6 @@ export const getRobotFans = async (
 
     const robots: RobotFans[] = []
     for (let i = 0; i < fansWithCards.length; i++) {
-      if (signal.aborted) throw createAbortError()
-
       const fan = fansWithCards[i]
       loadingDialog.show({
         message: `${i + 1}/${fansWithCards.length} 正在判断粉丝 ${fan.uname}`,
@@ -182,12 +168,23 @@ export const getRobotFans = async (
         onCancel,
       })
       await sleep(100)
-      const robotScore = await calcRobotScore(client, fan, appSettings, { signal })
-      if (robotScore > appSettings.robotScoreThreshold) {
-        robots.push({
-          ...fan,
-          robotScore,
-        })
+      try {
+        if (signal.aborted) throw createAbortError()
+        const robotScore = await calcRobotScore(client, fan, appSettings, { signal })
+        if (robotScore > appSettings.robotScoreThreshold) {
+          robots.push({
+            ...fan,
+            robotScore,
+          })
+        }
+        if (signal.aborted) throw createAbortError()
+      } catch (e) {
+        console.error(e)
+        if (robots.length < 1) {
+          throw e
+        }
+        showError(getErrorMessage(e))
+        return robots
       }
     }
     return robots
