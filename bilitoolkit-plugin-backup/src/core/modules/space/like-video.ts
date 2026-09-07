@@ -1,7 +1,7 @@
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import type { ExecuteContext } from '@/core/types/execute'
 import { OnlyClearableModule } from '@/core/modules/only-clearable-module'
-import { sleepRandom } from '@ybgnb/utils'
+import { sleepRandom, getErrorMessage } from '@ybgnb/utils'
 
 export class LikeVideoModule extends OnlyClearableModule {
   dataType: DataType = 'like_video'
@@ -30,11 +30,19 @@ export class LikeVideoModule extends OnlyClearableModule {
 
       for (let i = 0; i < likeVideos.length; i++) {
         const video = likeVideos[i]
-        await client.videoAction.like({
-          aid: video.aid,
-          like: false,
-        })
-        onProgress?.((i * 100) / likeVideos.length, `已取消点赞：${video.title}`)
+        try {
+          await client.videoAction.like({
+            aid: video.aid,
+            like: false,
+          })
+          onProgress?.((i * 100) / likeVideos.length, `已取消点赞：${video.title}`)
+        } catch (e) {
+          const msg = getErrorMessage(e)
+          if (!msg.includes('黑名单')) {
+            throw e
+          }
+          onProgress?.((i * 100) / likeVideos.length, `${msg}`)
+        }
         await sleepRandom(1222, 2233)
       }
     }

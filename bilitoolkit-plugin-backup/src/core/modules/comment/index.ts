@@ -1,5 +1,5 @@
 import { DataModule } from '@/core/modules/data-module'
-import { type PageDataWithNextParams } from '@ybgnb/bili-api'
+import { type PageDataWithNextParams, BiliClient } from '@ybgnb/bili-api'
 import { type DataType, DataTypeMap } from '@/core/types/data-type'
 import type { ExportTarget, BackupDataRangeType } from '@/core/types/backup'
 import type { OperationType } from '@/core/types/operation'
@@ -37,9 +37,14 @@ export class CommentModule extends DataModule {
   }
 
   async clearData(context: ExecuteContext): Promise<string | void> {
-    const { client, signal, onProgress } = context
+    const { client, signal, onProgress, user } = context
     onProgress?.(0, '正在获取被回复的通知消息')
-    const replyList = await client.message.fetchReplyAll(
+    const rawClient = new BiliClient({
+      context: {
+        userCookie: user.userCookie,
+      },
+    })
+    const replyList = await rawClient.message.fetchReplyAll(
       undefined,
       async (currList) => {
         onProgress?.(0, `已获取 ${currList.length} 条被回复的通知消息`)
@@ -76,7 +81,7 @@ export class CommentModule extends DataModule {
     }
 
     onProgress?.(0, '正在获取被点赞的通知消息')
-    const likeList = await client.message.fetchLikeAll(
+    const likeList = await rawClient.message.fetchLikeAll(
       undefined,
       async (currList) => {
         onProgress?.(0, `已获取 ${currList.length} 条被点赞的通知消息`)
