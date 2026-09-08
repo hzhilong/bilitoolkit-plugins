@@ -9,14 +9,16 @@ export const defaultAppSettings: () => AppSettings = () => ({
   autoRenameOnConflict: true,
   autoReparseOnUrlExpired: true,
   defaultResourceTypes: ['audio', 'video'],
+  subtitleFileFormats: ['srt'],
+  dmFileFormats: ['xml'],
 })
 
 export const defaultFileNamerFields: () => OptionalFileNamerFields[] = () => [
   'bvid',
   '_',
-  'title',
+  'shortTitle40',
   'fileSeparator',
-  'partTitle',
+  'shortPartTitle40',
   '.',
   'videoQuality',
   '.',

@@ -1,5 +1,5 @@
 import type { VideoQuality, AudioQuality, VideoCodecId } from '@ybgnb/bili-api'
-import type { DownloadResourceType } from 'bilitoolkit-types'
+import type { DownloadResourceType, SubtitleFileFormat, DmFileFormat } from 'bilitoolkit-types'
 
 export interface AppSettings {
   /** 优先下载的音频音质 */
@@ -18,4 +18,9 @@ export interface AppSettings {
 
   /** 默认下载的资源 */
   defaultResourceTypes: DownloadResourceType[]
+
+  /** 字幕文件保存格式 */
+  subtitleFileFormats: Array<SubtitleFileFormat>
+  /** 弹幕文件保存格式 */
+  dmFileFormats: Array<DmFileFormat>
 }

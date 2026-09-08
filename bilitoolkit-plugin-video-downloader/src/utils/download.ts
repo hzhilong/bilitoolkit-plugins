@@ -16,17 +16,20 @@ import {
   type UserInfoWithCookie,
   type PlayUrlData,
 } from '@ybgnb/bili-api'
-import type {
-  DownloadCreateOptions,
-  DownloadVideo,
-  DownloadVideoPart,
-  DownloadResource,
-  DownloadResourceType,
-  AudioDownloadResource,
-  VideoDownloadResource,
-  DMDownloadResource,
-  CoverDownloadResource,
-  BaseDownloadResource,
+import {
+  type DownloadCreateOptions,
+  type DownloadVideo,
+  type DownloadVideoPart,
+  type DownloadResource,
+  type DownloadResourceType,
+  type AudioDownloadResource,
+  type VideoDownloadResource,
+  type DMDownloadResource,
+  type CoverDownloadResource,
+  type BaseDownloadResource,
+  type SubtitleFileFormat,
+  type DmFileFormat,
+  type DownloadResourceMap,
 } from 'bilitoolkit-types'
 import type { FileNamer } from '@ybgnb/file-naming'
 import { getVideoPartSnapshot, getVideoInfoSnapshot } from '@/utils/convert'
@@ -195,7 +198,14 @@ export const createDownloadTasks = async (
         }
         const client = await createBiliClient(user)
         for (const resourceType of resourceTypes) {
-          const resourceData = await buildDownloadResourceData(client, fileNamer, fileNamingData, resourceType, part)
+          const resourceData = await buildDownloadResourceData(
+            client,
+            fileNamer,
+            fileNamingData,
+            resourceType,
+            part,
+            appSettings,
+          )
           if (resourceData) {
             if (Array.isArray(resourceData)) {
               for (const resourceItem of resourceData) {
@@ -246,13 +256,29 @@ const buildDownloadResourceData = async (
   fileNamingData: FileNamingData,
   resourceType: DownloadResourceType,
   { playUrlData }: SelectedPartData,
+  { subtitleFileFormats, dmFileFormats }: AppSettings,
 ): Promise<DownloadResource | DownloadResource[] | null> => {
-  const { segments } = parseFullFileName(fileNamingData, resourceType, fileNamer)
-  const fullFilename = segments[segments.length - 1]
-  const baseData: BaseDownloadResource = {
-    type: resourceType,
-    fullFilename: fullFilename,
-    source: null!,
+  const buildBaseData = <Type extends DownloadResourceType = DownloadResourceType>(
+    source: DownloadResourceMap[Type],
+    {
+      subtitleFileFormat,
+      dmFileFormat,
+      fullFilename,
+    }: { subtitleFileFormat?: SubtitleFileFormat; dmFileFormat?: DmFileFormat; fullFilename?: string } = {},
+  ) => {
+    if (fullFilename == null) {
+      const { segments } = parseFullFileName(fileNamingData, resourceType, fileNamer, {
+        subtitleFileFormat,
+        dmFileFormat,
+      })
+      fullFilename = segments[segments.length - 1]
+    }
+    const baseData: BaseDownloadResource = {
+      type: resourceType,
+      fullFilename: fullFilename,
+      source: source,
+    }
+    return baseData as DownloadResource
   }
   const { video, part, audioQuality, videoQuality, videoCodec } = fileNamingData
 
@@ -264,8 +290,7 @@ const buildDownloadResourceData = async (
         audio: audioStream,
         audioQuality: audioQuality,
       }
-      baseData.source = audioData
-      break
+      return buildBaseData(audioData)
 
     case 'video':
       const videoStream = playUrlData.dash?.video?.find((a) => a.id === videoQuality && a.codecid === videoCodec)
@@ -275,46 +300,55 @@ const buildDownloadResourceData = async (
         videoQuality: videoQuality,
         videoCodec: videoCodec,
       }
-      baseData.source = videoData
-      break
-
-    case 'dm':
-      const dmData: DMDownloadResource = {
-        videoPart: part,
-      }
-      baseData.source = dmData
-      break
+      return buildBaseData(videoData)
 
     case 'cover':
       const coverData: CoverDownloadResource = {
         coverUrl: video.pic,
       }
-      baseData.source = coverData
-      break
+      return buildBaseData(coverData)
+
+    case 'dm':
+      const dmList: DownloadResource[] = []
+      for (const format of dmFileFormats) {
+        const dmData: DMDownloadResource = {
+          videoPart: part,
+          format,
+        }
+        dmList.push(
+          buildBaseData(dmData, {
+            dmFileFormat: format,
+          }),
+        )
+      }
+      return dmList
 
     case 'subtitle':
-      const baseName = fullFilename.slice(0, fullFilename.lastIndexOf('.'))
-
-      const subtitleList: DownloadResource[] = []
-
       const partQuery = {
         bvid: video.bvid,
         cid: part.cid,
       }
       const subtitleItems = await client.videoPlayer.getSubtitles(partQuery)
       await sleepRandom(1111, 2233)
-      for (const subtitleItem of subtitleItems) {
-        const subtitleData: BaseDownloadResource<'subtitle'> = {
-          type: resourceType,
-          fullFilename: `${baseName}.${subtitleItem.lan}.json`,
-          source: {
-            subtitleItem: subtitleItem,
-          },
+      const subtitleList: DownloadResource[] = []
+      for (const format of subtitleFileFormats) {
+        const { segments } = parseFullFileName(fileNamingData, resourceType, fileNamer, { subtitleFileFormat: format })
+        const fullFilename = segments[segments.length - 1]
+        const baseName = fullFilename.slice(0, fullFilename.lastIndexOf('.'))
+        const ext = fullFilename.slice(fullFilename.lastIndexOf('.'))
+
+        for (const subtitleItem of subtitleItems) {
+          const subtitleData: BaseDownloadResource<'subtitle'> = {
+            type: resourceType,
+            fullFilename: `${baseName}.${subtitleItem.lan}.${ext}`,
+            source: {
+              subtitleItem: subtitleItem,
+              format: format,
+            },
+          }
+          subtitleList.push(subtitleData)
         }
-        subtitleList.push(subtitleData)
       }
       return subtitleList
   }
-
-  return baseData as DownloadResource
 }

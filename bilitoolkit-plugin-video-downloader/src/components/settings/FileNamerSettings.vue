@@ -11,6 +11,7 @@ import type { DownloadResourceType } from 'bilitoolkit-types'
 import { parseFullFileName } from '@/utils/file-namer'
 import { fileNamingDataExample } from '@/constants/video-example'
 import { VueDraggable } from 'vue-draggable-plus'
+import { showConfirm } from 'bilitoolkit-ui'
 
 const fileNamerSettingsStore = useFileNamerSettingsStore()
 const { reset } = fileNamerSettingsStore
@@ -35,8 +36,9 @@ const initCurrFields = () => {
   }))
 }
 
-const resetDefault = () => {
-  reset()
+const resetDefault = async () => {
+  await showConfirm('确定恢复默认的文件命名模板吗？')
+  await reset()
   initCurrFields()
 }
 

@@ -1,7 +1,8 @@
 import type { FileNamingData, FileNamerSettings } from '@/types/file-namer'
 import { FileNamer, baseFileNamingFieldMap, type BaseFileNamingField } from '@ybgnb/file-naming'
 import { fileNamerFields } from '@/constants/file-namer'
-import type { DownloadResourceType } from 'bilitoolkit-types'
+import { type DownloadResourceType, type SubtitleFileFormat, type DmFileFormat, AppError } from 'bilitoolkit-types'
+import { inArray } from '@ybgnb/utils'
 
 export function createFileNamer({ fields, extendedFormats }: FileNamerSettings) {
   return new FileNamer<FileNamingData>({
@@ -36,6 +37,10 @@ export const parseFullFileName = (
   data: FileNamingData,
   type: DownloadResourceType,
   context: FileNamerSettings | FileNamer,
+  { subtitleFileFormat, dmFileFormat }: { subtitleFileFormat?: SubtitleFileFormat; dmFileFormat?: DmFileFormat } = {
+    subtitleFileFormat: 'srt',
+    dmFileFormat: 'xml',
+  },
 ) => {
   const result = parseFileName(data, context)
   let suffix: string
@@ -47,10 +52,24 @@ export const parseFullFileName = (
       suffix = '.mp4'
       break
     case 'dm':
-      suffix = '.danmaku.json'
+      if (dmFileFormat === 'json') {
+        suffix = '.弹幕.json'
+      } else if (dmFileFormat === 'xml') {
+        suffix = '.弹幕.xml'
+      } else if (dmFileFormat === 'ass') {
+        suffix = '.弹幕.ass'
+      } else {
+        throw new AppError(`内部错误，暂不支持弹幕格式：${dmFileFormat}`)
+      }
       break
     case 'subtitle':
-      suffix = '.subtitle.json'
+      if (subtitleFileFormat === 'json') {
+        suffix = '.字幕.json'
+      } else if (inArray(subtitleFileFormat, ['lrc', 'srt', 'ass'])) {
+        suffix = `.${subtitleFileFormat}`
+      } else {
+        throw new AppError(`内部错误，暂不支持字幕格式：${dmFileFormat}`)
+      }
       break
     case 'cover':
       suffix = getImgFileSuffix(data.video.pic)

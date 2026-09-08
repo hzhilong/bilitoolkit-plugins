@@ -10,6 +10,7 @@ import {
 import { type FileNamingFieldDefinition, baseFileNamingFieldMap } from '@ybgnb/file-naming'
 import type { FileNamingData } from '@/types/file-namer'
 import dayjs from 'dayjs'
+import { shortenText } from '@ybgnb/utils'
 
 export const fileNamerFields = {
   avid: {
@@ -23,6 +24,18 @@ export const fileNamerFields = {
   title: {
     label: '视频标题',
     resolve: ({ data: { video } }) => `${video.title}`,
+  },
+  shortTitle20: {
+    label: '短视频标题(20)',
+    resolve: ({ data: { video } }) => `${shortenText(video.title, 20)}`,
+  },
+  shortTitle40: {
+    label: '短视频标题(40)',
+    resolve: ({ data: { video } }) => `${shortenText(video.title, 40)}`,
+  },
+  shortTitle60: {
+    label: '短视频标题(60)',
+    resolve: ({ data: { video } }) => `${shortenText(video.title, 60)}`,
   },
   mainZone: {
     label: '视频主分区',
@@ -83,6 +96,18 @@ export const fileNamerFields = {
   partTitle: {
     label: '分P 标题',
     resolve: ({ data: { part } }) => `${part.part}`,
+  },
+  shortPartTitle20: {
+    label: '短分P标题(20)',
+    resolve: ({ data: { part } }) => `${shortenText(part.part, 20)}`,
+  },
+  shortPartTitle40: {
+    label: '短分P标题(40)',
+    resolve: ({ data: { part } }) => `${shortenText(part.part, 40)}`,
+  },
+  shortPartTitle60: {
+    label: '短分P标题(60)',
+    resolve: ({ data: { part } }) => `${shortenText(part.part, 60)}`,
   },
   audioQuality: {
     label: '视频音质',

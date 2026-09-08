@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { PluginPageContent, SettingGroup, SettingItem } from 'bilitoolkit-ui'
+import { PluginPageContent, SettingGroup, SettingItem, showConfirm } from 'bilitoolkit-ui'
 import { videoQualityEntries, audioQualityEntries, videoCodecEntries } from '@ybgnb/bili-api'
 import { storeToRefs } from 'pinia'
 import { useAppSettingsStore } from '@/stores/app-settings'
 import FileNamerSettings from '@/components/settings/FileNamerSettings.vue'
-import { downloadResourceNameMap } from 'bilitoolkit-types'
-const { appSettings } = storeToRefs(useAppSettingsStore())
+import { downloadResourceNameMap, subtitleFileFormats, dmFileFormats } from 'bilitoolkit-types'
+
+const settingsStore = useAppSettingsStore()
+const { appSettings } = storeToRefs(settingsStore)
 
 const handleVideoQualityChange = () => {
   if (appSettings.value.preferredVideoQuality === 127 && appSettings.value.preferredVideoCodec === 7) {
@@ -17,11 +19,18 @@ const handleVideoCodecChange = () => {
     appSettings.value.preferredVideoQuality = 120
   }
 }
+const resetDefault = async () => {
+  await showConfirm('确定恢复默认的插件设置吗？')
+  await settingsStore.reset()
+}
 </script>
 
 <template>
   <plugin-page-content class="page-content">
     <setting-group name="插件设置">
+      <setting-item title="恢复默认的插件设置">
+        <ElButton @click="resetDefault">恢复默认</ElButton>
+      </setting-item>
       <setting-item title="优先下载的音频音质">
         <el-select v-model.number="appSettings.preferredAudioQuality" style="width: 120px">
           <el-option v-for="[id, name] in audioQualityEntries" :key="id" :label="name" :value="id" />
@@ -63,6 +72,16 @@ const handleVideoCodecChange = () => {
       <setting-item title="默认下载的资源">
         <el-checkbox-group v-model="appSettings.defaultResourceTypes">
           <el-checkbox v-for="(item, key) in downloadResourceNameMap" :label="item" :value="key" :key="key" />
+        </el-checkbox-group>
+      </setting-item>
+      <setting-item title="保存的字幕格式">
+        <el-checkbox-group v-model="appSettings.subtitleFileFormats">
+          <el-checkbox v-for="item in subtitleFileFormats" :label="item" :value="item" :key="item" />
+        </el-checkbox-group>
+      </setting-item>
+      <setting-item title="保存的弹幕格式">
+        <el-checkbox-group v-model="appSettings.dmFileFormats">
+          <el-checkbox v-for="item in dmFileFormats" :label="item" :value="item" :key="item" />
         </el-checkbox-group>
       </setting-item>
     </setting-group>

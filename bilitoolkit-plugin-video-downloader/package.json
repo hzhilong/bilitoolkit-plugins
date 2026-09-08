@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-video-downloader",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@ybgnb/bili-api": "workspace:^",
-    "@ybgnb/file-naming": "^1.0.1",
+    "@ybgnb/file-naming": "^1.0.2",
     "@ybgnb/utils": "^1.0.0",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
