@@ -88,7 +88,7 @@ export async function deleteDynamics(
   if (signal?.aborted) throw createAbortError()
 
   await showConfirm(`确定删除所选的${deleteList.length}条动态吗？`)
-  await showConfirm('确定清空吗')
+  await showConfirm('确定清空吗？')
 
   let successCount = 0
 
@@ -122,4 +122,46 @@ export async function deleteFilterDynamics(
   if (!list || list.length === 0) return
 
   await deleteDynamics(context, list, getDataLabel, itemWidth)
+}
+
+export async function deleteDynamicsWhileQuerying(
+  context: { client: BiliClient; addLog: (message: string) => void; signal?: AbortSignal; currUid: number },
+  filter: (dynamic: Dynamic) => boolean,
+  getDataLabel: (dynamic: Dynamic) => string,
+  _itemWidth: number,
+) {
+  await showConfirm(`确定删除符合所选条件的动态吗？`)
+  await showConfirm('确定清空吗？（此操作模式会边查边删，无需确认）')
+
+  const { addLog, signal, client, currUid } = context
+
+  let successCount = 0
+  const onPageFetched: OnPageFetched<Dynamic> = async (currList: Dynamic[], _list: Dynamic[]) => {
+    if (currList == null || currList.length === 0) return false
+
+    addLog('----------------------')
+    addLog(`已获取 ${currList.length} 条动态`)
+    for (const dynamic of currList) {
+      if (signal?.aborted) throw createAbortError()
+
+      if (filter(dynamic)) {
+        addLog(`正在删除动态：【${shortenText(getDataLabel(dynamic), 30)}】`)
+        await sleepRandom(1122, 2233, signal)
+        await client.spaceDynamic.deleteDynamic(dynamic.id_str, { signal })
+        successCount++
+        addLog(`\t成功删除动态`)
+      }
+    }
+
+    await sleepRandom(1122, 2233, signal)
+    return true
+  }
+  await client.spaceDynamic.fetchAll({ host_mid: currUid }, undefined, onPageFetched, { signal })
+
+  addLog('=================')
+  if (successCount === 0) {
+    addLog(`暂为找到符合条件的动态`)
+  } else {
+    addLog(`成功删除${successCount}条动态`)
+  }
 }

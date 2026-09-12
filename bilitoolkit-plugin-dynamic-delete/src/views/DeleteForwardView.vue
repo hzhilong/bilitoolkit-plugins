@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
-import { PluginPageContent, useSelectedUserStore, LogPrint } from 'bilitoolkit-ui'
+import { PluginPageContent, useSelectedUserStore, LogPrint, QueryFormItem } from 'bilitoolkit-ui'
 import { storeToRefs } from 'pinia'
 import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import { getErrorMessage } from '@ybgnb/utils'
-import { isLotteryDynamic, deleteFilterDynamics } from '@/utils/dynamic'
+import { isLotteryDynamic, deleteFilterDynamics, deleteDynamicsWhileQuerying } from '@/utils/dynamic'
 
 const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
 const { user } = storeToRefs(userStore)
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
 
+const mode = ref<'after' | 'during'>('after')
 const isOnlyDeleteLottery = ref(true)
 const isDeleting = ref(false)
 let abortController: AbortController | null = null
@@ -30,7 +31,7 @@ const handleDelete = async () => {
     isDeleting.value = true
     abortController = new AbortController()
 
-    await deleteFilterDynamics(
+    await (mode.value === 'after' ? deleteFilterDynamics : deleteDynamicsWhileQuerying)(
       {
         client: publicClient,
         addLog: addLog,
@@ -68,8 +69,23 @@ const handleDelete = async () => {
   <PluginPageContent>
     <div class="page-content">
       <div class="actions">
-        <el-checkbox v-model="isOnlyDeleteLottery" label="仅删除官方的抽奖动态" />
-        <el-button type="primary" @click="handleDelete">{{ isDeleting ? '停止操作' : '查询转发的所有动态' }}</el-button>
+        <QueryFormItem prefix="动态类型" style="width: fit-content">
+          <el-radio-group v-model="isOnlyDeleteLottery" style="width: fit-content; padding: 0 20px">
+            <el-radio label="转发的官方抽奖动态" :value="true" />
+            <el-radio label="转发的动态" :value="false" />
+          </el-radio-group>
+        </QueryFormItem>
+      </div>
+      <div class="actions">
+        <QueryFormItem prefix="操作模式" style="width: fit-content">
+          <el-radio-group v-model="mode" style="width: fit-content; padding: 0 20px">
+            <el-radio label="查完再删" value="after" />
+            <el-radio label="边查边删" value="during" />
+          </el-radio-group>
+        </QueryFormItem>
+        <el-button type="primary" @click="handleDelete">{{
+          isDeleting ? '停止操作' : mode === 'after' ? '查询转发的所有动态' : '删除转发的所有动态'
+        }}</el-button>
       </div>
       <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>
     </div>

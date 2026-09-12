@@ -13,7 +13,7 @@ import { publicClient } from 'bilitoolkit-runtime/biliapi'
 import type { DynamicType } from '@ybgnb/bili-api'
 import { DynamicTypeMap } from '@ybgnb/bili-api'
 import { inArray, getErrorMessage } from '@ybgnb/utils'
-import { deleteFilterDynamics } from '@/utils/dynamic'
+import { deleteFilterDynamics, deleteDynamicsWhileQuerying } from '@/utils/dynamic'
 
 const userStore = useSelectedUserStore()
 const { assertLoggedIn } = userStore
@@ -26,6 +26,7 @@ const { selectedIds: selectedTypes } = useSelectData(dynamicTypeOptions, (type: 
   DynamicTypeMap.DYNAMIC_TYPE_DRAW.type,
 ])
 
+const mode = ref<'after' | 'during'>('after')
 const keyword = ref<string>()
 const isDeleting = ref(false)
 let abortController: AbortController | null = null
@@ -50,7 +51,7 @@ const handleDelete = async () => {
     isDeleting.value = true
     abortController = new AbortController()
 
-    await deleteFilterDynamics(
+    await (mode.value === 'after' ? deleteFilterDynamics : deleteDynamicsWhileQuerying)(
       {
         client: publicClient,
         addLog: addLog,
@@ -110,7 +111,17 @@ onUnmounted(() => abortController?.abort())
         <QueryFormItem prefix="动态关键词">
           <el-input v-model.trim="keyword" placeholder="可为空" clearable style="width: 120px"> </el-input>
         </QueryFormItem>
-        <el-button type="primary" @click="handleDelete">{{ isDeleting ? '停止操作' : '查询所有动态' }}</el-button>
+      </div>
+      <div class="actions">
+        <QueryFormItem prefix="操作模式" style="width: fit-content">
+          <el-radio-group v-model="mode" style="width: fit-content; padding: 0 20px">
+            <el-radio label="查完再删" value="after" />
+            <el-radio label="边查边删" value="during" />
+          </el-radio-group>
+        </QueryFormItem>
+        <el-button type="primary" @click="handleDelete">{{
+          isDeleting ? '停止操作' : mode === 'after' ? '查询所有动态' : '删除所有动态'
+        }}</el-button>
       </div>
       <el-alert description="请注意，发布的部分纯文字动态也会被B站认定为图文动态"></el-alert>
       <LogPrint ref="loggerRef" class="log-print-box"></LogPrint>
