@@ -9,7 +9,7 @@ import {
   showConfirm,
   showVirtualSelectDialog,
 } from 'bilitoolkit-ui'
-import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
+import { getErrorMessage, sleepRandom, isCanceledError } from '@ybgnb/utils'
 import { BiliClient, type MyArcAuditItem } from '@ybgnb/bili-api'
 import { AppError } from 'bilitoolkit-types'
 import { storeToRefs } from 'pinia'
@@ -45,7 +45,7 @@ const handleStart = async () => {
 
     running.value = true
     abortController = new AbortController()
-    const signal = abortController.signal
+    let signal = abortController.signal
     const client = new BiliClient({
       context: {
         userCookie: user.value!.userCookie,
@@ -68,68 +68,78 @@ const handleStart = async () => {
       await sleepRandom(minDelay, maxDelay, signal)
     }
 
-    const list: Array<MyArcAuditItem & { aid: number }> = []
+    let list: Array<MyArcAuditItem & { aid: number }> = []
 
-    await client.myArchive.fetchAll(
-      {},
-      undefined,
-      async (currList) => {
-        if (!currList || currList.length === 0) return false
+    try {
+      await client.myArchive.fetchAll(
+        {},
+        { pageSize: 100 },
+        async (currList) => {
+          if (!currList || currList.length === 0) return false
 
-        for (const item of currList) {
-          const { bvid, aid, title, is_only_self: isOnlySelf } = item.Archive
-          addLog(`已获取稿件：${bvid} ${title} ${isOnlySelf === 1 ? '仅自己可见' : '公开可见'}`)
-          if (onlySelf.value !== (isOnlySelf === 1)) {
-            if (mode.value === 'batch') {
-              await apiSleep()
-              await changeVisibility(aid)
-              addLog(`\t已更改为：${onlySelf.value ? '仅自己可见' : '公开可见'}`)
+          for (const item of currList) {
+            const { bvid, aid, title, is_only_self: isOnlySelf } = item.Archive
+            addLog(`已获取稿件：${bvid} ${title} ${isOnlySelf === 1 ? '仅自己可见' : '公开可见'}`)
+            if (onlySelf.value !== (isOnlySelf === 1)) {
+              list.push({ ...item, aid: aid })
             }
-            list.push({ ...item, aid: aid })
           }
-        }
-      },
-      {
-        signal,
-        minDelay,
-        maxDelay,
-      },
-    )
+        },
+        {
+          signal,
+          minDelay,
+          maxDelay,
+        },
+      )
+    } catch (e) {
+      if (list.length <= 0) {
+        throw e
+      }
+      addLog(`${getErrorMessage(e)}`)
+
+      if (isCanceledError(e)) {
+        abortController = new AbortController()
+        signal = abortController.signal
+        await showConfirm(`已获取${list.length}个视频，是否修改为${onlySelf.value ? '仅自己可见' : '公开可见'}？`)
+      } else {
+        await showConfirm(
+          `获取稿件列表时遇到错误，已获取${list.length}个视频，是否修改为${onlySelf.value ? '仅自己可见' : '公开可见'}？`,
+        )
+      }
+    }
 
     if (list.length === 0) {
       throw new AppError(`未找到可见性为[${!onlySelf.value ? '仅自己可见' : '公开可见'}]的稿件`)
     }
 
-    if (mode.value === 'batch') {
-      addLog(`操作完成，共修改${list.length}个视频稿件`)
-      return
-    }
-
-    const selectedList = await showVirtualSelectDialog({
-      options: list,
-      getDataLabel: (data) => `${data.Archive.bvid} ${data.Archive.title}`,
-      canSelectAll: true,
-      multiple: true,
-      idKey: 'aid',
-      itemWidth: 500,
-    })
-    if (!selectedList || selectedList.length === 0) {
-      addLog(`未选择稿件`)
-    } else {
-      addLog(`处理中...`)
-      for (let i = 0; i < selectedList.length; i++) {
-        const item = selectedList[i]
-        if (signal.aborted) break
-
-        const { bvid, aid, title } = item.Archive
-        await changeVisibility(aid)
-        addLog(`\t已更改[${bvid} ${title}]为：${onlySelf.value ? '仅自己可见' : '公开可见'}`)
-        if (i < selectedList.length - 1) {
-          await apiSleep()
-        }
+    if (mode.value === 'manual') {
+      list =
+        (await showVirtualSelectDialog({
+          options: list,
+          getDataLabel: (data) => `${data.Archive.bvid} ${data.Archive.title}`,
+          canSelectAll: true,
+          multiple: true,
+          idKey: 'aid',
+          itemWidth: 500,
+        })) ?? []
+      if (!list || list.length === 0) {
+        throw new AppError('未选择稿件')
       }
-      addLog(`操作完成，共修改${selectedList.length}个视频稿件`)
     }
+
+    addLog(`处理中...`)
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i]
+      if (signal.aborted) break
+
+      const { bvid, aid, title } = item.Archive
+      await changeVisibility(aid)
+      addLog(`\t已更改[${bvid} ${title}]为：${onlySelf.value ? '仅自己可见' : '公开可见'}`)
+      if (i < list.length - 1) {
+        await apiSleep()
+      }
+    }
+    addLog(`操作完成，共修改${list.length}个视频稿件`)
   } catch (e) {
     addLog(getErrorMessage(e))
   } finally {
