@@ -7,6 +7,7 @@ import 'bilitoolkit-ui/style.css'
 import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
 import { router } from '@/router'
+import { useAppSettingsStore } from '@/stores/app-settings'
 
 if (import.meta.env.DEV) {
   import('element-plus/dist/index.css')
@@ -27,6 +28,8 @@ async function bootstrapApp() {
   app.use(router)
 
   const ui = await initBilitoolkitUi(pinia)
+
+  await useAppSettingsStore().init()
 
   app.use(ui)
   // Vue 组件中发生的错误

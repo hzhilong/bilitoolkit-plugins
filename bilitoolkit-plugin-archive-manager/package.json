@@ -1,6 +1,6 @@
 {
   "name": "bilitoolkit-plugin-archive-manager",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "type": "module",
   "main": "index.html",
@@ -39,7 +39,7 @@
     "pnpm publish": "pnpm publish --access public"
   },
   "dependencies": {
-    "@ybgnb/bili-api": "^1.0.1",
+    "@ybgnb/bili-api": "^1.0.2",
     "@ybgnb/file-naming": "^0.0.1",
     "@ybgnb/utils": "^1.0.0",
     "bilitoolkit-runtime": "^1.0.0",

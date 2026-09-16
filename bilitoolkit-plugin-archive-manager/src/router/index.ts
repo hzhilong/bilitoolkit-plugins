@@ -7,6 +7,12 @@ export const appMenus: Array<RouteRecordRaw & { title: string }> = [
     name: 'VisibilityView',
     component: () => import('../views/VisibilityView.vue'),
   },
+  {
+    title: '设置',
+    path: '/SettingsView',
+    name: 'SettingsView',
+    component: () => import('../views/SettingsView.vue'),
+  },
 ]
 
 export const router = createRouter({

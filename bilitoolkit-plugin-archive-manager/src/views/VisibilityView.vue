@@ -13,9 +13,11 @@ import { getErrorMessage, sleepRandom } from '@ybgnb/utils'
 import { BiliClient, type MyArcAuditItem } from '@ybgnb/bili-api'
 import { AppError } from 'bilitoolkit-types'
 import { storeToRefs } from 'pinia'
+import { useAppSettingsStore } from '@/stores/app-settings'
 
 const userStore = useSelectedUserStore()
 const { user } = storeToRefs(userStore)
+const { appSettings } = storeToRefs(useAppSettingsStore())
 const { assertLoggedIn } = userStore
 const loggerRef = useTemplateRef<InstanceType<typeof LogPrint>>('loggerRef')
 
@@ -60,6 +62,12 @@ const handleStart = async () => {
       )
     }
 
+    const minDelay = appSettings.value.businessRequestIntervalMinMs
+    const maxDelay = appSettings.value.businessRequestIntervalMaxMs
+    const apiSleep = async () => {
+      await sleepRandom(minDelay, maxDelay, signal)
+    }
+
     const list: Array<MyArcAuditItem & { aid: number }> = []
 
     await client.myArchive.fetchAll(
@@ -73,7 +81,7 @@ const handleStart = async () => {
           addLog(`已获取稿件：${bvid} ${title} ${isOnlySelf === 1 ? '仅自己可见' : '公开可见'}`)
           if (onlySelf.value !== (isOnlySelf === 1)) {
             if (mode.value === 'batch') {
-              await sleepRandom(1222, 2555, signal)
+              await apiSleep()
               await changeVisibility(aid)
               addLog(`\t已更改为：${onlySelf.value ? '仅自己可见' : '公开可见'}`)
             }
@@ -83,6 +91,8 @@ const handleStart = async () => {
       },
       {
         signal,
+        minDelay,
+        maxDelay,
       },
     )
 
@@ -115,7 +125,7 @@ const handleStart = async () => {
         await changeVisibility(aid)
         addLog(`\t已更改[${bvid} ${title}]为：${onlySelf.value ? '仅自己可见' : '公开可见'}`)
         if (i < selectedList.length - 1) {
-          await sleepRandom(1222, 2555, signal)
+          await apiSleep()
         }
       }
       addLog(`操作完成，共修改${selectedList.length}个视频稿件`)
