@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { LoadStateEntity, BiliCommentEntity } from 'bili-comment-core'
 
-const db = new Dexie('comment-export') as Dexie & {
+const db = new Dexie('comment-monitor') as Dexie & {
   comment: EntityTable<BiliCommentEntity, 'rpid'>
   loadState: EntityTable<LoadStateEntity, 'oid'>
 }

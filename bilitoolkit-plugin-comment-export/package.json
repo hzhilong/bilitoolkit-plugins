@@ -42,7 +42,6 @@
     "@ybgnb/bili-api": "workspace:^",
     "@ybgnb/utils": "^1.0.0",
     "@ybgnb/file-naming": "^0.0.1",
-    "bili-comment-core": "workspace:^",
     "bilitoolkit-runtime": "workspace:^",
     "bilitoolkit-types": "workspace:^",
     "bilitoolkit-ui": "workspace:^",
