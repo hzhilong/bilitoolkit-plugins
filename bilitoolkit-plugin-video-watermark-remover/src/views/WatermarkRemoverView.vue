@@ -2,15 +2,15 @@
 import { computed, onUnmounted, ref } from 'vue'
 import { toolkitApi, showError, showToast } from 'bilitoolkit-ui'
 import { getErrorMessage } from '@ybgnb/utils'
+import type { WatermarkPreset } from '@/types/media.js'
 import type {
   ToolkitMediaApi,
   VideoMediaFile,
   VideoPreview,
-  VideoWatermarkJob,
   VideoWatermarkMaskMode,
-  WatermarkPreset,
   WatermarkRegion,
-} from '@/types/media.js'
+  VideoWatermarkJob,
+} from 'bilitoolkit-types'
 
 const mediaApi = (toolkitApi as unknown as { media?: ToolkitMediaApi }).media
 const requireMediaApi = () => {
